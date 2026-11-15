@@ -1,0 +1,20 @@
+{
+ "name": "全球面板",
+ "short_name": "全球面板",
+ "display": "standalone",
+ "orientation": "portrait",
+ "background_color": "#06090d",
+ "theme_color": "#06090d",
+ "icons": [
+  {
+   "src": "icon-180.png",
+   "sizes": "180x180",
+   "type": "image/png"
+  },
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png"
+  }
+ ]
+}
