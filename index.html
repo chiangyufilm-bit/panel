@@ -1312,6 +1312,9 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
   .hc-tr .hc-52 { display: block; margin: 5px 0 3px; }
 }
 
+/* 觸控螢幕（平板也算）：視窗底部的按鈕至少 40px 高，手指才好按 */
+@media (pointer: coarse) { .dlg-f .btn { min-height: 40px; padding-left: 16px; padding-right: 16px; } }
+
 </style>
 </head>
 <body>
