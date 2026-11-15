@@ -618,7 +618,10 @@ body.remote .topbar { padding-left: max(14px, env(safe-area-inset-left)); paddin
   .topbar { gap: 10px; }
   .brand { letter-spacing: .22em; white-space: nowrap; gap: 8px; }
   .brand-sub { display: none; }
-  .status { gap: 10px; white-space: nowrap; }
+  .brand { letter-spacing: .16em; flex: none; }
+  /* 放不下的燈號整顆換到下一行藏起來，不會出現切到一半的字 */
+  .status { gap: 0 10px; white-space: nowrap; flex: 1 1 0; min-width: 0; flex-wrap: wrap; justify-content: flex-end; height: 18px; line-height: 18px; overflow: hidden; }
+  .status span { height: 18px; }
   .topbar .status span:nth-child(n+4) { display: none; }
 }
 .ph-pair.noqr { grid-template-columns: 1fr; }
@@ -1327,6 +1330,12 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
   /* 世界時間收合成一列時：放不下就換行，不要把最後一個時鐘切掉 */
   .slim .clocks { flex-wrap: wrap; row-gap: 4px; white-space: normal; }
 }
+
+/* 手機獨立版第一次打開的歡迎卡 */
+.empty.welcome { padding: 14px 4px 10px; display: flex; flex-direction: column; gap: 10px; align-items: stretch; }
+.empty.welcome b { font-size: 15px; color: var(--ink-1, #e9eef4); font-weight: 600; }
+.empty.welcome p { margin: 0; font-size: 12.5px; line-height: 1.7; color: var(--ink-2); }
+.empty.welcome .btn { min-height: 44px; font-size: 14px; }
 
 </style>
 </head>
@@ -5123,6 +5132,10 @@ function renderWatch() {
   const isTW = watchTab === 'tw', list = isTW ? twL : usL, quotes = (isTW ? S.tw?.data?.w : S.us?.data?.w) || {};
   if (!list.length) {
     $('watch-sum').textContent = '';
+    if (!twL.length && !usL.length && document.documentElement.classList.contains('standalone')) {     // 手機獨立版第一次打開：直接帶去最省事的那條路
+      setHTML($('watch'), `<div class="empty welcome"><b>歡迎，先把你的持股帶進來</b><p>到券商 App 的「庫存」頁截圖，選進來就好，不用自己打字。<br>截圖只在這支手機上辨識，不會上傳；持股也只存在這支手機。</p><button class="btn primary" data-act="hold-scan">從截圖帶入持股</button><button class="btn" data-act="hold">自己輸入</button></div>`);
+      return;
+    }
     setHTML($('watch'), `<div class="empty">還沒有${isTW ? '台股' : '美股'}自選股。<br><button class="btn primary" data-act="hold">＋ 加入股票</button></div>`);
     return;
   }
@@ -5165,7 +5178,7 @@ function renderWatch() {
       (cost > 0 ? `<span data-tip="${esc(notes)}">未實現${noCost ? '*' : ''}<b class="${dirCls(g)}">${g >= 0 ? '+' : ''}${money(g, 0)}　${(g >= 0 ? '+' : '−') + fmt(Math.abs(g / cost * 100), 2) + '%'}</b></span>` : '')
     : '');
 }
-$('watch').addEventListener('click', (e) => { if (e.target.closest('[data-act=hold]')) openHold(); });
+$('watch').addEventListener('click', (e) => { if (e.target.closest('[data-act=hold-scan]')) { openHold(); $('hold-scan').click(); } else if (e.target.closest('[data-act=hold]')) openHold(); });
 $('watch-tabs').addEventListener('click', (e) => {
   const b = e.target.closest('button[data-tab]'); if (!b) return;
   watchTab = b.dataset.tab; htmlCache.delete($('watch')); renderWatch(); $('watch').scrollTop = 0;
@@ -5870,6 +5883,8 @@ function holdDraw() {
   $('hold-rows').innerHTML = (list.length ? list : [{}]).map((it) => holdRow(holdTab, it)).join('');
   $('hold-rows').querySelectorAll('.hold-row').forEach((r) => holdLookup(r, true));
 }
+// 儲存時某一列有問題：捲到那一列、把游標放進代號欄，不用自己找
+function holdGoto(i) { const r = $('hold-rows').querySelectorAll('.hold-row')[i]; if (!r) return; r.scrollIntoView({ block: 'center', behavior: 'smooth' }); const c = r.querySelector('.h-code'); c.classList.add('bad'); try { c.focus({ preventScroll: true }); } catch (e) { /* 舊瀏覽器 */ } }
 function holdMeta() {
   const m = CFG.watchlistMeta;
   const when = m?.at ? new Date(m.at * 1000).toLocaleString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) : '';
@@ -5908,10 +5923,12 @@ function scanNote(kind, it) {
     if (!sameVal(sc.old.cost, it.cost)) was.push(sc.old.cost === '' || sc.old.cost == null ? '原本沒填均價' : `原本均價 ${dC(sc.old.cost)}`);
     t = was.join('・') || '數字已照截圖更新';
   } else if (st === 'new') t = sc.st === 'need' ? `截圖上的名稱「${sc.raw}」：填好代號，下次會自動配對` : '截圖裡有、清單裡原本沒有';
-  if (sc.derived && (st === 'upd' || st === 'new' || st === 'need')) t += (t ? '・' : '') + '截圖上沒有均價，用「現值−損益」÷股數推算（含買進手續費），請對照';
-  if (sc.est && (st === 'upd' || st === 'new' || st === 'need')) t += (t ? '・' : '') + '股數沒讀清楚，用台幣損益和匯率推算，請對照截圖';
-  else if (st === 'need') t = `截圖上的名稱「${sc.raw}」配不到代號，請填一次，之後會記住`;
+  if (st === 'need') t = `截圖上的名稱「${sc.raw}」配不到代號，請填一次，之後會記住`;
   else if (st === 'chk') t = '截圖裡這檔讀不完整（可能被畫面邊緣切到），數字沒改，請對照截圖';
+  if (sc.from === 'hint' && st === 'new') t += (t ? '・' : '') + '代號是照截圖上印的字帶入的，請對照';
+  if (sc.derived && (st === 'upd' || st === 'new' || st === 'need')) t += (t ? '・' : '') + '截圖上沒有均價，用「現值−損益」÷股數推算（含買進手續費），請對照';
+  if (sc.multi && (st === 'upd' || st === 'new' || st === 'need')) t += (t ? '・' : '') + `這一檔在 ${sc.multi} 張截圖裡都有（不同券商），股數已相加、均價照股數平均，請對照`;
+  if (sc.est && (st === 'upd' || st === 'new' || st === 'need')) t += (t ? '・' : '') + '股數沒讀清楚，用台幣損益和匯率推算，請對照截圖';
   else if (st === 'miss') t = '這檔沒出現在截圖裡，沒有更動；已經賣掉的話請按「賣出」或右邊 × 移除';
   return `<span class="h-tag ${st}">${SCAN_TAG[st]}</span>${t ? `<span>${esc(t)}</span>` : ''}`;
 }
@@ -5922,6 +5939,8 @@ function scanStatus(kind, text) {
   el.hidden = false; el.className = 'scan-status ' + kind; el.textContent = text;
   if (kind !== 'busy') el.scrollIntoView({ block: 'nearest' });
 }
+// 名稱配不到代號、但截圖上本來就印著代號（例如國泰的「整股 DMNIF」）：直接用截圖上的代號，使用者不用自己打
+function scanHint(rows) { for (const r of rows) { const h = String(r.hint || '').toUpperCase(); if (!r.code && h && scanCodeOk(r.kind, h)) { r.code = h; r.from = 'hint'; } } }
 async function scanFiles(files) {
   if (!holdDraft || !files.length) return;
   holdCollect();
@@ -5939,8 +5958,8 @@ async function scanFiles(files) {
         scanStatus('busy', `讀到 ${rs.length} 檔，正在配對代號…`);
         try {
           const m = await postJSON('/api/holdings/scan', { names: rs.map((r) => ({ kind: r.kind, name: r.name, price: r.price, ...(r.hint ? { hint: r.hint } : {}) })) });
-          rs.forEach((r, k) => { r.code = m.codes[k]?.code || ''; r.from = m.codes[k]?.from || ''; });
-        } catch (e) { rs.forEach((r) => { r.code = ''; r.from = ''; }); }
+          rs.forEach((r, k) => { r.code = m.codes[k]?.code || ''; r.from = m.codes[k]?.from || ''; }); scanHint(rs);
+        } catch (e) { rs.forEach((r) => { r.code = ''; r.from = ''; }); scanHint(rs); }
         all.push(...rs);
       } else all.push(...j.rows);
     } catch (e) { errs.push(e.message); }
@@ -5961,23 +5980,38 @@ async function scanText(text) {
   scanStatus('busy', `讀到 ${rows.length} 檔，正在配對代號…`);
   try {
     const j = await postJSON('/api/holdings/scan', { names: rows.map((r) => ({ kind: r.kind, name: r.name, price: r.price, ...(r.hint ? { hint: r.hint } : {}) })) });
-    rows.forEach((r, i) => { r.code = j.codes[i]?.code || ''; r.from = j.codes[i]?.from || ''; });
-  } catch (e) { rows.forEach((r) => { r.code = ''; r.from = ''; }); }
+    rows.forEach((r, i) => { r.code = j.codes[i]?.code || ''; r.from = j.codes[i]?.from || ''; }); scanHint(rows);
+  } catch (e) { rows.forEach((r) => { r.code = ''; r.from = ''; }); scanHint(rows); }
   scanApply(rows, [], '文字');
 }
 function scanApply(all, errs, what) {
   // 好幾張截圖會重複到同一檔：同名只留一筆，優先留數字對得上的；被切到一半、名稱讀壞的那一列，如果股數和均價和別列相同就丟掉
   const m = new Map();
-  for (const r of all) { const k = r.kind + ':' + scanNorm(r.name), o = m.get(k); if (!o || (!o.ok && r.ok)) m.set(k, r); }
+  const scanAdd = (o, r) => { const sh = o.shares + r.shares; o.cost = +((o.shares * o.cost + r.shares * r.cost) / sh).toFixed(4); o.shares = +sh.toFixed(6); o.multi = (o.multi || 1) + 1; };   // 兩家券商都有同一檔：股數相加、均價照股數加權
+  for (const r of all) {
+    const k = r.kind + ':' + scanNorm(r.name), o = m.get(k);
+    if (!o || (!o.ok && r.ok)) m.set(k, r);
+    else if (o.ok && r.ok && (o.shares !== r.shares || o.cost !== r.cost)) scanAdd(o, r);
+  }
   const good = [...m.values()].filter((r) => r.ok);
-  const rows = [...m.values()].filter((r) => r.ok || !good.some((g) => g.kind === r.kind && g.shares === r.shares && g.cost === r.cost));
+  let rows = [...m.values()].filter((r) => r.ok || !good.some((g) => g.kind === r.kind && g.shares === r.shares && g.cost === r.cost));
+  // 同一檔出現在兩家券商的截圖（代號相同、股數或均價不同）：股數相加、均價照股數加權，不要後面那張蓋掉前面那張
+  const byCode = new Map();
+  rows = rows.filter((r) => {
+    const c = String(r.code || '').toUpperCase();
+    if (!r.ok || !c || !scanCodeOk(r.kind, c)) return true;
+    const o = byCode.get(r.kind + ':' + c);
+    if (!o) { byCode.set(r.kind + ':' + c, r); return true; }
+    if (o.shares === r.shares && o.cost === r.cost) return false;          // 同一列被讀了兩次（截圖重疊）
+    scanAdd(o, r); return false;
+  });
   if (!rows.length) { const m = '沒有讀到持股：' + (errs[0] || '請選庫存頁的截圖'); scanStatus('err', m); $('hold-msg').className = 'dlg-note err'; $('hold-msg').textContent = m; return; }
   if (what === '文字') for (const o of [...holdDraft.tw, ...holdDraft.us]) if (o._scan?.st === 'miss') delete o._scan;
   const n = { upd: 0, new: 0, same: 0, need: 0, chk: 0, miss: 0 }, lost = [], hit = new Set();
   for (const r of rows) {
     const kind = r.kind, k = kind === 'tw' ? 'code' : 'sym', list = holdDraft[kind];
     const code = String(r.code || '').toUpperCase(), name = kind === 'tw' ? String(r.name || '').replace(/\*/g, '') : '';
-    const base = { raw: r.name, auto: code, from: r.from || '', ...(r.derived ? { derived: 1 } : {}), ...(r.est ? { est: 1 } : {}) };
+    const base = { raw: r.name, auto: code, from: r.from || '', ...(r.derived ? { derived: 1 } : {}), ...(r.est ? { est: 1 } : {}), ...(r.multi ? { multi: r.multi } : {}) };
     const valid = code && scanCodeOk(kind, code);
     let cur = valid ? list.find((x) => String(x[k] || '').toUpperCase() === code) : null;
     if (!cur) cur = list.find((x) => x._scan?.raw && scanNorm(x._scan.raw) === scanNorm(r.name));      // 同一張圖再丟一次：配到上次那一列
@@ -6066,7 +6100,7 @@ $('hold-save').addEventListener('click', async () => {
   // 先在這裡把明顯的錯誤指出來，不用等伺服器
   for (const k of ['tw', 'us']) for (const o of holdDraft[k]) {
     const id = o.code || o.sym;
-    if (!id) { if (k !== holdTab) { holdTab = k; holdDraw(); } $('hold-msg').className = 'dlg-note err'; $('hold-msg').textContent = '有一列填了股數或均價，但沒有代號。'; return; }
+    if (!id) { if (k !== holdTab) { holdTab = k; holdDraw(); } $('hold-msg').className = 'dlg-note err'; $('hold-msg').textContent = `「${o.name || o._scan?.raw || '有一列'}」還沒有代號：請在那一列填上代號，或按右邊的 × 先拿掉。`; holdGoto(holdDraft[k].indexOf(o)); return; }
     if (Number.isNaN(numIn(o.shares)) || Number.isNaN(numIn(o.cost))) { if (k !== holdTab) { holdTab = k; holdDraw(); } $('hold-msg').className = 'dlg-note err'; $('hold-msg').textContent = `${o.name || id}：股數和均價只能填數字。`; return; }
   }
   if (holdSnap() === holdOrig) { holdDraft = null; closeDialog($('hold')); return; }
