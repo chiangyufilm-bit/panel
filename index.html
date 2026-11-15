@@ -1558,7 +1558,7 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
       <div class="scan-steps only-standalone"><b>從券商 App 帶入持股（不用自己打字）</b>
         <ol><li>在券商 App 的「庫存」頁截圖（持股多就多截幾張）。</li><li>按下面的「<b>從截圖更新</b>」，選那幾張截圖。</li><li>核對標了顏色的地方，按「儲存」。</li></ol></div>
       <p class="scan-line"><button class="btn" id="hold-scan">從截圖更新…</button><input type="file" id="hold-scan-file" accept="image/*" multiple hidden>
-        <span class="dim not-standalone">選券商 App「庫存」頁的截圖（可一次選好幾張），股數和均價會直接填進下面的清單，有變動的地方會標顏色，對照截圖沒問題再按「儲存」。圖片只在你的 Mac 上辨識，不會上傳。</span>
+        <span class="dim not-standalone">選券商 App「庫存」頁的截圖（可一次選好幾張），股數和均價會直接填進下面的清單，有變動的地方會標顏色，對照截圖沒問題再按「儲存」。元大、凱基、統一、元富／台新、第一金、富果等都能讀；富邦、國泰、玉山的列表沒有均價，請先點開那一檔（展開明細）再截圖。圖片只在你的 Mac 上辨識，不會上傳。</span>
         <span class="dim only-standalone">圖片只在這台裝置上辨識，不會上傳。第一次使用要先下載辨識工具（約 20MB，建議連 Wi-Fi），之後就很快。</span></p>
       <p class="scan-line paste-line"><textarea id="hold-paste" rows="1" placeholder="或把券商文字貼在這裡" autocomplete="off" spellcheck="false" aria-label="貼上券商文字"></textarea>
         <span class="dim not-standalone">iPhone：在「照片」打開庫存截圖 → 右下角的原況文字圖示 →「拷貝全部」→ 回來貼在「或把券商文字貼在這裡」那一格。文字只在這個裝置上整理。</span></p>
@@ -2315,7 +2315,7 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
     const hs = items.map((i) => i.h).sort((a, b) => a - b), med = hs[Math.floor(hs.length / 2)] || 0;
     return items.filter((i) => i.h >= med * 0.55 && !(i.x > 0.85 && i.t.length === 1 && !/\d/.test(i.t)));     // 最右邊單獨一個非數字的字，也是圖示
   }
-  // 排成「一列一列、每列由左到右」的純文字，交給 parseBrokerText。用每個框的上緣分列：
+  // 排成「一列一行、每列由左到右、格子之間用 Tab」的純文字，交給 parseBrokerText。用每個框的上緣分列：
   // 兩行的名稱（第二行在數字列的下面一點）才會排在同一檔裡、而且順序正確。
   function toText(items) {
     const its = items.slice().sort((a, b) => a.y - b.y), rows = [];
@@ -2323,7 +2323,7 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
       const r = rows[rows.length - 1];
       if (r && Math.abs(r.y - i.y) < Math.max(r.h, i.h) * 0.4) { r.it.push(i); r.h = Math.max(r.h, i.h); } else rows.push({ y: i.y, h: i.h, it: [i] });
     }
-    return rows.map((r) => r.it.sort((a, b) => a.x - b.x).map((i) => i.t).join('\n')).join('\n');
+    return rows.map((r) => r.it.sort((a, b) => a.x - b.x).map((i) => i.t.replace(/\t/g, ' ')).join('\t')).join('\n');      // 同一列的格子用 Tab 隔開
   }
   window.WP_OCR = { recognize, warm: init, toText };
 })();
@@ -3919,95 +3919,378 @@ return { scoreWord, scoreCmd, matchCommands, matchSpoken, pushRecent, nextGroup 
 })();
 // ── scantext.js ──
 const __m_scantext_js = (() => {
-// 把券商庫存頁「拷貝全部」得到的純文字整理成一檔一列。
-// 只有文字、沒有位置，順序一列一列或一欄一欄都可以：
-//   數字：每個「％」去找四個數字，要同時滿足  損益 ÷（均價×股數）＝％  和 （市價−均價）×股數 ≈ 損益；
-//         先在「上一個％到這個％」之間找（iPhone 照片的「拷貝全部」是這種順序），找不到再整頁找。
-//   名稱：每檔名稱後面跟著「現股／美國」這類標籤，第 i 個標籤配第 i 個％。
-// 不連網、不依賴伺服器，手機獨立版也用同一份。
-const TAG = /^(現股|美國|融資|融券)$/, MARK = new Set(['息', '權', '資', '券']), HDR = /名稱|市價|均價|股數|可下單數|損益|面額/;
+// 把券商庫存頁的文字（截圖辨識出來的，或 iPhone「拷貝全部」貼上的）整理成一檔一列。
+// 各家券商的版面都不一樣（元大、凱基、富邦、永豐、國泰、統一、元富／台新、玉山、兆豐、第一金、群益、富果……，
+// 研究資料在「券商庫存研究」資料夾），所以這裡不靠欄位位置，而是靠「數字之間的關係」：
+//   每個「％」去找四個數字，要同時滿足  損益 ÷（均價×股數）＝％  和 （市價−均價）×股數 ≈ 損益。
+//   台股的損益多半已先扣掉賣出手續費和證交稅，所以會比毛額少一點；有的券商（統一）是毛額；
+//   有的券商報酬率的分母是含買進手續費的「付出成本」，所以分母也容許 ×1.001425。
+// 輸入：一行一列；同一列裡的不同格可以用 Tab 隔開（Mac／手機的辨識結果會這樣排），也可以每格一行（iPhone 拷貝全部）。
+// 不連網、不依賴伺服器，Mac 和手機獨立版都用同一份。
+const TAG = /^(現股|美國|融資|融券|零股|現沖|沖賣|沖買|整股|盤中零股|外幣交割|台幣交割|定期定額|定期定股)$/;
+const MARK = new Set(['息', '權', '資', '券', '市', '櫃', '興', '現', '股', '服', 'v', 'V']);
+// 欄位標題與畫面上的字（不能當成股票名稱）
+const HDR = /名稱|股名|市價|均價|股數|可下單|可賣|損益|面額|商品|代碼|代號|現價|報酬|庫存|漲跌|類別|交易別|成本|市值|現值|參考價|今餘|昨餘|價格|今日變動|收付|幣別|筆數|頁次|更新|查詢|總計|說明|篩選|彙總|明細|維持率|餘額|試算/;
+const UI = /^(下單|明細|交易|看漲|看跌|筆記|反沖|快速|沖銷|快速沖銷|更多|詳細|展開|收合|全部展開|全部|自選|行情|帳務|我的|首頁|修改|USD|TWD|NTD|HKD|JPY|CNY|AM|PM)$/;
+// 「標籤：數字」裡的標籤 → 這個數字是什麼。不在這裡的標籤（成本金額、昨日股數、損益兩平價…）那個數字就不拿來算
+const ROLE = [['cost', /均價|單位成本|平均成本/], ['price', /^(現價|市價|參考價|參考現價|最新價)$/], ['shares', /^(今日股數|庫存股數?|即時股數|今餘股數|總股數|股數|庫存（股）)$/],
+  ['pl', /^[^已]{0,5}損益$/], ['value', /^(現值|預估淨收付|帳面收入)$/]];
+const roleOf = (lab) => { if (/兩平|平衡/.test(lab)) return 'none'; for (const [r, re] of ROLE) if (re.test(lab)) return r; return 'none'; };
+const CODE_TW = /^(\d{4}|00\d{3,4}[A-Z]?|\d{4,5}[A-Z])$/, CODE_US = /^[A-Z]{1,5}(\.[A-Z])?$/;
 function scanNum(t) {
-  t = String(t).normalize('NFKC').trim().replace(/,/g, '').replace(/[−–]/g, '-').replace(/%$/, '');
+  t = String(t).normalize('NFKC').trim().replace(/[\s,]/g, '').replace(/[−–—]/g, '-').replace(/^\+/, '').replace(/^(USD|TWD|NTD|NT\$|US\$|\$)/i, '')
+    .replace(/(%)[.。]$/, '$1').replace(/(股|元)$/, '');
+  if (/^-?\d+%$/.test(t) === false && /^-?\d+,\d{1,2}%$/.test(t)) t = t.replace(',', '.');
+  t = t.replace(/%$/, '');
   return /^-?\d+(\.\d+)?$/.test(t) ? +t : null;
 }
-function parseBrokerText(text) {
-  const toks = [];
-  for (let t of String(text || '').split(/\r?\n/)) {
-    t = t.normalize('NFKC').trim();
-    if (!t) continue;
-    const glued = scanNum(t) === null && t.match(/^(.+?)(現股|美國|融資|融券)$/);      // 「康舒現股」：名稱和標籤被讀成同一行，拆開
-    for (const u of glued ? [glued[1].trim(), glued[2]] : [t]) toks.push({ t: u, n: scanNum(u), pct: u.endsWith('%') });
+// 一格文字拆成幾個詞：「-28,938(-1.41%)」→ 金額＋％；「成本均價：127.5」→ 標籤＋數字；「元大台灣50 （0050）」→ 名稱＋代號；「現股 16,064股」→ 標籤＋數字
+function split(c, out, ln, lab) {
+  c = c.normalize('NFKC').trim().replace(/^([+\-]?[\d,.]+)\s*[vV~﹀∨<>丷⌄]$/, '$1');      // 「9V」「80~」：數字後面的展開箭頭
+  if (!c) return;
+  let m;
+  if ((m = c.match(/^(整股|零股|現股|定期定額)\s*([A-Z][A-Z.]{0,6})$/))) { out.push({ t: m[1], ln }, { t: m[2], ln }); return; }   // 「整股IONQ」
+  if ((m = c.match(/^([^\d:+\-]{1,10}?)\s*:\s*(.*)$/))) {                    // 標籤：數字
+    out.push({ t: m[1].trim(), ln, label: true });
+    if (m[2].trim()) split(m[2], out, ln, roleOf(m[1].replace(/[(（].*$/, '').trim()));
+    return;
   }
-  const pcts = [], tags = [], all = [];
-  toks.forEach((x, k) => {
-    if (x.pct && x.n !== null) pcts.push(k);
-    else if (TAG.test(x.t)) tags.push(k);
-    else if (x.n !== null) all.push([k, x.n]);
+  if ((m = c.match(/^(.*?[\d.])\s*[(（]\s*([+\-−]?[\d.,]+%)\s*[)）]$/))) {      // 金額(％)：括號裡的％可能是損益％，也可能只是今天的漲跌
+    split(m[1], out, ln, lab); out.push({ t: m[2], ln, paren: true }); return;
+  }
+  if ((m = c.match(/^[(（]\s*([+\-−]?[\d.,]+%)\s*[)）]$/))) { out.push({ t: m[1], ln, paren: true }); return; }
+  if ((m = c.match(/^(.*\S)\s*[(（]\s*(\d{4,6}[A-Z]?|[A-Z]{1,5})\s*[)）]$/)) && !UI.test(m[2])) { split(m[1], out, ln); out.push({ t: m[2], ln, code: true }); return; }   // 名稱（代號）
+  if ((m = c.match(/^[^\x00-\x7f\d]\s?(\d{4}|00\d{3,4}[A-Z]?)$/))) { out.push({ t: m[1], ln, code: true }); return; }   // 「市2330」「用3231」：代號前面的小徽章
+  if (/^[▲▼△▽↑↓]/.test(c) || /^[4AV]\s+[+\-]?[\d.,]+%?$/.test(c)) { out.push({ t: c, ln, chg: true }); return; }      // 今天的漲跌（▲ 常被讀成 4 或 A），不是損益
+  const glued = scanNum(c) === null && c.match(/^(.+?)(現股|美國|融資|融券|零股)$/);     // 「康舒現股」：名稱和標籤黏在一起
+  if (glued && !/\s/.test(c)) { out.push({ t: glued[1].trim(), ln }, { t: glued[2], ln }); return; }
+  const ws = c.split(/\s+/);
+  const isNum = (w) => scanNum(w) !== null, mid = !ws.some((w) => TAG.test(w) || UI.test(w)) && ws.slice(1, -1).some((w) => isNum(w) && !CODE_TW.test(w)) && !isNum(ws[0]) && !isNum(ws[ws.length - 1]);   // 「SPDR S&P 500 ETF」：數字夾在名稱中間，不拆
+  if (ws.length > 1 && ws.some((w) => TAG.test(w) || UI.test(w) || (isNum(w) && !mid))) {   // 「現股 16,064股」「元大台灣50 0050 現股」「TWD 252,100」：數字和字分開，連著的字合在一起
+    let buf = [];
+    const flush = () => { if (buf.length) out.push({ t: buf.join(' '), ln }); buf = []; };
+    for (const w of ws) {
+      if ((isNum(w) && !mid) || TAG.test(w) || UI.test(w)) { flush(); split(w, out, ln, lab); } else buf.push(w);
+    }
+    flush(); return;
+  }
+  out.push({ t: c, ln, role: lab });
+}
+function tokens(text) {
+  const raw = [];
+  String(text || '').split(/\r?\n/).forEach((line, ln) => { for (const c of line.split('\t')) split(c, raw, ln); });
+  const LAB = /均價|單位成本|平均成本|現價|市價|參考價|股數|庫存股|損益|現值|淨收付|帳面收入|成本|市值|兩平|平衡|配息|手續費|交易稅|可下單|可賣|餘額/;
+  return raw.map((x, i) => {
+    const prev = raw[i - 1];
+    if (!x.role && prev && prev.ln === x.ln && !prev.label && LAB.test(prev.t) && prev.t.replace(/\s*[(（].*$/, '').length <= 8 && scanNum(prev.t) === null && !/%/.test(x.t)) x.role = roleOf(prev.t.replace(/[(（].*$/, '').trim());
+    const t = x.t.replace(/^[1Il|丨](?=[一-鿿])/, '');                // 名稱前面的直線常被讀成 1
+    const n = x.label || x.chg ? null : scanNum(t);
+    const pct = n !== null && /%[.。]?$/.test(t.normalize('NFKC').trim());
+    const cdTw = !pct && CODE_TW.test(t), cdUs = !pct && n === null && t.length >= 2 && CODE_US.test(t) && !UI.test(t);
+    return { t, ln: x.ln, n, pct, paren: !!x.paren, label: !!x.label, chg: !!x.chg, role: x.role || null, code: x.code || cdTw || cdUs ? t : null, usCode: cdUs };
   });
-  while (pcts.length && tags.length && pcts.length > tags.length) pcts.shift();     // 頁首的總報酬率也是％，在最前面
+}
+const NOTNAME = /占比|佔比|申購|櫃買|加權|應付|紀錄|交割|健診|新聞|分析|帳號|帳戶|委託|回報|成交|條件單|注意|時間|日期|市場|修改|刪除|搜尋|請輸入|功能|資產|總值|總額/;
+const nameOk = (x) => x.n === null && !NOTNAME.test(x.t) && !x.pct && !x.label && !x.code && !x.chg && !TAG.test(x.t) && !UI.test(x.t) && !MARK.has(x.t) && !HDR.test(x.t) &&
+  !/^[vV<>›﹀∨^︿﹥•·*]+$/.test(x.t) && !/\d{1,2}:\d{2}/.test(x.t) && /[一-鿿A-Za-z]{2,}|[一-鿿]/.test(x.t);
+
+function parseGeneric(text) {
+  const toks = tokens(text);
+  const all = [], pcts = [];
+  toks.forEach((x, k) => {
+    if (x.pct) pcts.push(k);
+    else if (x.n !== null && x.role !== 'none') all.push([k, x.n]);
+  });
+  const page = toks.map((x) => x.t).join(' ');
+  if (/港幣|HKD|港股/.test(page) && !/TWD|新台幣|台幣|USD|美元/.test(page)) return [];        // 港股：面板只記台股和美股
+  const usPage = /複委託|海外庫存|美國庫存|美股|USD|美元/.test(page) && !toks.some((x) => /^(現股|融資|融券|零股)$/.test(x.t));
+  const tw0 = (x) => !x.usCode, twTags = toks.some((x) => /^(現股|融資|融券|零股)$/.test(x.t));
+  // 欄位標題的最後一個位置：在它前面、沒對上的％是頁首的總報酬率，不是某一檔
+  let hdrEnd = -1;
+  toks.forEach((x, k) => { if (!x.label && x.n === null && HDR.test(x.t) && x.t.length <= 8) hdrEnd = k; });
+  // 合理範圍：擋掉頁首總計（幾百萬當成均價）和小數字湊巧對上的情況
+  const sane = (cost, price, sh, us) => {
+    const base = cost * sh;
+    if (us ? base < 5 || base > 5e7 || cost > 1e6 : base < 200 || base > 3e9 || cost <= 1 || cost > 20000 || sh > 5e7 || (price !== null && price <= 1)) return false;
+    return price === null || (price / cost >= 0.15 && price / cost <= 8);
+  };
+  const roleCost = (x, want) => (x.role && x.role !== want ? 20 : x.role === want ? -2 : 0);
+  const solve = (k, us, nums) => {
+    const p = toks[k].n, dec = (toks[k].t.split('.')[1] || '').replace(/\D/g, '').length, tolPct = Math.pow(10, -dec) + 0.001;
+    let best = null;
+    for (const [kc, cost] of nums) {
+      if (cost <= 0) continue;
+      for (const [ks, sh] of nums) {
+        if (sh <= 0 || ks === kc || (!us && !Number.isInteger(sh))) continue;      // 台股的股數一定是整數
+        const base = cost * sh, tol = (tolPct + 60 / base) * base / 100;
+        for (const [kl, pl] of nums) {
+          if (kl === kc || kl === ks || (pl === 0) !== (p === 0) || (!us && !Number.isInteger(pl))) continue;      // 台股損益是整數元
+          if (Math.abs(pl - base * p / 100) > tol && (us || Math.abs(pl - base * 1.001425 * p / 100) > tol)) continue;   // 分母可能含買進手續費
+          for (const [kp, price] of nums) {
+            if (price <= 0 || kp === kc || kp === ks || kp === kl) continue;
+            const diff = (price - cost) * sh - pl, slack = us ? Math.max(0.02, Math.abs(pl) * 0.005) : price * sh * 0.0046 + cost * sh * 0.0015 + 25;
+            if (us ? Math.abs(diff) > slack : diff < -1 || diff > slack) continue;
+            if (!sane(cost, price, sh, us) || (!us && price === cost && p > 0)) continue;     // 現價＝均價卻賺錢：湊巧對上的
+            const score = Math.abs(k - kl) + Math.abs(kp - kc) + (kp < kc ? 0 : 3) + roleCost(toks[kc], 'cost') + roleCost(toks[kp], 'price') + roleCost(toks[ks], 'shares') + roleCost(toks[kl], 'pl');
+            if (!best || score < best.score) best = { score, shares: sh, cost, price, used: [kc, ks, kl, kp] };
+          }
+        }
+      }
+    }
+    return best;
+  };
+  // 卡片式「標籤 數字」（國泰新版 App 的台股與複委託）：總股數、成交均價都有標籤，直接拿；損益和％用來核對。
+  // 複委託的損益是台幣、均價是美元：損益÷％÷(均價×股數) 算出來要像匯率（25–40），或剛好是 1（損益本來就是美元）。
+  // 股數是帶底線的小數字，辨識偶爾會漏掉：用同一頁其他檔的匯率反推，只有一個整數說得通才採用（畫面會註明「推算」）。
+  const fxSeen = [];
+  const cardSolve = (k, us, lo) => {
+    const p = toks[k].n;
+    let jc = -1, js = -1, jl = -1, shLabel = false;
+    for (let j = k - 1; j > lo && j >= k - 14; j--) {
+      const x = toks[j];
+      if (x.pct) break;                                  // 到上一檔了
+      if (x.n === null) { if (!x.label && roleOf(x.t.replace(/\s*[(（].*$/, '')) === 'shares') shLabel = true; continue; }
+      if (x.role === 'cost' && jc < 0) jc = j;
+      else if (x.role === 'shares' && js < 0) js = j;
+      else if (jl < 0 && j >= k - 2 && x.role !== 'cost' && x.role !== 'shares') jl = j;
+    }
+    if (jc < 0 || jl < 0 || (js < 0 && !shLabel)) return null;
+    const cost = toks[jc].n, pl = toks[jl].n;
+    if (!(cost > 0) || (pl === 0) !== (p === 0)) return null;
+    const dec = (toks[k].t.split('.')[1] || '').replace(/\D/g, '').length, rel = (Math.pow(10, -dec) * 0.51) / Math.max(Math.abs(p), 0.01) + 0.5 / Math.max(Math.abs(pl), 1);
+    const price = Math.round(cost * (1 + p / 100) * 1e4) / 1e4, used = [jc, js >= 0 ? js : jc, jl];
+    if (js >= 0) {
+      const sh = toks[js].n, base = cost * sh;
+      if (!(sh > 0) || (!us && !Number.isInteger(sh))) return null;
+      if (p === 0) return { shares: sh, cost, price: cost, used };
+      const fx = pl * 100 / p / base;
+      if (!us) return Math.abs(fx - 1) <= rel + 0.002 || Math.abs(fx * 1.001425 - 1) <= rel + 0.002 ? { shares: sh, cost, price, used } : null;
+      if (Math.abs(fx - 1) <= rel + 0.003) return { shares: sh, cost, price, used };
+      if (fx >= 25 && fx <= 40) { if (Math.abs(pl) >= 100 && Math.abs(p) >= 1) fxSeen.push(fx); return { shares: sh, cost, price, used }; }
+      return null;
+    }
+    if (!us || p === 0 || Math.abs(pl) < 1) return null;                   // 股數沒讀到：只有複委託、而且損益不是 0 才能推
+    const ref = fxSeen.length ? fxSeen.slice().sort((a, b) => a - b)[fxSeen.length >> 1] : 31.5, baseT = pl * 100 / p;
+    const devs = [];
+    for (let n = 1; n <= 5000; n++) { const fx = baseT / (cost * n); if (fx < 20) break; if (fx <= 45) devs.push([Math.abs(fx / ref - 1), n]); }
+    devs.sort((a, b) => a[0] - b[0]);
+    if (!devs.length || devs[0][0] > 0.04 || (devs[1] && devs[1][0] - devs[0][0] < 0.03)) return null;
+    return { shares: devs[0][1], cost, price, used, est: true };
+  };
   // 這份文字是一列一列的嗎？看「相鄰兩個％之間」夾了幾個數字：一列一列時每一檔的數字都夾在中間
   const between = pcts.slice(1).map((k, i) => all.filter((x) => x[0] > pcts[i] && x[0] < k).length);
   const byRow = between.length > 0 && between.filter((n) => n >= 3).length * 2 >= between.length;
   const rows = [];
-  pcts.forEach((k, i) => {
-    const lo = i ? pcts[i - 1] : -1, g0 = tags.find((g) => g > lo && g < k) ?? (tags.length === pcts.length ? tags[i] : undefined);
-    const us = g0 !== undefined && toks[g0].t === '美國', p = toks[k].n;
-    let best = null;
-    // 一列一列的順序：這一檔的數字都在「上一個％到這個％」之間，只在那裡找。
-    // 一欄一欄的順序：那中間只有損益一個數字，才需要整頁找（整頁找比較容易湊巧配到，所以只在必要時用）。
+  let lo = -1;                                       // 上一檔的結尾（上一個對上的％）
+  for (const [pi, k] of pcts.entries()) {
+    const nx = pcts[pi + 1];
+    if (toks[k].paren && nx !== undefined && !toks[nx].paren && nx - k <= 12) continue;
+    // 這一檔是美股嗎：「美國」標籤、英文代號、或整頁是複委託
+    const seg = toks.slice(lo + 1, k + 1);
+    const twCode = seg.some((x) => x.code && tw0(x));
+    const us = seg.some((x) => x.t === '美國') || (usPage && !twCode) || (!twTags && !twCode && seg.some((x) => x.usCode));
     const local = all.filter((x) => x[0] > lo && x[0] < k);
-    // 一列一列時如果正好夾在中間的找不到，再放寬到前後幾個詞（辨識出來的順序偶爾會差一點），但不整頁找
-    for (const nums of byRow ? [local, all.filter((x) => x[0] > k - 14 && x[0] < k + 5)] : [local, all]) {
+    let best = cardSolve(k, us, lo);
+    // 一列一列：先在「上一檔到這個％」之間找；找不到再放寬到前後幾個詞（卡片式的「標籤：數字」常排在％後面）。
+    // 一欄一欄：那中間只有損益一個數字，才需要整頁找（整頁找比較容易湊巧配到，所以只在必要時用）。
+    if (!best) for (const nums of byRow || pcts.length === 1 ? [local, all.filter((x) => x[0] > Math.max(lo, k - 14) && x[0] < k + 16)] : [local, all]) {
+      best = solve(k, us, nums);
       if (best) break;
-      for (const [kc, cost] of nums) {
+    }
+    // 損益那個數字沒讀到（被畫面切到、或辨識漏掉）：只要這一列裡的市價、股數、均價，配上用％反推的損益也說得通，就採用
+    if (!best && !toks[k].paren) {
+      const p = toks[k].n;
+      for (const [kc, cost] of local) {
         if (cost <= 0) continue;
-        for (const [ks, sh] of nums) {
-          if (sh <= 0 || ks === kc || (!us && !Number.isInteger(sh))) continue;      // 台股的股數一定是整數
-          const base = cost * sh, tol = (0.011 + 60 / base) * base / 100;
-          for (const [kl, pl] of nums) {
-            if (kl === kc || kl === ks || Math.abs(pl - base * p / 100) > tol || (pl === 0) !== (p === 0)) continue;
+        for (const [ks, sh] of local) {
+          if (sh <= 0 || ks === kc || (!us && !Number.isInteger(sh))) continue;
+          const pl = cost * sh * p / 100;
+          for (const [kp, price] of local) {
+            if (price <= 0 || kp === kc || kp === ks || kp > kc || price === sh) continue;
+            const diff = (price - cost) * sh - pl, slack = us ? Math.max(0.05, Math.abs(pl) * 0.01) : price * sh * 0.0046 + cost * sh * 0.0015 + 25;
+            if (us ? Math.abs(diff) > slack : diff < -2 || diff > slack) continue;
+            if ((price > cost) !== (p > 0) && Math.abs(p) > 1.5) continue;      // 漲跌方向要和％一致（很接近 0 的不算）
+            if (!sane(cost, price, sh, us)) continue;
+            const score = Math.abs(kp - kc) + Math.abs(ks - kp);
+            if (!best || score < best.score) best = { score, shares: sh, cost, price, used: [kc, ks, kp] };
+          }
+        }
+      }
+    }
+    // 列表上沒有均價和現價、只有「現值（或淨收付）＋損益＋％＋股數」（永豐、國泰的收合列表）：
+    // 付出成本＝現值−損益，而且要等於 損益÷％；兩條對上了，均價＝付出成本÷股數（含買進手續費）。現價不知道就留空
+    if (!best && !toks[k].paren && Math.abs(toks[k].n) >= 0.5) {
+      const p = toks[k].n, nums = byRow ? local : all.filter((x) => x[0] > Math.max(lo, k - 10) && x[0] <= k + 6);
+      for (const [kl, pl] of nums) {
+        if (pl === 0 || Math.sign(pl) !== Math.sign(p)) continue;
+        const paid = pl * 100 / p;
+        for (const [kv, v] of nums) {
+          if (kv === kl || v <= 0 || Math.abs(v - pl - paid) > Math.abs(paid) * (Math.pow(10, -2) / Math.abs(p) * 1.2) + 2) continue;
+          for (const [ks, sh] of nums) {
+            if (ks === kl || ks === kv || ks > k || sh <= 0 || (!us && !Number.isInteger(sh)) || sh === v) continue;
+            const cost = Math.round((v - pl) / sh * 10000) / 10000;
+            if (!sane(cost, null, sh, us) || Math.abs(cost - 1) < 0.01) continue;
+            const score = Math.abs(k - kl) + Math.abs(kv - kl) + Math.abs(ks - kl) + (toks[kv].role === 'value' ? -5 : 0);
+            if (!best || score < best.score) best = { score, shares: sh, cost, price: null, used: [kl, kv, ks], derived: true };
+          }
+        }
+      }
+    }
+    // 沒對上的％：括號裡的（多半是今天的漲跌）和欄位標題之前的（頁首總報酬率）直接略過，其他的標成「讀不完整」
+    if (!best && (toks[k].paren || k < hdrEnd)) continue;
+    const first = best ? Math.min(...best.used) : k;
+    // 名稱：這一檔第一個數字那一行的字；那一行沒有，就往上找最近一行有字的
+    const elig = (j) => j > lo && j < first && nameOk(toks[j]);
+    let line = toks[first].ln, nm = toks.filter((x, j) => elig(j) && x.ln === line);
+    if (!nm.length) {
+      const j = [...Array(Math.max(0, first - lo - 1)).keys()].map((i) => first - 1 - i).find(elig);
+      if (j !== undefined) { line = toks[j].ln; nm = toks.filter((x, i) => elig(i) && x.ln === line); }
+    }
+    if (!nm.length && best) {                        // 一筆一列時，市價可能借用上一列的同一個數字：改看損益那一行
+      const ok2 = (j) => j > lo && j < k && nameOk(toks[j]);
+      line = toks[best.used[2]].ln; nm = toks.filter((x, j) => ok2(j) && x.ln === line);
+    }
+    // 名稱太長折到下一行、跟在「美國／現股」標籤後面（元大複委託）：把那一行的字接上
+    const tagAt = toks.findIndex((x, j) => j > lo && j < k && TAG.test(x.t) && x.ln > line);
+    if (nm.length && tagAt >= 0) nm = nm.concat(toks.filter((x, j) => j > tagAt && j < k && x.ln === toks[tagAt].ln && nameOk(x)));
+    let name = nm.map((x) => (/[^\x00-\x7f]/.test(x.t) ? x.t : ' ' + x.t + ' ')).join('').replace(/\s+/g, ' ').trim();
+    // 代號：名稱附近、沒被當成數字用掉的那個（2330、0050、00878、AAPL）
+    const used = new Set(best ? best.used : []);
+    const cd = toks.find((x, j) => j > lo && j <= Math.min(toks.length - 1, k + 3) && x.ln >= line - 1 && x.ln <= line + 2 && x.code && !used.has(j) && (us ? x.usCode : CODE_TW.test(x.code)));
+    if (!name && cd && us) name = cd.code;            // 美股只寫代號（AAPL）
+    rows.push({ name: name.slice(0, 40), kind: us ? 'us' : 'tw', ok: !!(best && name), shares: best ? best.shares : null, cost: best ? best.cost : null, price: best ? best.price : null,
+      ...(cd ? { hint: cd.code } : {}), ...(best && best.derived ? { derived: true } : {}), ...(best && best.est ? { est: true } : {}) });
+    if (best) lo = k;
+  }
+  for (let i = rows.length - 1; i >= 0; i--) if (!rows[i].name) rows.splice(i, 1);     // 連名稱都沒有的（畫面邊緣被切到）沒有用
+  // 同一張截圖裡同一檔出現好幾列（現股＋融資、一筆一筆的明細）：合成一列，股數相加、均價加權
+  const out = [], seen = new Map();
+  for (const r of rows) {
+    const key = r.kind + ':' + r.name.replace(/\s/g, '');
+    const o = r.ok && seen.get(key);
+    if (o && o.ok) {
+      const sh = o.shares + r.shares;
+      o.cost = Math.round((o.cost * o.shares + r.cost * r.shares) / sh * 10000) / 10000; o.shares = r.kind === 'tw' ? sh : Math.round(sh * 1e6) / 1e6;
+      if (r.derived) o.derived = true;
+      if (r.est) o.est = true;
+    } else { out.push(r); if (r.ok) seen.set(key, r); }
+  }
+  return out;
+}
+
+// ───────── 元大版面專用的讀法（使用者親自驗證過，保留原樣；包在自己的範圍裡，名字不會和上面相撞） ─────────
+const parseYuanta = (() => {
+  // 把券商庫存頁「拷貝全部」得到的純文字整理成一檔一列。
+  // 只有文字、沒有位置，順序一列一列或一欄一欄都可以：
+  //   數字：每個「％」去找四個數字，要同時滿足  損益 ÷（均價×股數）＝％  和 （市價−均價）×股數 ≈ 損益；
+  //         先在「上一個％到這個％」之間找（iPhone 照片的「拷貝全部」是這種順序），找不到再整頁找。
+  //   名稱：每檔名稱後面跟著「現股／美國」這類標籤，第 i 個標籤配第 i 個％。
+  // 不連網、不依賴伺服器，手機獨立版也用同一份。
+  const TAG = /^(現股|美國|融資|融券)$/, MARK = new Set(['息', '權', '資', '券']), HDR = /名稱|市價|均價|股數|可下單數|損益|面額/;
+  function scanNum(t) {
+    t = String(t).normalize('NFKC').trim().replace(/,/g, '').replace(/[−–]/g, '-').replace(/%$/, '');
+    return /^-?\d+(\.\d+)?$/.test(t) ? +t : null;
+  }
+  function parseBrokerText(text) {
+    const toks = [];
+    for (let t of String(text || '').split(/\r?\n/)) {
+      t = t.normalize('NFKC').trim();
+      if (!t) continue;
+      const glued = scanNum(t) === null && t.match(/^(.+?)(現股|美國|融資|融券)$/);      // 「康舒現股」：名稱和標籤被讀成同一行，拆開
+      for (const u of glued ? [glued[1].trim(), glued[2]] : [t]) toks.push({ t: u, n: scanNum(u), pct: u.endsWith('%') });
+    }
+    const pcts = [], tags = [], all = [];
+    toks.forEach((x, k) => {
+      if (x.pct && x.n !== null) pcts.push(k);
+      else if (TAG.test(x.t)) tags.push(k);
+      else if (x.n !== null) all.push([k, x.n]);
+    });
+    while (pcts.length && tags.length && pcts.length > tags.length) pcts.shift();     // 頁首的總報酬率也是％，在最前面
+    // 這份文字是一列一列的嗎？看「相鄰兩個％之間」夾了幾個數字：一列一列時每一檔的數字都夾在中間
+    const between = pcts.slice(1).map((k, i) => all.filter((x) => x[0] > pcts[i] && x[0] < k).length);
+    const byRow = between.length > 0 && between.filter((n) => n >= 3).length * 2 >= between.length;
+    const rows = [];
+    pcts.forEach((k, i) => {
+      const lo = i ? pcts[i - 1] : -1, g0 = tags.find((g) => g > lo && g < k) ?? (tags.length === pcts.length ? tags[i] : undefined);
+      const us = g0 !== undefined && toks[g0].t === '美國', p = toks[k].n;
+      let best = null;
+      // 一列一列的順序：這一檔的數字都在「上一個％到這個％」之間，只在那裡找。
+      // 一欄一欄的順序：那中間只有損益一個數字，才需要整頁找（整頁找比較容易湊巧配到，所以只在必要時用）。
+      const local = all.filter((x) => x[0] > lo && x[0] < k);
+      // 一列一列時如果正好夾在中間的找不到，再放寬到前後幾個詞（辨識出來的順序偶爾會差一點），但不整頁找
+      for (const nums of byRow ? [local, all.filter((x) => x[0] > k - 14 && x[0] < k + 5)] : [local, all]) {
+        if (best) break;
+        for (const [kc, cost] of nums) {
+          if (cost <= 0) continue;
+          for (const [ks, sh] of nums) {
+            if (sh <= 0 || ks === kc || (!us && !Number.isInteger(sh))) continue;      // 台股的股數一定是整數
+            const base = cost * sh, tol = (0.011 + 60 / base) * base / 100;
+            for (const [kl, pl] of nums) {
+              if (kl === kc || kl === ks || Math.abs(pl - base * p / 100) > tol || (pl === 0) !== (p === 0)) continue;
+              for (const [kp, price] of nums) {
+                if (price <= 0 || kp === kc || kp === ks || kp === kl) continue;
+                const diff = (price - cost) * sh - pl, slack = us ? Math.max(0.02, Math.abs(pl) * 0.005) : price * sh * 0.0046 + 25;
+                if (us ? Math.abs(diff) > slack : diff < -1 || diff > slack) continue;
+                const score = Math.abs(k - kl) + Math.abs(kp - kc) + (kp < kc ? 0 : 3);
+                if (!best || score < best.score) best = { score, shares: sh, cost, price };
+              }
+            }
+          }
+        }
+      }
+      // 損益那個數字沒讀到（被畫面切到、或辨識漏掉）：只要這一列裡的市價、股數、均價，配上用％反推的損益也說得通，就採用
+      if (!best) {
+        const nums = all.filter((x) => x[0] > lo && x[0] < k);
+        for (const [kc, cost] of nums) {
+          if (cost <= 0) continue;
+          for (const [ks, sh] of nums) {
+            if (sh <= 0 || ks === kc || (!us && !Number.isInteger(sh))) continue;
+            const pl = cost * sh * p / 100;
             for (const [kp, price] of nums) {
-              if (price <= 0 || kp === kc || kp === ks || kp === kl) continue;
-              const diff = (price - cost) * sh - pl, slack = us ? Math.max(0.02, Math.abs(pl) * 0.005) : price * sh * 0.0046 + 25;
-              if (us ? Math.abs(diff) > slack : diff < -1 || diff > slack) continue;
-              const score = Math.abs(k - kl) + Math.abs(kp - kc) + (kp < kc ? 0 : 3);
+              if (price <= 0 || kp === kc || kp === ks || kp > kc || price === sh) continue;
+              const diff = (price - cost) * sh - pl, slack = us ? Math.max(0.05, Math.abs(pl) * 0.01) : price * sh * 0.0046 + 25;
+              if (us ? Math.abs(diff) > slack : diff < -2 || diff > slack) continue;
+              if ((price > cost) !== (p > 0) && Math.abs(p) > 1.5) continue;      // 漲跌方向要和％一致（很接近 0 的不算）
+              const score = Math.abs(kp - kc) + Math.abs(ks - kp);
               if (!best || score < best.score) best = { score, shares: sh, cost, price };
             }
           }
         }
       }
-    }
-    // 損益那個數字沒讀到（被畫面切到、或辨識漏掉）：只要這一列裡的市價、股數、均價，配上用％反推的損益也說得通，就採用
-    if (!best) {
-      const nums = all.filter((x) => x[0] > lo && x[0] < k);
-      for (const [kc, cost] of nums) {
-        if (cost <= 0) continue;
-        for (const [ks, sh] of nums) {
-          if (sh <= 0 || ks === kc || (!us && !Number.isInteger(sh))) continue;
-          const pl = cost * sh * p / 100;
-          for (const [kp, price] of nums) {
-            if (price <= 0 || kp === kc || kp === ks || kp > kc || price === sh) continue;
-            const diff = (price - cost) * sh - pl, slack = us ? Math.max(0.05, Math.abs(pl) * 0.01) : price * sh * 0.0046 + 25;
-            if (us ? Math.abs(diff) > slack : diff < -2 || diff > slack) continue;
-            if ((price > cost) !== (p > 0) && Math.abs(p) > 1.5) continue;      // 漲跌方向要和％一致（很接近 0 的不算）
-            const score = Math.abs(kp - kc) + Math.abs(ks - kp);
-            if (!best || score < best.score) best = { score, shares: sh, cost, price };
-          }
-        }
+      let name = '';
+      // 名稱：一列一列的順序時，標籤就在「上一個％和這個％」之間；一欄一欄時用第 i 個標籤，但標籤數和％數要一樣多才可信
+      const near = tags.findIndex((g) => g > lo && g < k), ti = near >= 0 ? near : (tags.length === pcts.length ? i : -1);
+      if (ti >= 0) {
+        let seg = toks.slice(ti ? tags[ti - 1] + 1 : 0, tags[ti]);
+        if (!ti) { let h = -1; seg.forEach((x, j) => { if (HDR.test(x.t)) h = j; }); seg = seg.slice(h + 1); }
+        name = seg.filter((x) => x.n === null && !x.pct && !MARK.has(x.t) && !HDR.test(x.t) && !/^[vV<>›﹀∨^︿﹥]$/.test(x.t))      // 單獨一個 v 是列尾的展開箭頭
+          .map((x) => (/[^\x00-\x7f]/.test(x.t) ? x.t : ' ' + x.t + ' ')).join('').replace(/\s+/g, ' ').trim();
       }
-    }
-    let name = '';
-    // 名稱：一列一列的順序時，標籤就在「上一個％和這個％」之間；一欄一欄時用第 i 個標籤，但標籤數和％數要一樣多才可信
-    const near = tags.findIndex((g) => g > lo && g < k), ti = near >= 0 ? near : (tags.length === pcts.length ? i : -1);
-    if (ti >= 0) {
-      let seg = toks.slice(ti ? tags[ti - 1] + 1 : 0, tags[ti]);
-      if (!ti) { let h = -1; seg.forEach((x, j) => { if (HDR.test(x.t)) h = j; }); seg = seg.slice(h + 1); }
-      name = seg.filter((x) => x.n === null && !x.pct && !MARK.has(x.t) && !HDR.test(x.t) && !/^[vV<>›﹀∨^︿﹥]$/.test(x.t))      // 單獨一個 v 是列尾的展開箭頭
-        .map((x) => (/[^\x00-\x7f]/.test(x.t) ? x.t : ' ' + x.t + ' ')).join('').replace(/\s+/g, ' ').trim();
-    }
-    rows.push({ name: name.slice(0, 40), kind: us ? 'us' : 'tw', ok: !!(best && name), shares: best ? best.shares : null, cost: best ? best.cost : null, price: best ? best.price : null });
-  });
-  return rows;
+      rows.push({ name: name.slice(0, 40), kind: us ? 'us' : 'tw', ok: !!(best && name), shares: best ? best.shares : null, cost: best ? best.cost : null, price: best ? best.price : null });
+    });
+    return rows;
+  }
+  return parseBrokerText;
+})();
+
+// ───────── 入口：兩種讀法都跑，挑比較可信的 ─────────
+function parseBrokerText(text) {
+  let y = [], g = [];
+  try { y = parseYuanta(String(text || '').replace(/\t/g, '\n')); } catch (e) { y = []; }
+  try { g = parseGeneric(text); } catch (e) { g = []; }
+  const key = (r) => r.shares + '|' + r.cost;
+  const yo = y.filter((r) => r.ok), go = g.filter((r) => r.ok);
+  // 元大的版面：讀出來的檔數不比通用讀法少、讀不完整的列也不比它多，就用它
+  if (yo.length > 0 && yo.length >= go.length && y.length - yo.length <= g.length - go.length) {
+    // 名稱前後若黏著欄位字（「交易別台泥」「庫存明細元大台灣50 0050」），而通用讀法同一檔讀到乾淨的名稱，就換成乾淨的
+    return y.map((r) => {
+      const q = go.find((x) => key(x) === key(r));
+      if (!q || !q.name || q.name === r.name || !String(r.name).includes(q.name)) return r;
+      const rest = String(r.name).replace(q.name, '').replace(/[\s\d]/g, '');
+      return rest && HDR.test(rest) ? q : r;
+    });
+  }
+  return go.length >= yo.length ? g : y;
 }
 
 return { scanNum, parseBrokerText };
@@ -5625,6 +5908,8 @@ function scanNote(kind, it) {
     if (!sameVal(sc.old.cost, it.cost)) was.push(sc.old.cost === '' || sc.old.cost == null ? '原本沒填均價' : `原本均價 ${dC(sc.old.cost)}`);
     t = was.join('・') || '數字已照截圖更新';
   } else if (st === 'new') t = sc.st === 'need' ? `截圖上的名稱「${sc.raw}」：填好代號，下次會自動配對` : '截圖裡有、清單裡原本沒有';
+  if (sc.derived && (st === 'upd' || st === 'new' || st === 'need')) t += (t ? '・' : '') + '截圖上沒有均價，用「現值−損益」÷股數推算（含買進手續費），請對照';
+  if (sc.est && (st === 'upd' || st === 'new' || st === 'need')) t += (t ? '・' : '') + '股數沒讀清楚，用台幣損益和匯率推算，請對照截圖';
   else if (st === 'need') t = `截圖上的名稱「${sc.raw}」配不到代號，請填一次，之後會記住`;
   else if (st === 'chk') t = '截圖裡這檔讀不完整（可能被畫面邊緣切到），數字沒改，請對照截圖';
   else if (st === 'miss') t = '這檔沒出現在截圖裡，沒有更動；已經賣掉的話請按「賣出」或右邊 × 移除';
@@ -5648,12 +5933,12 @@ async function scanFiles(files) {
       if (files[i].size > 11e6) throw new Error('圖片太大');
       window.WP_SAY = (t) => scanStatus('busy', files.length > 1 ? `第 ${i + 1}／${files.length} 張：${t}` : t);   // 手機獨立版在裝置上辨識時回報進度
       const j = await postJSON('/api/holdings/scan', { img: await fileB64(files[i]) });
-      if (typeof j.text === 'string') {                  // 手機獨立版：回來的是辨識出的文字，在這裡整理成一檔一列，再配代號
+      if (typeof j.text === 'string') {                  // 回來的是辨識出的文字（手機獨立版，或 Mac 上元大以外的券商）：在這裡整理成一檔一列，再配代號
         const rs = parseBrokerText(j.text);
         if (!rs.length) throw new Error('這張圖裡沒有讀到持股，請確認是券商「庫存」頁的截圖');
         scanStatus('busy', `讀到 ${rs.length} 檔，正在配對代號…`);
         try {
-          const m = await postJSON('/api/holdings/scan', { names: rs.map((r) => ({ kind: r.kind, name: r.name, price: r.price })) });
+          const m = await postJSON('/api/holdings/scan', { names: rs.map((r) => ({ kind: r.kind, name: r.name, price: r.price, ...(r.hint ? { hint: r.hint } : {}) })) });
           rs.forEach((r, k) => { r.code = m.codes[k]?.code || ''; r.from = m.codes[k]?.from || ''; });
         } catch (e) { rs.forEach((r) => { r.code = ''; r.from = ''; }); }
         all.push(...rs);
@@ -5675,7 +5960,7 @@ async function scanText(text) {
   if (!rows.length) { const m = `收到 ${lines} 行文字，但裡面沒有讀到持股。請確認是在「照片」打開券商庫存頁的截圖，按右下角的原況文字圖示，再按「拷貝全部」。`; scanStatus('err', m); $('hold-msg').className = 'dlg-note err'; $('hold-msg').textContent = m; return; }
   scanStatus('busy', `讀到 ${rows.length} 檔，正在配對代號…`);
   try {
-    const j = await postJSON('/api/holdings/scan', { names: rows.map((r) => ({ kind: r.kind, name: r.name, price: r.price })) });
+    const j = await postJSON('/api/holdings/scan', { names: rows.map((r) => ({ kind: r.kind, name: r.name, price: r.price, ...(r.hint ? { hint: r.hint } : {}) })) });
     rows.forEach((r, i) => { r.code = j.codes[i]?.code || ''; r.from = j.codes[i]?.from || ''; });
   } catch (e) { rows.forEach((r) => { r.code = ''; r.from = ''; }); }
   scanApply(rows, [], '文字');
@@ -5692,7 +5977,7 @@ function scanApply(all, errs, what) {
   for (const r of rows) {
     const kind = r.kind, k = kind === 'tw' ? 'code' : 'sym', list = holdDraft[kind];
     const code = String(r.code || '').toUpperCase(), name = kind === 'tw' ? String(r.name || '').replace(/\*/g, '') : '';
-    const base = { raw: r.name, auto: code, from: r.from || '' };
+    const base = { raw: r.name, auto: code, from: r.from || '', ...(r.derived ? { derived: 1 } : {}), ...(r.est ? { est: 1 } : {}) };
     const valid = code && scanCodeOk(kind, code);
     let cur = valid ? list.find((x) => String(x[k] || '').toUpperCase() === code) : null;
     if (!cur) cur = list.find((x) => x._scan?.raw && scanNorm(x._scan.raw) === scanNorm(r.name));      // 同一張圖再丟一次：配到上次那一列
