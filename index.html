@@ -2055,7 +2055,8 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
     if (raw.startsWith('/api/')) u = new URL(raw, 'https://panel.invalid');
     else { try { const t = new URL(raw, location.href); if (t.origin === location.origin && t.pathname.startsWith('/api/')) u = t; } catch (e) { /* 交給原本的 fetch */ } }
     if (!u) return real(input, init);
-    try { return await route(u, init); } catch (e) { return J({ ok: false, error: e.message || '出錯了' }, e.status || 400); }
+    // 不能回 401：面板看到 401 會以為是「手機連 Mac 沒配對」而跳回網站根目錄（在這裡是一個不存在的頁面）
+    try { return await route(u, init); } catch (e) { return J({ ok: false, error: e.message || '出錯了' }, e.status === 401 ? 503 : e.status || 400); }
   };
   window.WP_LOCAL = { load, save, key: KEY };
   // ── 設定：要顯示哪些區塊、天氣的地點、備份 ──
