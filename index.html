@@ -2,6 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-Zcb7wP1a2hqpNOFJHFlB9WoRCKmIpfANHfSs/YrKWWs=' 'sha256-jBRT3eFIjtkws0KNnRv8vkMvts2Aph8gEojcRLARqc0='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#06090d">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2118,7 +2119,7 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
     hideStyle.textContent = (h.length ? h.map((id) => '#' + id).join(',') + '{display:none!important}' : '') + orderNow().map((id, i) => `.grid.m-phone #${id}{order:${i + 1}}`).join('');
   };
   applyHide();
-  const escH = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const escH = (t) => String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   let setEl = null;
   function openSettings() {
     if (setEl) return;
@@ -2177,10 +2178,34 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
       if (!j || j.app !== 'worldpanel' || !j.data || typeof j.data !== 'object') return msg('這不是全球面板的備份文字，請確認有完整貼上。', true);
       try { j.data.watchlist = cleanWatchlist(j.data.watchlist || { tw: [], us: [] }); } catch (e) { return msg('備份裡的持股有問題：' + e.message, true); }
       if (!Array.isArray(j.data.trades)) j.data.trades = [];
-      const dd = { ...JSON.parse(JSON.stringify(DEF)), ...j.data };
+      // 備份文字可能是別人傳來的：只收認得的項目，文字裡的角括號拿掉、長度和層數設上限，不讓奇怪的內容混進畫面
+      const tidy = (v, depth) => {
+        if (typeof v === 'string') return v.replace(/[<>]/g, '').slice(0, 400);
+        if (typeof v === 'number') return Number.isFinite(v) ? v : 0;
+        if (typeof v === 'boolean' || v === null) return v;
+        if (depth > 6 || typeof v !== 'object') return null;
+        if (Array.isArray(v)) return v.slice(0, 5000).map((x) => tidy(x, depth + 1));
+        const o = {}; for (const k of Object.keys(v).slice(0, 400)) if (!/^__|^constructor$|^prototype$/.test(k)) o[k.replace(/[<>]/g, '').slice(0, 80)] = tidy(v[k], depth + 1);
+        return o;
+      };
+      const clean = {}; for (const k of Object.keys(DEF)) if (k in j.data) clean[k] = tidy(j.data[k], 0);
+      for (const k of ['watchlist', 'scanAlias', 'location', 'footage']) if (clean[k] && (typeof clean[k] !== 'object' || Array.isArray(clean[k]))) delete clean[k];
+      for (const k of ['clocks', 'trades', 'mvHide', 'inspLikes', 'hidePanels', 'panelOrder']) if (k in clean && !Array.isArray(clean[k])) delete clean[k];
+      const dd = { ...JSON.parse(JSON.stringify(DEF)), ...clean };
+      // 再逐項把關：買賣紀錄用和平常新增時同一套檢查，不合格的那筆略過；圖片與連結只收 https；地點只收清單裡的城市；時鐘用預設
+      dd.trades = (dd.trades || []).flatMap((t) => { try { const c = cleanTrade(t); return [{ ...c, side: t && t.side === 'buy' ? 'buy' : 'sell', id: /^[0-9a-f]{12}$/.test(t.id) ? t.id : newId(), at: Number.isFinite(+t.at) ? +t.at : 0 }]; } catch (e) { return []; } });
+      const okUrl = (u) => typeof u === 'string' && /^https:\/\/[^\s"<>\\]{1,600}$/.test(u);
+      dd.inspLikes = (dd.inspLikes || []).filter((x) => x && okUrl(x.img)).slice(0, 500).map((x) => ({ img: x.img, link: okUrl(x.link) ? x.link : '', title: String(x.title || '').slice(0, 200), source: String(x.source || '').slice(0, 80) }));
+      dd.mvHide = (dd.mvHide || []).filter((x) => typeof x === 'string').slice(0, 300);
+      dd.hidePanels = (dd.hidePanels || []).filter((x) => typeof x === 'string'); dd.panelOrder = (dd.panelOrder || []).filter((x) => typeof x === 'string');
+      const city = CITIES.find((x) => dd.location && x[0] === dd.location.name); dd.location = city ? { name: city[0], lat: city[1], lon: city[2] } : JSON.parse(JSON.stringify(DEF.location));
+      dd.clocks = JSON.parse(JSON.stringify(DEF.clocks)); dd.footage = JSON.parse(JSON.stringify(DEF.footage)); dd.redUp = dd.redUp !== false;
+      const al = {}; for (const [k, v] of Object.entries(dd.scanAlias || {})) { const m = /^(tw|us):/.exec(k); if (m && typeof v === 'string' && PAT[m[1]].test(v)) al[k] = v; } dd.scanAlias = al;
       dd.watchlistMeta = { at: Math.floor(Date.now() / 1000), by: '備份還原', rev: ((load().watchlistMeta || {}).rev || 0) + 1 };
       if (!save(dd)) return msg('這個瀏覽器不讓網頁存資料（可能是無痕模式）。', true);
-      if (typeof j.assets === 'string') ls.set(AKEY, j.assets);
+      if (typeof j.assets === 'string') {                 // 每日資產紀錄：只收「日期 → 幾個數字」的格式
+        try { const h = JSON.parse(j.assets), ok = {}; for (const [k, v] of Object.entries(h || {})) if (/^\d{4}-\d{2}-\d{2}$/.test(k) && Array.isArray(v) && v.length <= 6 && v.every((n) => typeof n === 'number' && Number.isFinite(n))) ok[k] = v; ls.set(AKEY, JSON.stringify(ok)); } catch (e) { /* 這份不收 */ }
+      }
       msg('已還原，重新載入中…'); setTimeout(() => location.reload(), 600);
     });
     q('#wps-x').addEventListener('click', () => { setEl.remove(); setEl = null; });
@@ -2219,31 +2244,38 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
 // 以 onnxruntime-web 在瀏覽器裡執行。第一次使用要下載模型（之後瀏覽器會留著），所以第一次比較慢。
 // 回傳格式和 Mac 版的 wp-ocr 一樣：{ w, h, items: [{ t, c, x, y, w, h }] }，位置是 0–1、左上角為原點。
 (() => {
-  const ORT = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/';
+  // 辨識引擎和模型都放在面板自己的網站空間（vendor/），不向別的網站要程式；本機測試版才用公開的 CDN
+  const SITE = !!(window.WP_BOOT && window.WP_BOOT.site);
+  const BASE = SITE ? new URL('vendor/', location.href).href : '';
+  const ORT = SITE ? BASE + 'ort/' : 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/';
   const HF = 'https://huggingface.co/PaddlePaddle/';
-  const DET = HF + 'PP-OCRv5_mobile_det_onnx/resolve/main/inference.onnx';
-  const REC = HF + 'PP-OCRv5_mobile_rec_onnx/resolve/main/inference.onnx';
-  const DICT = HF + 'PP-OCRv5_mobile_rec_onnx/resolve/main/inference.yml';
+  const DET = SITE ? BASE + 'ocr/det.onnx' : HF + 'PP-OCRv5_mobile_det_onnx/resolve/main/inference.onnx';
+  const REC = SITE ? BASE + 'ocr/rec.onnx' : HF + 'PP-OCRv5_mobile_rec_onnx/resolve/main/inference.onnx';
+  const DICT = SITE ? BASE + 'ocr/rec.yml' : HF + 'PP-OCRv5_mobile_rec_onnx/resolve/main/inference.yml';
+  // 模型檔的指紋：下載回來的內容不一樣（被換過或沒下載完整）就不用
+  const SUM = { [DET]: 'a431985659dc921974177a95adcfbb90fd9e51989a5e04d70d0b75f597b6e61d', [REC]: 'da72dc72ca4dc220df0dfde68c1dedc31c58d3e76a25871122e5056227d50092', [DICT]: '5dfeb2777f6d0db8177d8128a8acfcf6e6276dc4ac73ea3bf0dc06d6a5e85d8e' };
+  const sha = async (buf) => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', buf)), (b) => b.toString(16).padStart(2, '0')).join('');
   let ready = null;
 
   const loadScript = (src) => new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = () => no(new Error('辨識工具下載失敗，請檢查網路')); document.head.appendChild(s); });
   // 模型檔：先看瀏覽器有沒有留著，沒有才下載（顯示進度）
   async function getFile(url, say, label) {
     let cache = null;
-    try { cache = await caches.open('wp-ocr-v1'); const hit = await cache.match(url); if (hit) return await hit.arrayBuffer(); } catch (e) { cache = null; }
+    try { cache = await caches.open('wp-ocr-v2'); const hit = await cache.match(url); if (hit) { const ab = await hit.arrayBuffer(); if (await sha(ab) === SUM[url]) return ab; await cache.delete(url); } } catch (e) { cache = null; }
     const r = await fetch(url);
     if (!r.ok) throw new Error('辨識模型下載失敗（' + r.status + '）');
     const total = +r.headers.get('content-length') || 0, reader = r.body.getReader(), parts = [];
     let got = 0;
     for (;;) { const { done, value } = await reader.read(); if (done) break; parts.push(value); got += value.length; if (say && total) say(`第一次使用，正在下載${label}… ${Math.round(got / total * 100)}%`); }
     const buf = new Uint8Array(got); let o = 0; for (const p of parts) { buf.set(p, o); o += p.length; }
+    if (await sha(buf.buffer) !== SUM[url]) throw new Error('辨識模型下載不完整，請再試一次');
     try { if (cache) await cache.put(url, new Response(buf, { headers: { 'Content-Type': 'application/octet-stream' } })); } catch (e) { /* 存不了就下次再下載 */ }
     return buf.buffer;
   }
   function init(say) {
     if (ready) return ready;
     ready = (async () => {
-      if (!window.ort) await loadScript(ORT + 'ort.min.js');
+      if (!window.ort) await loadScript(ORT + 'ort.wasm.min.js');
       ort.env.wasm.wasmPaths = ORT;
       ort.env.wasm.numThreads = 1;                       // 多執行緒需要特殊的網頁標頭，這裡用不了
       const yml = new TextDecoder().decode(await getFile(DICT, null, ''));
@@ -2339,7 +2371,7 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
 
 </script>
 <script type="module">
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js';
+import * as THREE from './vendor/three.module.min.js';
 // ── world.js ──
 const __m_world_js = (() => {
 // 地球上的國名與補充城市。
@@ -3356,10 +3388,10 @@ class Globe {
       if (single) tex.format = THREE.RedFormat;                 // 只用到一個色版的貼圖，省顯示卡記憶體
       this.uniforms[uni].value = tex; this.uniforms[flag].value = 1;
     });
-    load('https://cdn.jsdelivr.net/npm/three-globe@2/example/img/earth-blue-marble.jpg', 'uDay', 'uHasDay', false);
-    load('https://cdn.jsdelivr.net/npm/three-globe@2/example/img/earth-night.jpg', 'uNight', 'uHasNight', true);
-    load('https://cdn.jsdelivr.net/npm/three-globe@2/example/img/earth-water.png', 'uWater', 'uHasWater', true);
-    loader.load('https://cdn.jsdelivr.net/npm/three-globe@2/example/img/earth-topology.png', (tex) => {
+    load('vendor/earth-day.jpg', 'uDay', 'uHasDay', false);
+    load('vendor/earth-night.jpg', 'uNight', 'uHasNight', true);
+    load('vendor/earth-water.png', 'uWater', 'uHasWater', true);
+    loader.load('vendor/earth-topology.png', (tex) => {
       tex.colorSpace = THREE.NoColorSpace; tex.format = THREE.RedFormat; tex.anisotropy = aniso;
       this.uniforms.uTopo.value = tex; this.uniforms.uHasTopo.value = 1; this.uniforms.uDisp.value = 0.011;      // 聖母峰約凸出半徑的 1.1%（實際高度的約 8 倍）
     });
@@ -3376,7 +3408,7 @@ class Globe {
       this.g.add(rivers);
     }).catch(() => {});
     try {
-      const topo = await (await fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json')).json();
+      const topo = await (await fetch('vendor/countries-50m.json')).json();
       this._buildMap(topo);
     } catch (e) { console.error('地圖資料載入失敗', e); }
   }
@@ -4448,7 +4480,9 @@ const { matchCommands, matchSpoken, scoreCmd, pushRecent, nextGroup } = __m_pale
 const { parseBrokerText } = __m_scantext_js;
 const { PANELS, PANEL_CODE, PANEL_NAME, BP_COLS, COLS, COL_DEFAULT, SCENES, SCENE_IDS, defaultLayout, sanitizeLayout, visiblePanels, hiddenPanels, layoutDiff } = __m_layout_js;
 const $ = (id) => document.getElementById(id);
-const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+// 連結只收一般網址（http／https）：外面來的資料就算夾了別種連結也點不出去
+const safeUrl = (u) => { try { const x = new URL(String(u ?? ''), location.href); return x.protocol === 'https:' || x.protocol === 'http:' ? x.href : ''; } catch (e) { return ''; } };
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const pad = (n) => String(n).padStart(2, '0');
 const fmt = (v, d = 2) => v == null || isNaN(v) ? '—' : v.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -4678,7 +4712,7 @@ function qrow(key, q, pts, meta, on, live = on) {
   if (live && pts && pts.length && q.last != null) pts = [...pts, ['現在', q.last]];      // 走勢線尾端跟著最新報價走
   return `<div class="q" data-key="${key}"><div class="q-name"><b>${esc(q.name)}</b><small class="${on ? 'on' : ''}">${esc(meta || '')}</small></div>
     ${spark(pts, { id: key, base: q.prev, cls: dirCls(q.chg), fmt: (v) => fmt(v, d), live })}
-    <div class="q-val"><span class="q-last" data-k="${key}" data-v="${q.last}" data-d="${d}" data-s="${sfx}">${fmt(q.last, d)}${sfx}</span>${chgText(q, key)}</div></div>`;
+    <div class="q-val"><span class="q-last" data-k="${key}" data-v="${esc(q.last)}" data-d="${d}" data-s="${sfx}">${fmt(q.last, d)}${sfx}</span>${chgText(q, key)}</div></div>`;
 }
 function chip(key, q, label) {
   if (!q) return '';
@@ -5002,7 +5036,7 @@ function showHeadline(i, animate = true, auto = false) {
   hlIdx = (i + NEWS.length) % NEWS.length;
   hlStart = performance.now();
   const n = NEWS[hlIdx], el = $('headline');
-  el.href = n.link;
+  { const hl = safeUrl(n.link); if (hl) el.href = hl; else el.removeAttribute('href'); }
   $('hl-title').textContent = n.title;
   $('hl-desc').textContent = n.desc || '';
   $('hl-meta').textContent = `${n.source}　${n.ts ? ago(n.ts) : ''}${n.geo ? '　◆ ' + n.geo.name : ''}`;
@@ -5038,7 +5072,7 @@ $('news').addEventListener('click', (e) => {
   if (n.geo) globe.flyTo(n.geo.lat, n.geo.lon, 12000);
 });
 $('news').addEventListener('dblclick', (e) => {
-  const row = e.target.closest('.n'); if (row) window.open(NEWS[+row.dataset.i].link, '_blank', 'noopener');
+  const row = e.target.closest('.n'); if (row) { const u = safeUrl(NEWS[+row.dataset.i].link); if (u) window.open(u, '_blank', 'noopener'); }
 });
 globe.onNewsClick = (id) => { const i = NEWS.findIndex((n) => newsId(n) === id); if (i >= 0) showHeadline(i); };
 // 進度條每 250 毫秒走一格。不用 CSS 轉場：它位在毛玻璃區塊裡，連續轉場會逼顯示卡每張都重算模糊。
@@ -5685,12 +5719,12 @@ function renderStrait() {
   const int = (v) => String(Math.round(v));
   setHTML($('strait'), `
     <div class="st-grid">
-      <div class="st${L.aircraft >= 20 ? ' hot' : ''}"><b>${L.aircraft}</b><span>共機 架次</span></div>
-      <div class="st${L.cross >= 10 ? ' hot' : ''}"><b>${L.cross}</b><span>逾越中線</span></div>
-      <div class="st"><b>${L.ships}</b><span>共艦 艘</span></div>
-      <div class="st"><b>${L.official}</b><span>公務船 艘</span></div>
+      <div class="st${L.aircraft >= 20 ? ' hot' : ''}"><b>${esc(L.aircraft)}</b><span>共機 架次</span></div>
+      <div class="st${L.cross >= 10 ? ' hot' : ''}"><b>${esc(L.cross)}</b><span>逾越中線</span></div>
+      <div class="st"><b>${esc(L.ships)}</b><span>共艦 艘</span></div>
+      <div class="st"><b>${esc(L.official)}</b><span>公務船 艘</span></div>
     </div>
-    <div class="st-line"><span>進入空域　<b>${L.sectors.length ? L.sectors.join('、') : '無'}</b></span>${L.balloons ? `<span>空飄氣球　<b>${L.balloons}</b></span>` : ''}</div>
+    <div class="st-line"><span>進入空域　<b>${L.sectors.length ? esc(L.sectors.join('、')) : '無'}</b></span>${L.balloons ? `<span>空飄氣球　<b>${esc(L.balloons)}</b></span>` : ''}</div>
     <div class="st-trend">
       <div><span>共機　近 ${air.length} 筆<i style="font-style:normal">均 ${avg(air).toFixed(1)}　高 ${max(air)}</i></span>${spark(air, { id: 'plaAir', min: 0, h: 24, fmt: int, unit: ' 架次' })}</div>
       <div><span>共艦與公務船<i style="font-style:normal">均 ${avg(sea).toFixed(1)}　高 ${max(sea)}</i></span>${spark(sea, { id: 'plaSea', min: 0, h: 24, fmt: int, unit: ' 艘' })}</div>
@@ -5698,7 +5732,7 @@ function renderStrait() {
     <div class="st-actions">
       <button data-act="strait" class="primary">${straitMode ? '回全球視角' : '臺海視角'}</button>
       ${L.image ? '<button data-act="mndimg">官方示意圖</button>' : ''}
-      <a href="${esc(L.url)}" target="_blank" rel="noopener">國防部原文 ↗</a>
+      <a href="${esc(safeUrl(L.url))}" target="_blank" rel="noopener">國防部原文 ↗</a>
     </div>`);
 }
 function setStrait(on) {
@@ -6476,8 +6510,8 @@ function tgtRow(t = {}) {
   })).join('');
   const missing = t.c && !opts.includes(`value="${esc(t.m + ':' + t.c)}"`) ? `<option value="${esc(t.m + ':' + t.c)}" selected>${esc(t.c)}</option>` : '';
   return `<div class="al-tgt"><select aria-label="股票">${missing}${opts}</select>
-    <label><span>高於</span><input class="t-above" inputmode="decimal" value="${t.above ?? ''}" placeholder="—"></label>
-    <label><span>低於</span><input class="t-below" inputmode="decimal" value="${t.below ?? ''}" placeholder="—"></label>
+    <label><span>高於</span><input class="t-above" inputmode="decimal" value="${esc(t.above ?? '')}" placeholder="—"></label>
+    <label><span>低於</span><input class="t-below" inputmode="decimal" value="${esc(t.below ?? '')}" placeholder="—"></label>
     <button class="h-del" aria-label="移除">×</button></div>`;
 }
 function openAlerts() {
@@ -6520,7 +6554,7 @@ $('al-save').addEventListener('click', async () => {
 });
 
 // 手機系統通知（Web Push）：要用 https 的網址、而且是從主畫面圖示打開的面板才能開
-if (REMOTE && location.protocol === 'https:' && 'serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').then((reg) => reg.update()).catch(() => {});
+if (REMOTE && !window.WP_BOOT && location.protocol === 'https:' && 'serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').then((reg) => reg.update()).catch(() => {});
 const SW_VER = 3;
 // 問背景程式是第幾版（舊版不會回答 → 1；還沒啟動 → 0）
 function swVersion(reg) {
@@ -6710,7 +6744,7 @@ function renderInsp() {
   if (!list.length) { if (S.insp?.error || S.insp?.data) setHTML(box, '<div class="empty">圖片來源暫時連不上</div>'); return; }
   inspIdx = ((inspIdx % list.length) + list.length) % list.length;
   const it = list[inspIdx], next = [1, 2, 3].map((k) => list[(inspIdx + k) % list.length]);
-  setHTML(box, `<a class="insp-hero" href="${esc(it.link)}" target="_blank" rel="noopener">${imgTag(it.img)}<span class="insp-cap"><i>${esc(it.source)}</i><b>${esc(it.title)}</b></span></a>${likeBtn('insp-like', it.img)}
+  setHTML(box, `<a class="insp-hero" href="${esc(safeUrl(it.link))}" target="_blank" rel="noopener">${imgTag(it.img)}<span class="insp-cap"><i>${esc(it.source)}</i><b>${esc(it.title)}</b></span></a>${likeBtn('insp-like', it.img)}
     <div class="insp-row">${next.map((n, k) => `<button class="insp-th" data-go="${k + 1}" title="${esc(n.source)}｜${esc(n.title)}">${imgTag(n.img, true)}</button>`).join('')}</div>`);
   $('insp-meta').textContent = `${inspIdx + 1} / ${list.length}`;
   renderStageInsp();
@@ -6757,7 +6791,7 @@ function renderGal() {
       ? `<div class="gal-taste">你最常按喜歡的：${top.map(([k, v]) => `<span>${esc(k.replace(/^Are\.na · /, ''))}<em>${v}</em></span>`).join('')}<small>這些來源之後會出得比較多（每 30 分鐘換一批時生效）</small></div>`
       : '<div class="gal-taste empty">還沒有喜歡的圖。看到喜歡的，按圖片右上角的愛心。</div>';
   }
-  $('gal-grid').innerHTML = head + items.map((it) => `<div class="gal-it"><a href="${esc(it.link || it.img)}" target="_blank" rel="noopener">${imgTag(it.img, true)}<span class="insp-cap"><i>${esc(it.source)}</i><b>${esc(it.title)}</b></span></a>${likeBtn('gal-like', it.img)}</div>`).join('');
+  $('gal-grid').innerHTML = head + items.map((it) => `<div class="gal-it"><a href="${esc(safeUrl(it.link) || safeUrl(it.img))}" target="_blank" rel="noopener">${imgTag(it.img, true)}<span class="insp-cap"><i>${esc(it.source)}</i><b>${esc(it.title)}</b></span></a>${likeBtn('gal-like', it.img)}</div>`).join('');
   refreshLikeBtns();
 }
 $('insp-wall').addEventListener('click', () => { galView = 'all'; renderGal(); openDialog('gallery'); $('gal-grid').scrollTop = 0; });
@@ -6797,7 +6831,7 @@ $('mv-meta').addEventListener('click', async (e) => {
 function renderFilm() {
   const list = S.film?.data;
   if (!list) { if (S.film?.error) setHTML($('film'), '<div class="empty">影視新聞來源暫時連不上</div>'); return; }
-  setHTML($('film'), list.map((n) => `<a class="fl-row" href="${esc(n.link)}" target="_blank" rel="noopener"><time>${n.ts ? ago(n.ts) : ''}</time><span><b>${esc(n.title)}</b><small>${esc(n.source)}</small></span></a>`).join(''));
+  setHTML($('film'), list.map((n) => `<a class="fl-row" href="${esc(safeUrl(n.link))}" target="_blank" rel="noopener"><time>${n.ts ? ago(n.ts) : ''}</time><span><b>${esc(n.title)}</b><small>${esc(n.source)}</small></span></a>`).join(''));
   $('film-meta').textContent = `${list.length} 則`;
 }
 
@@ -6810,7 +6844,7 @@ function renderStageInsp() {
   const i = ((inspIdx % list.length) + list.length) % list.length, it = list[i];
   if (siShown !== it.img) {
     siShown = it.img;
-    $('si-main').href = it.link;
+    { const hl = safeUrl(it.link); if (hl) $('si-main').href = hl; else $('si-main').removeAttribute('href'); }
     $('si-main').innerHTML = imgTag(it.img);
     $('si-bg').style.backgroundImage = ecoOn ? '' : `url("${it.img.replace(/["\\\n]/g, '')}")`;
     $('si-src').textContent = it.source; $('si-title').textContent = it.title;
@@ -7344,16 +7378,17 @@ if (QS.has('eco')) { ecoForced = QS.get('eco') === '1'; }
 if (QS.has('route')) setTimeout(() => { const [a, b, c, d] = QS.get('route').split(',').map(Number); globe.traffic.setRoute({ lat: a, lon: b }, { lat: c, lon: d }); }, 2500);
 
 // 測試用：?search=關鍵字 自動搜尋並選第一個結果
-if (QS.has('search')) setTimeout(() => { $('q').value = QS.get('search'); results = runSearch($('q').value); resIdx = 0; drawResults(); if (QS.get('pick') !== '0') pickResult(0); }, 5500);
+const QS_TEST = !window.WP_BOOT;                    // 這些測試用的網址參數只在電腦版有效；公開的手機網頁不理會，免得別人做一條連結讓面板自己動作
+if (QS_TEST && QS.has('search')) setTimeout(() => { $('q').value = QS.get('search'); results = runSearch($('q').value); resIdx = 0; drawResults(); if (QS.get('pick') !== '0') pickResult(0); }, 5500);
 
 // 測試用：?scene=2 指定情境、?edit=1 編輯版面、?palette=關鍵字 打開指令列、?boot=0 跳過開機動畫
 if (QS.has('scene')) { const sc = SCENES.find((x) => x.key === QS.get('scene') || x.id === QS.get('scene')); if (sc) setTimeout(() => switchScene(sc.id, { quiet: true }), 300); }
-if (QS.has('edit')) setTimeout(enterEdit, 900);
-if (QS.has('palette')) setTimeout(() => openPalette(QS.get('palette')), 1200);
+if (QS_TEST && QS.has('edit')) setTimeout(enterEdit, 900);
+if (QS_TEST && QS.has('palette')) setTimeout(() => openPalette(QS.get('palette')), 1200);
 // 測試用：?stage=insp 靈感模式、?tab=p-mv 指定分頁、?wall=1 打開靈感牆
-if (QS.has('stage')) setTimeout(() => setStageMode(QS.get('stage')), 400);
-if (QS.has('tab')) setTimeout(() => setMediaTab(QS.get('tab')), 400);
-if (QS.has('wall')) setTimeout(() => $('insp-wall').click(), 9000);
+if (QS_TEST && QS.has('stage')) setTimeout(() => setStageMode(QS.get('stage')), 400);
+if (QS_TEST && QS.has('tab')) setTimeout(() => setMediaTab(QS.get('tab')), 400);
+if (QS_TEST && QS.has('wall')) setTimeout(() => $('insp-wall').click(), 9000);
 
 </script>
 </body>
