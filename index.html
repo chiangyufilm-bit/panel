@@ -1315,6 +1315,19 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
 /* 觸控螢幕（平板也算）：視窗底部的按鈕至少 40px 高，手指才好按 */
 @media (pointer: coarse) { .dlg-f .btn { min-height: 40px; padding-left: 16px; padding-right: 16px; } }
 
+/* 手機：自選股標題列的按鈕多（台股／美股、損益、健檢、編輯），窄螢幕放不下時「編輯持股」縮成「編輯」，再不夠就換行，不能把字切掉 */
+.tabs { flex: none; } .tabs button { white-space: nowrap; }
+.panel h2 .mini { flex: none; white-space: nowrap; }
+@media (max-width: 639px) {
+  /* 自選股標題列排成兩列：第一列是標題和「台股／美股」，第二列是三個按鈕靠右。比擠成一列、最後一顆掉下去好看，也不會切字 */
+  .grid.m-phone #p-watch h2 { flex-wrap: wrap; height: auto; min-height: 32px; row-gap: 8px; column-gap: 6px; }
+  .grid.m-phone #p-watch h2::after { content: ""; flex-basis: 100%; order: 1; height: 0; }
+  .grid.m-phone #p-watch h2 .mini { order: 2; }
+  .grid.m-phone #p-watch h2 #watch-pl { margin-left: auto; }
+  /* 世界時間收合成一列時：放不下就換行，不要把最後一個時鐘切掉 */
+  .slim .clocks { flex-wrap: wrap; row-gap: 4px; white-space: normal; }
+}
+
 </style>
 </head>
 <body>
@@ -1725,7 +1738,7 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
     clocks: [{ name: '台北', tz: 'Asia/Taipei', market: 'TWSE' }, { name: '東京', tz: 'Asia/Tokyo', market: 'TSE' }, { name: '倫敦', tz: 'Europe/London', market: 'LSE' },
       { name: '紐約', tz: 'America/New_York', market: 'NYSE' }, { name: '洛杉磯', tz: 'America/Los_Angeles' }, { name: 'UTC', tz: 'UTC' }],
     redUp: true, footage: { label: '4K ProRes HQ', mbps: 707 },
-    watchlist: { tw: [], us: [] }, watchlistMeta: null, mvHide: [], trades: [], inspLikes: [], scanAlias: {}, hidePanels: [],
+    watchlist: { tw: [], us: [] }, watchlistMeta: null, mvHide: [], trades: [], inspLikes: [], scanAlias: {}, hidePanels: [], panelOrder: [],
   };
   let mem = null;                                        // 無痕模式等存不進去的情況：至少這次開著的期間還在
   const load = () => {
@@ -1936,6 +1949,23 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
       wx = { ts: now, tried: now, error: null, fresh: true, data: { location: loc, current: w.current, hourly: w.hourly || {}, daily: w.daily || {}, utcOffset: w.utc_offset_seconds, air } };
     } catch (e) { wx.error = '天氣暫時連不上'; }
   }
+  // ── 點飛機查航線：手機直接問 adsbdb（公開資料），和 Mac 版 lookup_route 回傳同樣的格式 ──
+  const routes = new Map();
+  async function route_(cs) {
+    cs = String(cs || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
+    if (cs.length < 3) return { callsign: cs, found: false };
+    const hit = routes.get(cs);
+    if (hit && Date.now() - hit[0] < (hit[1].found ? 6 * 3600e3 : 300e3)) return hit[1];
+    let out = { callsign: cs, found: false };
+    try {
+      const fr = (await (await real('https://api.adsbdb.com/v0/callsign/' + cs)).json()).response.flightroute;
+      const ap = (a) => ({ iata: a.iata_code, icao: a.icao_code, name: a.name, city: a.municipality, country: a.country_name, lat: +a.latitude, lon: +a.longitude });
+      out = { callsign: cs, found: true, flight: fr.callsign_iata || cs, airline: (fr.airline || {}).name, origin: ap(fr.origin), destination: ap(fr.destination) };
+    } catch (e) { /* 查不到就當沒有 */ }
+    if (routes.size > 300) routes.clear();
+    routes.set(cs, [Date.now(), out]);
+    return out;
+  }
   // ── 太空站位置：手機直接問（公開資料），15 秒一次 ──
   let iss = { ts: 0, tried: 0, data: null, fresh: false };
   async function issTick() {
@@ -2022,7 +2052,9 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
     if (p === '/api/lookup') return J(await relay('lookup', { m: u.searchParams.get('m') || '', code: u.searchParams.get('c') || '' }));
     if (p === '/api/cables') return GAS ? J({ lines: [] }) : J(await relay('cables'));
     if (p === '/api/assets') return J({ days: assetDays() });
-    if (p === '/api/flights' || p === '/api/ships') return J({ data: [] });
+    if (p === '/api/flights') { try { return J(await relay('flights')); } catch (e) { return J({ ts: 0, data: [] }); } }
+    if (p === '/api/ships') return J({ data: [] });
+    if (p === '/api/route') return J(await route_(u.searchParams.get('cs')));
     if (p === '/api/phone/status') return J({ enabled: false });
     if (post && p === '/api/watchlist') {
       const wl = cleanWatchlist(body), rev = (d.watchlistMeta && d.watchlistMeta.rev) || 0;
@@ -2069,7 +2101,13 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
   const CITIES = [['台北', 25.04, 121.56], ['新北', 25.01, 121.46], ['桃園', 24.99, 121.3], ['新竹', 24.8, 120.97], ['台中', 24.15, 120.67], ['台南', 22.99, 120.21], ['高雄', 22.63, 120.3], ['花蓮', 23.98, 121.6],
     ['香港', 22.32, 114.17], ['東京', 35.68, 139.69], ['首爾', 37.57, 126.98], ['新加坡', 1.35, 103.82], ['上海', 31.23, 121.47], ['倫敦', 51.51, -0.13], ['紐約', 40.71, -74.01], ['洛杉磯', 34.05, -118.24], ['溫哥華', 49.28, -123.12], ['雪梨', -33.87, 151.21]];
   const hideStyle = document.createElement('style'); document.head.appendChild(hideStyle);
-  const applyHide = () => { const h = (load().hidePanels || []).filter((id) => PANELS.some((x) => x[0] === id)); hideStyle.textContent = h.length ? h.map((id) => '#' + id).join(',') + '{display:none!important}' : ''; };
+  // 區塊由上到下的順序（地球永遠在最上面）。預設：國際新聞、臺海動態、黃金與匯率，再來才是其他的；使用者可以在設定裡自己排
+  const ORDER0 = ['p-news', 'p-strait', 'p-gold', 'p-watch', 'p-tw', 'p-us', 'p-weather', 'p-clocks', 'p-cal', 'p-film', 'p-mv', 'p-insp'];
+  const orderNow = () => { const saved = (load().panelOrder || []).filter((id) => ORDER0.includes(id)); return saved.concat(ORDER0.filter((id) => !saved.includes(id))); };
+  const applyHide = () => {
+    const h = (load().hidePanels || []).filter((id) => PANELS.some((x) => x[0] === id));
+    hideStyle.textContent = (h.length ? h.map((id) => '#' + id).join(',') + '{display:none!important}' : '') + orderNow().map((id, i) => `.grid.m-phone #${id}{order:${i + 1}}`).join('');
+  };
   applyHide();
   const escH = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   let setEl = null;
@@ -2083,7 +2121,8 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
     setEl.innerHTML = `<div style="max-width:560px;margin:0 auto;padding:18px 18px 60px">
       <div style="display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:rgba(6,9,13,.98);padding:6px 0 10px;z-index:1"><b style="font-size:20px">設定</b><button id="wps-x" style="${btn};border-color:#7fe3f2;background:#7fe3f2;color:#04121a;font-weight:600">完成</button></div>
       <div style="${h3}">要顯示哪些區塊</div>
-      <div id="wps-panels">${PANELS.map(([id, name]) => `<label style="${row}"><input type="checkbox" data-id="${id}" ${hid.has(id) ? '' : 'checked'} style="width:22px;height:22px;accent-color:#7fe3f2"><span>${name}</span></label>`).join('')}</div>
+      <div style="${note}">打勾的才會顯示。按右邊的 ▲ ▼ 可以調整由上到下的順序（地球固定在最上面）。</div>
+      <div id="wps-panels"></div>
       <div style="${h3}">天氣用的地點</div>
       <select id="wps-city" style="width:100%;height:46px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:#0b1117;color:#e9eef4;font-size:16px;padding:0 10px">${CITIES.map(([n], i) => `<option value="${i}" ${d.location && d.location.name === n ? 'selected' : ''}>${n}</option>`).join('')}</select>
       <div style="${h3}">備份與換手機</div>
@@ -2096,6 +2135,20 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
       <div style="${note}">啟用碼：${escH(CODE ? CODE.slice(0, 5) + '-' + CODE.slice(5) : '（本機測試）')}<br>報價與新聞來自公開來源，僅供參考。截圖只在這台裝置上辨識，不會上傳。</div></div>`;
     document.body.appendChild(setEl);
     const q = (id) => setEl.querySelector(id), msg = (t, bad) => { q('#wps-msg').style.color = bad ? '#ff8f86' : '#7fe3f2'; q('#wps-msg').textContent = t; };
+    const arrow = 'width:40px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,.16);background:transparent;color:#9ba8b6;font-size:13px;flex:none';
+    const drawPanels = () => {
+      const hidNow = new Set(load().hidePanels || []), name = Object.fromEntries(PANELS), ids = ['stage'].concat(orderNow());
+      q('#wps-panels').innerHTML = ids.map((id, i) => `<div style="${row}"><label style="display:flex;align-items:center;gap:12px;flex:1;min-width:0"><input type="checkbox" data-id="${id}" ${hidNow.has(id) ? '' : 'checked'} style="width:22px;height:22px;accent-color:#7fe3f2;flex:none"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name[id]}</span></label>` +
+        (id === 'stage' ? '' : `<button data-mv="-1" data-id="${id}" aria-label="往上移" style="${arrow}" ${i <= 1 ? 'disabled' : ''}>▲</button><button data-mv="1" data-id="${id}" aria-label="往下移" style="${arrow}" ${i === ids.length - 1 ? 'disabled' : ''}>▼</button>`) + '</div>').join('');
+    };
+    drawPanels();
+    q('#wps-panels').addEventListener('click', (e) => {
+      const b = e.target.closest('button[data-mv]'); if (!b) return;
+      const list = orderNow(), i = list.indexOf(b.dataset.id), j = i + (+b.dataset.mv);
+      if (i < 0 || j < 0 || j >= list.length) return;
+      [list[i], list[j]] = [list[j], list[i]];
+      const dd = load(); dd.panelOrder = list; save(dd); applyHide(); drawPanels();
+    });
     q('#wps-panels').addEventListener('change', () => {
       const dd = load(); dd.hidePanels = [...setEl.querySelectorAll('#wps-panels input')].filter((i) => !i.checked).map((i) => i.dataset.id); save(dd); applyHide(); window.dispatchEvent(new Event('resize'));
     });
