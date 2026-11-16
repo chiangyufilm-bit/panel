@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-JNA6biwclaDQyOwv6SXs4QFb8fzp6h4y8+dOvlmGopc=' 'sha256-yFS/SLFqBQEgSHpSqJvHOq8Xcn/1BuBCunzeAfCVxOU='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-JNA6biwclaDQyOwv6SXs4QFb8fzp6h4y8+dOvlmGopc=' 'sha256-Tkh2yVhNu8wCUGvZ2wCpkRSaOiKpHZef6/7b3QY3obI='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#06090d">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -4007,7 +4007,7 @@ const __m_scantext_js = (() => {
 //   有的券商報酬率的分母是含買進手續費的「付出成本」，所以分母也容許 ×1.001425。
 // 輸入：一行一列；同一列裡的不同格可以用 Tab 隔開（Mac／手機的辨識結果會這樣排），也可以每格一行（iPhone 拷貝全部）。
 // 不連網、不依賴伺服器，Mac 和手機獨立版都用同一份。
-const TAG = /^(現股|美國|融資|融券|零股|現沖|沖賣|沖買|整股|盤中零股|外幣交割|台幣交割|定期定額|定期定股)$/;
+const TAG = /^(現股|美國|融資|融券|零股|現沖|沖賣|沖買|整股|盤中零股|外幣交割|台幣交割|定期定額|定期定股|定額|定额|定股|興櫃)$/;
 const MARK = new Set(['息', '權', '資', '券', '市', '櫃', '興', '現', '股', '服', 'v', 'V']);
 // 欄位標題與畫面上的字（不能當成股票名稱）
 const HDR = /名稱|股名|市價|均價|股數|可下單|可賣|損益|面額|商品|代碼|代號|現價|報酬|庫存|漲跌|類別|交易別|成本|市值|現值|參考價|今餘|昨餘|價格|今日變動|收付|幣別|筆數|頁次|更新|查詢|總計|說明|篩選|彙總|明細|維持率|餘額|試算/;
@@ -4041,6 +4041,15 @@ function split(c, out, ln, lab) {
   if ((m = c.match(/^(.*?[\d.])\s*[(（]\s*([+\-−]?[\d.,]+%)$/))) { split(m[1], out, ln, lab); out.push({ t: m[2], ln, paren: true }); return; }   // 右括號沒讀到
   if ((m = c.match(/^[(（]\s*([+\-−]?[\d.,]+%)\s*[)）]?$/))) { out.push({ t: m[1], ln, paren: true }); return; }
   if ((m = c.match(/^(.*\S)\s*[(（]\s*(\d{4,6}[A-Z]?|[A-Z]{1,5})\s*[)）]$/)) && !UI.test(m[2])) { split(m[1], out, ln); out.push({ t: m[2], ln, code: true }); return; }   // 名稱（代號）
+  if ((m = c.match(/^(.*[一-鿿].*?)\s*(\d{4,}[A-Z]?)$/)) && !/[,.:/%]/.test(m[2]) && !HDR.test(m[1]) && /[一-鿿]{2}/.test(m[1])) {   // 「主動中信台灣收益00406A」「元大台灣500050」：名稱後面直接接代號
+    const tail = (c.match(/\d+[A-Z]?$/) || [''])[0], let_ = /[A-Z]$/.test(tail), dg = let_ ? tail.slice(0, -1) : tail, sfx = let_ ? tail.slice(-1) : '';
+    let n = 0;
+    if (let_) n = dg.length === 4 || (dg.length === 5 && dg.startsWith('00')) ? dg.length : dg.slice(-5).startsWith('00') ? 5 : 4;
+    else if (dg.length === 4 || ((dg.length === 5 || dg.length === 6) && dg.startsWith('00'))) n = dg.length;
+    else n = dg.slice(-4).startsWith('00') ? 4 : dg.slice(-6).startsWith('00') ? 6 : dg.slice(-5).startsWith('00') ? 5 : 4;
+    const code = dg.slice(-n) + sfx, name = c.slice(0, c.length - code.length).trim();
+    if (CODE_TW.test(code) && /[一-鿿]{2}/.test(name)) { split(name, out, ln); out.push({ t: code, ln, code: true }); return; }
+  }
   if ((m = c.match(/^[^\x00-\x7f\d]\s?(\d{4}|00\d{3,4}[A-Z]?)$/))) { out.push({ t: m[1], ln, code: true }); return; }   // 「市2330」「用3231」：代號前面的小徽章
   if (/^[▲▼△▽↑↓]/.test(c) || /^[4AV]\s+[+\-]?[\d.,]+%?$/.test(c)) { out.push({ t: c, ln, chg: true }); return; }      // 今天的漲跌（▲ 常被讀成 4 或 A），不是損益
   const glued = scanNum(c) === null && c.match(/^(.+?)(現股|美國|融資|融券|零股)$/);     // 「康舒現股」：名稱和標籤黏在一起
@@ -4156,6 +4165,13 @@ function parseGeneric(text) {
     if (js >= 0 && (jc < 0 || jc < js)) {              // 台股卡片：成交均價排在損益％的後面
       for (let j = k + 1; j < toks.length && j <= k + 6; j++) { const x = toks[j]; if (x.pct || (x.n !== null && x.role === 'shares')) break; if (x.n !== null && x.role === 'cost') { jc = j; break; } }
     }
+    if (jc < 0 && js >= 0 && jl >= 0 && !us) {         // 台股卡片沒展開：只有總股數和「損益（報酬率）」，付出成本＝損益÷報酬率
+      const sh = toks[js].n, pl0 = Math.abs(toks[jl].n), p0 = Math.abs(p);
+      if (!(sh > 0) || !Number.isInteger(sh) || !(pl0 > 0) || !(p0 > 0)) return null;
+      if (0.005 / p0 + 0.5 / pl0 > 0.03) return null;                       // 損益太接近 0：推不準，請使用者展開
+      const c0 = Math.round(pl0 * 100 / p0 / sh * 100) / 100;
+      return sane(c0, null, sh, false) ? { shares: sh, cost: c0, price: null, used: [js, jl], card: true, approx: true } : null;
+    }
     if (jc < 0 || (js < 0 && (jl < 0 || !shLabel))) return null;
     const cost = toks[jc].n, pl = jl >= 0 ? toks[jl].n : 0;
     if (!(cost > 0)) return null;
@@ -4260,7 +4276,7 @@ function parseGeneric(text) {
     const cd = toks.find((x, j) => j > lo && j <= Math.min(toks.length - 1, k + 3) && x.ln >= line - 1 && x.ln <= line + 2 && x.code && !used.has(j) && (us ? x.usCode : CODE_TW.test(x.code)));
     if (!name && cd && us) name = cd.code;            // 美股只寫代號（AAPL）
     rows.push({ name: name.slice(0, 40), kind: us ? 'us' : 'tw', ok: !!(best && name), shares: best ? best.shares : null, cost: best ? best.cost : null, price: best ? best.price : null,
-      ...(cd ? { hint: cd.code } : {}), ...(best && best.derived ? { derived: true } : {}), ...(best && best.est ? { est: true } : {}) });
+      ...(cd ? { hint: cd.code } : {}), ...(best && best.derived ? { derived: true } : {}), ...(best && best.est ? { est: true } : {}), ...(best && best.approx ? { approx: true } : {}) });
     if (best) lo = best.card ? Math.max(k, ...best.used) : k;
   }
   for (let i = rows.length - 1; i >= 0; i--) if (!rows[i].name) rows.splice(i, 1);     // 連名稱都沒有的（畫面邊緣被切到）沒有用
@@ -4274,6 +4290,7 @@ function parseGeneric(text) {
       o.cost = Math.round((o.cost * o.shares + r.cost * r.shares) / sh * 10000) / 10000; o.shares = r.kind === 'tw' ? sh : Math.round(sh * 1e6) / 1e6;
       if (r.derived) o.derived = true;
       if (r.est) o.est = true;
+      if (r.approx) o.approx = true;
     } else { out.push(r); if (r.ok) seen.set(key, r); }
   }
   return out;
@@ -6022,6 +6039,7 @@ function scanNote(kind, it) {
   if (sc.from === 'hint' && st === 'new') t += (t ? '・' : '') + '代號是照截圖上印的字帶入的，請對照';
   if (sc.derived && (st === 'upd' || st === 'new' || st === 'need')) t += (t ? '・' : '') + '截圖上沒有均價，用「現值−損益」÷股數推算（含買進手續費），請對照';
   if (sc.multi && (st === 'upd' || st === 'new' || st === 'need')) t += (t ? '・' : '') + `這一檔在 ${sc.multi} 張截圖裡都有（不同券商），股數已相加、均價照股數平均，請對照`;
+  if (sc.approx && (st === 'upd' || st === 'new' || st === 'need')) t += (t ? '・' : '') + '截圖上這一檔沒展開、看不到均價，用損益和報酬率推算（可能差一點點）；點卡片右邊的箭頭展開再截圖會更準';
   if (sc.est && (st === 'upd' || st === 'new' || st === 'need')) t += (t ? '・' : '') + '股數沒讀清楚，用台幣損益和匯率推算，請對照截圖';
   else if (st === 'miss') t = '這檔沒出現在截圖裡，沒有更動；已經賣掉的話請按「賣出」或右邊 × 移除';
   return `<span class="h-tag ${st}">${SCAN_TAG[st]}</span>${t ? `<span>${esc(t)}</span>` : ''}`;
@@ -6081,11 +6099,13 @@ async function scanText(text) {
 function scanApply(all, errs, what) {
   // 好幾張截圖會重複到同一檔：同名只留一筆，優先留數字對得上的；被切到一半、名稱讀壞的那一列，如果股數和均價和別列相同就丟掉
   const m = new Map();
+  const scanSame = (o, r) => o.shares === r.shares && (o.cost === r.cost || ((o.approx || r.approx) && Math.abs(o.cost - r.cost) <= Math.max(o.cost, r.cost) * 0.035));
   const scanAdd = (o, r) => { const sh = o.shares + r.shares; o.cost = +((o.shares * o.cost + r.shares * r.cost) / sh).toFixed(4); o.shares = +sh.toFixed(6); o.multi = (o.multi || 1) + 1; };   // 兩家券商都有同一檔：股數相加、均價照股數加權
   for (const r of all) {
     const k = r.kind + ':' + scanNorm(r.name), o = m.get(k);
     if (!o || (!o.ok && r.ok)) m.set(k, r);
-    else if (o.ok && r.ok && (o.shares !== r.shares || o.cost !== r.cost)) scanAdd(o, r);
+    else if (o.ok && r.ok && scanSame(o, r)) { if (o.approx && !r.approx) m.set(k, r); }      // 同一列被讀了兩次（截圖重疊；其中一張沒展開、均價是推算的）：留精確的那筆
+    else if (o.ok && r.ok) scanAdd(o, r);
   }
   const good = [...m.values()].filter((r) => r.ok);
   let rows = [...m.values()].filter((r) => r.ok || !good.some((g) => g.kind === r.kind && g.shares === r.shares && g.cost === r.cost));
@@ -6096,7 +6116,7 @@ function scanApply(all, errs, what) {
     if (!r.ok || !c || !scanCodeOk(r.kind, c)) return true;
     const o = byCode.get(r.kind + ':' + c);
     if (!o) { byCode.set(r.kind + ':' + c, r); return true; }
-    if (o.shares === r.shares && o.cost === r.cost) return false;          // 同一列被讀了兩次（截圖重疊）
+    if (scanSame(o, r)) { if (o.approx && !r.approx) { o.cost = r.cost; delete o.approx; } return false; }          // 同一列被讀了兩次（截圖重疊）
     scanAdd(o, r); return false;
   });
   if (!rows.length) { const m = '沒有讀到持股：' + (errs[0] || '請選庫存頁的截圖'); scanStatus('err', m); $('hold-msg').className = 'dlg-note err'; $('hold-msg').textContent = m; return; }
@@ -6105,7 +6125,7 @@ function scanApply(all, errs, what) {
   for (const r of rows) {
     const kind = r.kind, k = kind === 'tw' ? 'code' : 'sym', list = holdDraft[kind];
     const code = String(r.code || '').toUpperCase(), name = kind === 'tw' ? String(r.name || '').replace(/\*/g, '') : '';
-    const base = { raw: r.name, auto: code, from: r.from || '', ...(r.derived ? { derived: 1 } : {}), ...(r.est ? { est: 1 } : {}), ...(r.multi ? { multi: r.multi } : {}) };
+    const base = { raw: r.name, auto: code, from: r.from || '', ...(r.derived ? { derived: 1 } : {}), ...(r.est ? { est: 1 } : {}), ...(r.approx ? { approx: 1 } : {}), ...(r.multi ? { multi: r.multi } : {}) };
     const valid = code && scanCodeOk(kind, code);
     let cur = valid ? list.find((x) => String(x[k] || '').toUpperCase() === code) : null;
     if (!cur) cur = list.find((x) => x._scan?.raw && scanNorm(x._scan.raw) === scanNorm(r.name));      // 同一張圖再丟一次：配到上次那一列
