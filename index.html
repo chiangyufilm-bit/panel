@@ -604,7 +604,8 @@ html.dlg-lock, html.dlg-lock body { overflow: hidden !important; }
 .grid.m-phone .rz-row, .grid.m-phone .rz-col { display: none !important; }
 .grid.m-phone .watch { max-height: none; }
 .grid.m-phone .panel-news { min-height: 0; }
-body.tall .topbar { padding-top: max(8px, env(safe-area-inset-top)); }
+/* 有瀏海／動態島的手機：整列往下讓出狀態列的高度（--sat 測試時可以代入假的高度） */
+body.tall .topbar { height: calc(38px + var(--sat, env(safe-area-inset-top, 0px))); padding-top: var(--sat, env(safe-area-inset-top, 0px)); }
 /* 手機：最上面那一列固定在畫面頂端，往下滑再遠都按得到「設定」；點一下標題回到最上面 */
 @media (max-width: 639px) { body.tall .topbar { position: sticky; top: 0; z-index: 30; background: rgba(8,11,15,.94); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); } }
 body.remote .topbar { padding-left: max(14px, env(safe-area-inset-left)); padding-right: max(14px, env(safe-area-inset-right)); }
