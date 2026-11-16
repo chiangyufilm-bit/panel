@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-XFk5vljvwvWDxWcs8phAya8rXE6jRfmyN2sLjCkcRDY=' 'sha256-+1duyEKsN/qwXrIsI3dlLDGtn5/3/gpTsRtIGnoDOOY='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-XFk5vljvwvWDxWcs8phAya8rXE6jRfmyN2sLjCkcRDY=' 'sha256-sNc1kaeOQWD+oejnLS4IPz9JXYeFA7s2G3Z5NSRxbYY='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#06090d">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -4535,7 +4535,13 @@ function parseTableItems(items) {
     if (role(a.t) !== 'name') continue;
     const cols = [];
     for (const b of its.filter((x) => Math.abs(x.cy - a.cy) < a.h * 0.6)) {
-      const parts = b.t.split(/\s+/);
+      let parts = b.t.split(/\s+/);
+      if (parts.length === 1 && !role(parts[0])) {                             // 兩個標題黏成一個詞（「市值損益兩平價」）：照認得的標題切開
+        const known = ['損益兩平價', '成交均價', '庫存股數', '市值', '現值', '現價', '市價', '委託別', '類別', '商品', '動作'], cut = [];
+        let rest = parts[0];
+        while (rest) { const k = known.find((w) => rest.startsWith(w)); if (!k) { cut.length = 0; break; } cut.push(k); rest = rest.slice(k.length); }
+        if (cut.length > 1) parts = cut;
+      }
       if (parts.length > 1 && parts.every((q) => role(q))) {                   // 兩個標題被讀成一格（「市值 損益兩平價」）：照字數把寬度分開
         const tot = parts.reduce((n, q) => n + q.length, 0) + (parts.length - 1) * 0.5;
         let x = b.x0;
@@ -4571,7 +4577,7 @@ function parseTableItems(items) {
   }
   const unit = (t) => { const m = t.replace(/[\s,]/g, '').match(/^(\d+(?:\.\d+)?)(張|股)?$/); return m ? +m[1] * (m[2] === '張' ? 1000 : 1) : null; };
   const out = stocks.map((st) => {
-    const name = st.parts.map((q) => q.t).reduce((a, b) => a + (/[A-Za-z0-9]$/.test(a) && /^[A-Za-z0-9]/.test(b) ? ' ' : '') + b, '');
+    const name = st.parts.map((q) => q.t.split(/\s+/).filter((w) => !/^(下單|明細)$/.test(w) && !TAG.test(w) && scanNum(w) === null && !/^[\d,]+(張|股)$/.test(w)).join(' ')).filter(Boolean).reduce((a, b) => a + (/[A-Za-z0-9]$/.test(a) && /^[A-Za-z0-9]/.test(b) ? ' ' : '') + b, '');
     const shs = (st.v.shares || []).map((c) => unit(c.t)).filter((n) => n > 0), sh = shs.length ? shs.reduce((a, b) => a + b, 0) : null;
     const cc = (st.v.cost || [])[0], be = st.v.be && st.v.be[0] ? scanNum(st.v.be[0].t) : null;
     let cost = cc ? scanNum(cc.t) : null, cut = false;
@@ -6234,7 +6240,9 @@ function holdMeta() {
   $('hold-msg').textContent = (when ? `上次修改：${m.by || ''}・${when}。` : '') + (document.documentElement.classList.contains('standalone') ? '資料只存在這台裝置上，不會上傳。' : '資料只存在你的 Mac 上，不會上傳。');
 }
 let holdBase = 0;
+const scanUrls = [];                               // 截圖片段用的暫時網址：下次打開「編輯持股」時釋放，不佔手機記憶體
 function openHold(tab) {
+  while (scanUrls.length) { try { URL.revokeObjectURL(scanUrls.pop()); } catch (e) { /* 沒差 */ } }
   if (holdDraft && !$('hold').hidden) return;          // 已經開著：不要把改到一半的內容洗掉
   holdBase = CFG.watchlistMeta?.rev || 0;              // 存檔時帶回去：這段時間別台裝置改過的話，伺服器會擋下來
   const wl = CFG.watchlist || {};
@@ -6290,6 +6298,15 @@ function scanStatus(kind, text) {
 }
 // 名稱配不到代號、但截圖上本來就印著代號（例如國泰的「整股 DMNIF」）：直接用截圖上的代號，使用者不用自己打
 function scanHint(rows) { for (const r of rows) { const h = String(r.hint || '').toUpperCase(); if (!r.code && h && scanCodeOk(r.kind, h)) { r.code = h; r.from = 'hint'; } } }
+// 每個字的位置 → 每一行的上下範圍、每一格的左右範圍（和伺服器排文字的方法一樣，順序才對得上）
+function scanLayout(items) {
+  const its = items.filter((i) => i && String(i.t || '').trim()).slice().sort((a, b) => a.y - b.y || a.h - b.h || a.x - b.x), rows = [];
+  for (const i of its) {
+    const r = rows[rows.length - 1];
+    if (r && Math.abs(r.y - i.y) < Math.max(r.h, i.h) * 0.4) { r.it.push(i); r.h = Math.max(r.h, i.h); r.y0 = Math.min(r.y0, i.y); r.y1 = Math.max(r.y1, i.y + i.h); } else rows.push({ y: i.y, h: i.h, y0: i.y, y1: i.y + i.h, it: [i] });
+  }
+  return { lines: rows.map((r) => [r.y0, r.y1]), geo: rows.map((r) => r.it.sort((a, b) => a.x - b.x).map((i) => [i.x, i.x + i.w])) };
+}
 async function scanFiles(files) {
   if (!holdDraft || !files.length) return;
   holdCollect();
@@ -6301,11 +6318,12 @@ async function scanFiles(files) {
       if (files[i].size > 11e6) throw new Error('圖片太大');
       window.WP_SAY = (t) => scanStatus('busy', files.length > 1 ? `第 ${i + 1}／${files.length} 張：${t}` : t);   // 手機獨立版在裝置上辨識時回報進度
       const j = await postJSON('/api/holdings/scan', { img: await fileB64(files[i]) });
+      if (Array.isArray(j.items) && !Array.isArray(j.lines)) Object.assign(j, scanLayout(j.items));      // 電腦版：伺服器只給每個字的位置，行和格在這裡排
       if (typeof j.text === 'string') {                  // 回來的是辨識出的文字（手機獨立版，或 Mac 上元大以外的券商）：在這裡整理成一檔一列，再配代號
         const rs = parseBrokerText(j.text, Array.isArray(j.geo) ? j.geo : null, Array.isArray(j.items) ? j.items : null);
         if (!rs.length) throw new Error('這張圖裡沒有讀到持股，請確認是券商「庫存」頁的截圖');
         if (Array.isArray(j.lines) && j.w > 0 && j.h > 0) {            // 每一檔在截圖上的那一段：要核對或要補數字時，直接顯示在那一列下面
-          let url = ''; try { url = URL.createObjectURL(files[i]); } catch (e) { url = ''; }
+          let url = ''; try { url = URL.createObjectURL(files[i]); scanUrls.push(url); } catch (e) { url = ''; }
           if (url) for (const r of rs) {
             if (!r.ln && !r.yr) continue;
             const a = r.yr ? [r.yr[0], r.yr[0]] : j.lines[Math.max(0, r.ln[0])], b = r.yr ? [r.yr[1], r.yr[1]] : j.lines[Math.min(j.lines.length - 1, r.ln[1])];
@@ -6554,6 +6572,15 @@ function renderAssets() {
 
 // ───────────────────────── 持股健檢 ─────────────────────────
 // 把持股現況整理成一頁：集中度、配置、匯率影響、損益結構、每一檔的股性。全部在這台裝置上算，只描述現況，不給買賣建議。
+// 在台灣掛牌的 ETF 不一定是台股：照交易所的代號規則和名稱分開，配置圖才不會把美國公債、海外股票都算成「台股」。
+// 代號結尾 B＝債券、L＝槓桿、R＝反向、U＝期貨（商品）；名稱裡有國外市場的字＝投資海外的股票 ETF。
+function twEtfKind(id, name) {
+  if (/B$/.test(id)) return '債券 ETF';
+  if (/[LR]$/.test(id)) return '槓桿／反向 ETF';
+  if (/U$/.test(id)) return '商品期貨 ETF';
+  if (!/台灣|臺灣|台股|臺股/.test(name) && /美國|美股|標普|S&P|那斯達克|NASDAQ|費城|道瓊|日本|日經|東證|中國|上證|滬深|A股|恒生|港股|香港|越南|印度|歐洲|全球|世界|新興|MSCI|半導體收益?美|尖牙|FANG|ARK/i.test(name)) return '海外股票 ETF';
+  return '台股 ETF';
+}
 function healthData() {
   const fx = S.us?.data?.usdtwd?.last || 0, fund = S.fund?.data || {}, rows = [];
   let miss = 0;
@@ -6564,7 +6591,7 @@ function healthData() {
     if (!q || !q.last || !k) { miss++; continue; }
     const px = q.last, c = +it.cost || 0, f = kind === 'tw' ? fund[id] : null, etf = kind === 'tw' ? /^00/.test(id) : !!q.etf;
     rows.push({ kind, id, name: it.name || q.name || id, val: px * sh * k, cost: c ? c * sh * k : 0, gain: c ? (px - c) * sh * k : null, gainPct: c ? (px - c) / c * 100 : null,
-      day: q.prev ? (px - q.prev) * sh * k : 0, etf, group: kind === 'tw' ? (etf ? '台股 ETF' : (f && f[3]) || '台股其他') : (etf ? '美股 ETF' : '美股個股'),
+      day: q.prev ? (px - q.prev) * sh * k : 0, etf, group: kind === 'tw' ? (etf ? twEtfKind(id, it.name || q.name || '') : (f && f[3]) || '台股其他') : (etf ? '美股 ETF' : '美股個股'),
       pe: kind === 'tw' ? f?.[0] ?? null : q.pe ?? null, dy: kind === 'tw' ? f?.[1] ?? null : q.dy ?? null, pb: kind === 'tw' ? f?.[2] ?? null : null, beta: q.beta ?? null,
       pos52: q.hi52 > q.lo52 ? Math.max(0, Math.min(100, (px - q.lo52) / (q.hi52 - q.lo52) * 100)) : null });
   }
@@ -6636,7 +6663,7 @@ function renderHealth() {
       <div class="hc-pie">${dGroup.svg}<div class="hc-legs">${dGroup.legend}</div></div>
       <div class="hc-stack" title="台股／美股"><i style="width:${twW.toFixed(1)}%;background:${HC_COLORS[0]}"></i><i style="width:${usW.toFixed(1)}%;background:${HC_COLORS[1]}"></i></div><div class="hc-stack-l"><span><i style="background:${HC_COLORS[0]}"></i>台股 ${pc(twW)}</span><span><i style="background:${HC_COLORS[1]}"></i>美股 ${pc(usW)}</span></div>
       <div class="hc-stack" title="ETF／個股"><i style="width:${etfW.toFixed(1)}%;background:${HC_COLORS[3]}"></i><i style="width:${(100 - etfW).toFixed(1)}%;background:${HC_COLORS[2]}"></i></div><div class="hc-stack-l"><span><i style="background:${HC_COLORS[3]}"></i>ETF ${pc(etfW)}</span><span><i style="background:${HC_COLORS[2]}"></i>個股 ${pc(100 - etfW)}</span></div>
-      <p class="hc-note">產業別是交易所的分類；美股目前只分成 ETF 和個股。</p></section>
+      <p class="hc-note">產業別是交易所的分類；在台灣掛牌的 ETF 會再分成台股、海外股票、債券、槓桿／反向；美股目前只分成 ETF 和個股。「台股／美股」那一條是照掛牌的市場分。</p></section>
     ${usVal > 0 && fx ? `<section class="hc-sec"><h3>匯率影響</h3>
       <p class="hc-note">美元資產約 ${nt(usVal)}（${pc(usW)}），以 1 美元＝${fmt(fx, 2)} 台幣換算。台幣對美元每升值 1%，換算成台幣的總資產大約少 <b>${nt(usVal * 0.01)}</b>；貶值 1% 則大約多這麼多。</p></section>` : ''}
     ${withCost.length ? `<section class="hc-sec"><h3>損益結構</h3>
