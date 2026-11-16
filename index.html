@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-Eq+Ufx+uLMqOojeOsGwedcVbOjA0wEjx2UlVP2kNZqQ=' 'sha256-h8LGoBf+v+B4EtEr2fEDQcxyYUjv3pnwFjff79HWfnw='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://geocoding-api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-zZtkN2eXkbntg6sSj9NKhrQ50kd8T8SIKxBYA2ZaRDk=' 'sha256-gYztSd/I843B8sJ80ljOZMWB0xUy1eTY6ufgNf4zn+w='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://geocoding-api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#06090d">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1373,24 +1373,31 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
 .grid:not(.m-phone) .panel.slim .pf-edit { width: 15px; height: 18px; padding: 0; border: 0; background: none; box-shadow: none; font-size: 0; color: var(--ink-3); display: grid; place-items: center; border-radius: 5px; }
 .grid:not(.m-phone) .panel.slim .pf-edit::before { content: "✎"; font-size: 11px; line-height: 1; }
 .grid:not(.m-phone) .panel.slim .pf-edit:hover { color: var(--ink); background: rgba(255,255,255,.06); }
-/* 天氣面板下面的各城市清單：電腦上最多露出四列多一點，其餘在清單裡上下捲；整頁捲動的版面（手機、直式）全部展開 */
-.wx-more { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; }
-.wx-more-h { display: flex; align-items: baseline; font-size: 10px; letter-spacing: .14em; color: var(--ink-3); margin-bottom: 5px; }
-.wx-more-h span { margin-left: auto; letter-spacing: .02em; font-size: 10px; color: var(--ink-4); white-space: nowrap; }
-.wx-list { display: grid; gap: 4px; max-height: 196px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.18) transparent; margin-right: -6px; padding-right: 6px; }
+/* 天氣面板：上面一整塊是同一個城市（現在、空氣、逐時、三日、日出日落），「其他城市」在最下面，用粗一點的分隔線和小標題分開 */
+.wx-more { margin-top: 14px; border-top: 2px solid var(--line-2); padding-top: 9px; }
+.wx-more-h { display: flex; align-items: baseline; gap: 8px; font-size: 10.5px; font-weight: 600; letter-spacing: .2em; color: var(--ink-2); margin-bottom: 7px; }
+.wx-more-h span { margin-left: auto; font-weight: 400; letter-spacing: .02em; font-size: 10px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.wx-list { display: grid; gap: 4px; }
 .wx-c { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; column-gap: 8px; row-gap: 1px; text-align: left; padding: 5px 8px 6px; border: 1px solid var(--line); border-radius: 7px; background: rgba(0,0,0,.18); color: var(--ink); min-width: 0; }
 .wx-c:hover { border-color: var(--accent); }
 .wx-c:disabled { opacity: .5; }
 .wx-cn { font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wx-cn i { font-style: normal; font-size: 9.5px; color: var(--accent); border: 1px solid rgba(127,227,242,.4); border-radius: 4px; padding: 0 4px; margin-left: 6px; vertical-align: 1px; }
 .wx-cw { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--ink-2); white-space: nowrap; }
 .wx-cw svg { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
 .wx-c b { font-family: var(--mono); font-weight: 400; font-size: 14px; min-width: 30px; text-align: right; }
 .wx-c small { grid-column: 1 / -1; font-size: 10.5px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; }
 .wx-c small u { text-decoration: none; margin: 0 3px; color: var(--ink-4); }
 .wx-c small .dot { width: 6px; height: 6px; border-radius: 50%; margin-right: 4px; flex: none; }
-.grid.m-tall .wx-list, .panel.sized .wx-list { max-height: none; overflow: visible; margin-right: 0; padding-right: 0; }
-.slim .wx-more { display: none; }
-@media (max-width: 639px) { .wx-c { padding: 9px 11px 10px; } .wx-cn { font-size: 15px; } .wx-cw { font-size: 13px; } .wx-c b { font-size: 17px; } .wx-c small { font-size: 12px; } .wx-more-h { font-size: 11px; } .wx-more-h span { font-size: 11px; } }
+/* 暫時看另一個城市時，最上面的提示列 */
+.wx-view { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 9px; padding: 6px 8px; border: 1px solid rgba(127,227,242,.4); border-radius: 7px; background: var(--accent-dim); font-size: 11.5px; color: var(--ink-2); }
+.wx-view span { flex: 1 1 auto; min-width: 0; } .wx-view b { color: var(--ink); font-weight: 600; }
+.wx-view .mini { flex: none; }
+.slim .wx-more, .slim .wx-view { display: none; }
+#p-weather { scroll-margin-top: 50px; }                 /* 手機上換城市後捲回這一塊的開頭：留出上方固定標題列的高度 */
+/* 電腦上欄位放不下時：整個天氣面板一起上下捲（主要城市在上、其他城市在下），不在中間留矮矮的捲動窗；整頁捲動的版面（手機、直式）照內容全部展開 */
+.grid:not(.m-tall) #p-weather:not(.slim):not(.sized) { flex: 0 1 auto; min-height: 150px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.18) transparent; }
+@media (max-width: 639px) { .wx-c { padding: 9px 11px 10px; } .wx-cn { font-size: 15px; } .wx-cw { font-size: 13px; } .wx-c b { font-size: 17px; } .wx-c small { font-size: 12px; } .wx-more-h { font-size: 12px; } .wx-more-h span { font-size: 11px; } .wx-view { font-size: 13px; padding: 9px 10px; } }
 /* 收成一行的天氣：放不下的項目整個不顯示（不要切到一半） */
 .slim .weather { flex-wrap: wrap; height: 22px; align-content: flex-start; row-gap: 8px; column-gap: 9px; }
 .panel.slim h2 .pf-edit { margin-left: 0; }
@@ -2055,20 +2062,39 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
   }
   // ── 天氣：手機自己向 Open-Meteo 要（只送出座標），10 分鐘更新一次 ──
   let wx = { ts: 0, tried: 0, data: null, error: null };
+  const WX_XY = { 台北: [25.04, 121.56], 東京: [35.68, 139.69], 倫敦: [51.51, -0.13], 紐約: [40.71, -74.01], 洛杉磯: [34.05, -118.24] };      // 預設那幾個城市原本只有時區，補上座標
+  // 一個地點的詳細天氣（現在、逐時、三日、空氣品質）。主要城市和「暫時看另一個城市」都用這一份（和 Mac 版 weather_detail 一樣）
+  async function wxDetail(loc, oldAir) {
+    const q = `latitude=${loc.lat}&longitude=${loc.lon}&timezone=auto`;
+    const w = await (await real('https://api.open-meteo.com/v1/forecast?' + q + '&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m,wind_direction_10m,cloud_cover,uv_index&hourly=temperature_2m,precipitation_probability,weather_code,is_day&forecast_hours=13&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max,precipitation_probability_max,weather_code&forecast_days=4')).json();
+    if (!w.current || w.current.temperature_2m == null) throw new Error('天氣來源沒有回傳目前天氣');
+    let air = oldAir || null;
+    try { air = (await (await real('https://air-quality-api.open-meteo.com/v1/air-quality?' + q + '&current=us_aqi,pm2_5,pm10,ozone,nitrogen_dioxide')).json()).current || air; } catch (e) { /* 沿用上一筆 */ }
+    return { location: loc, current: w.current, hourly: w.hourly || {}, daily: w.daily || {}, utcOffset: w.utc_offset_seconds, air };
+  }
+  const wxAt = new Map();                                 // 暫時看的城市：名稱 → [時間, 資料]，10 分鐘內不重抓
+  async function weatherAt(name, clocks) {
+    const c = (clocks || []).find((x) => x && x.name === name);
+    if (!c) throw fail('清單裡沒有這個城市', 400);
+    const xy = Number.isFinite(c.lat) && Number.isFinite(c.lon) ? [c.lat, c.lon] : WX_XY[name];
+    if (!xy) throw fail('這個城市沒有地點', 400);
+    const hit = wxAt.get(name);
+    if (hit && Date.now() - hit[0] < 600000 && hit[1].location.lat === xy[0]) return hit[1];
+    const out = await wxDetail({ name, lat: xy[0], lon: xy[1] });
+    if (wxAt.size > 40) wxAt.clear();
+    wxAt.set(name, [Date.now(), out]);
+    return out;
+  }
   async function weather(loc, clocks) {
     const now = Date.now() / 1000;
     if (now - Math.max(wx.ts, wx.tried) < (wx.error ? 60 : 600)) return;
     wx.tried = now;
     try {
-      const q = `latitude=${loc.lat}&longitude=${loc.lon}&timezone=auto`;
-      const w = await (await real('https://api.open-meteo.com/v1/forecast?' + q + '&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m,wind_direction_10m,cloud_cover,uv_index&hourly=temperature_2m,precipitation_probability,weather_code,is_day&forecast_hours=13&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max,precipitation_probability_max,weather_code&forecast_days=4')).json();
-      if (!w.current || w.current.temperature_2m == null) throw new Error('天氣來源沒有回傳目前天氣');
-      let air = wx.data ? wx.data.air : null;
-      try { air = (await (await real('https://air-quality-api.open-meteo.com/v1/air-quality?' + q + '&current=us_aqi,pm2_5,pm10,ozone,nitrogen_dioxide')).json()).current || air; } catch (e) { /* 沿用上一筆 */ }
+      const det = await wxDetail(loc, wx.data ? wx.data.air : null);
       // 「世界時間」裡有座標的城市：一次問完現在的天氣、今天高低溫和降雨機率，再一次問完空氣品質（和 Mac 版 fetch_weather 同一套；跟著天氣 10 分鐘更新一次）
       const old = (wx.data && wx.data.more) || {};
       let more = {};
-      const XY = { 台北: [25.04, 121.56], 東京: [35.68, 139.69], 倫敦: [51.51, -0.13], 紐約: [40.71, -74.01], 洛杉磯: [34.05, -118.24] };      // 預設那幾個城市原本只有時區，補上座標
+      const XY = WX_XY;
       const cs = (clocks || []).slice(0, 16).map((c) => (c && Number.isFinite(c.lat) && Number.isFinite(c.lon) ? [c.name, c.lat, c.lon] : c && XY[c.name] ? [c.name, ...XY[c.name]] : null)).filter(Boolean);
       if (cs.length) {
         const coords = 'latitude=' + cs.map((c) => c[1].toFixed(3)).join(',') + '&longitude=' + cs.map((c) => c[2].toFixed(3)).join(',');
@@ -2084,7 +2110,7 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
           cs.forEach((c, i) => { const v = rows[i] && rows[i].current && rows[i].current.us_aqi; if (more[c[0]] && Number.isFinite(v)) more[c[0]].aqi = v; });
         } catch (e) { /* 空氣品質抓不到：沿用上一次的 */ }
       }
-      wx = { ts: now, tried: now, error: null, fresh: true, data: { location: loc, current: w.current, hourly: w.hourly || {}, daily: w.daily || {}, utcOffset: w.utc_offset_seconds, air, more } };
+      wx = { ts: now, tried: now, error: null, fresh: true, data: { ...det, more } };
     } catch (e) { wx.error = '天氣暫時連不上'; }
   }
   // ── 點飛機查航線：手機直接問 adsbdb（公開資料），和 Mac 版 lookup_route 回傳同樣的格式 ──
@@ -2252,6 +2278,10 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
       if (up.topics) { tp.at = 0; }
       nextAt = 0;
       return J({ ok: true, prefs: { clocks: d.clocks, location: d.location, macroPick: d.macroPick, topics: d.topics } });
+    }
+    if (p === '/api/wxat') {                               // 天氣面板：暫時看清單上另一個城市的詳細預報
+      try { return J({ ok: true, data: await weatherAt(String(u.searchParams.get('name') || '').slice(0, 20), d.clocks) }); }
+      catch (e) { return J({ ok: false, error: (e && e.status === 400 && e.message) || '天氣暫時連不上' }); }
     }
     if (p === '/api/geo') {                                // 找城市：手機直接問 Open-Meteo 的公開地名查詢（只送出打的那幾個字）
       const qq = String(u.searchParams.get('q') || '').replace(/[\x00-\x1f<>]/g, '').trim().slice(0, 40);
@@ -5434,9 +5464,34 @@ function lightTimes(now, loc, off) {
   return html;
 }
 
+// 天氣面板上面那一整塊平常是主要城市；在下面「其他城市」點一個，就暫時換成那個城市（不存檔，重開面板回到主要城市）
+let wxView = null;                                       // { name, data, at, loading }
+function wxShown(base) {
+  if (!wxView || !wxView.data || $('p-weather').classList.contains('slim')) return null;
+  if (wxView.name === base.location?.name || !(CFG.clocks || []).some((c) => c.name === wxView.name)) { wxView = null; return null; }
+  if (Date.now() - wxView.at > 600000 && !wxView.loading) wxLoad(wxView.name, true);      // 看著的時候也跟著 10 分鐘更新一次
+  return wxView.data;
+}
+async function wxLoad(name, quiet) {
+  const keep = wxView && wxView.name === name ? wxView : null;
+  wxView = { name, data: keep ? keep.data : null, at: keep ? keep.at : 0, loading: true };
+  try {
+    const j = await (await fetch('/api/wxat?name=' + encodeURIComponent(name))).json();
+    if (!wxView || wxView.name !== name) return;
+    if (!j.ok || !j.data?.current) throw new Error(j.error || '天氣暫時連不上');
+    wxView = { name, data: j.data, at: Date.now(), loading: false };
+    htmlCache.delete($('weather')); renderWeather();
+    if (!quiet) { const p = $('p-weather'); p.scrollTop = 0; if (p.getBoundingClientRect().top < 0) p.scrollIntoView({ block: 'start' }); }      // 清單在最下面：換好之後回到這一塊的開頭
+  } catch (e) {
+    if (wxView && wxView.name === name) { if (keep) wxView = { ...keep, at: Date.now() - 540000, loading: false }; else wxView = null; }      // 沒抓到：原本在看的留著，一分鐘後再試
+    if (!quiet) toast('沒有成功：' + e.message);
+    htmlCache.delete($('weather')); renderWeather();
+  }
+}
 function renderWeather() {
-  const w = S.weather?.data;
-  if (!w || !w.current) return;
+  const base = S.weather?.data;
+  if (!base || !base.current) return;
+  const view = wxShown(base), w = view || base;
   const c = w.current, d = w.daily || {}, h = w.hourly || {}, a = w.air;
   const now = wmo(c.weather_code, c.is_day);
   $('wx-place').textContent = w.location?.name || '';
@@ -5454,7 +5509,7 @@ function renderWeather() {
     const pr = d.precipitation_probability_max?.[i];
     days.push(`<div class="wx-d"><span>週${wd}</span>${svg(ww.icon)}<b>${Math.round(d.temperature_2m_min[i])}°–${Math.round(d.temperature_2m_max[i])}°</b><em>${pr != null ? '降雨 ' + Math.round(pr) + '%' : ''}</em></div>`);
   }
-  setHTML($('weather'), `
+  setHTML($('weather'), `${view ? `<div class="wx-view"><span>現在看的是 <b>${esc(w.location.name)}</b>（暫時查看）</span><button class="mini" data-wxback="1">回到 ${esc(base.location?.name || '主要城市')}</button><button class="mini" data-wxset="${esc(w.location.name)}" title="以後天氣這一區都先顯示這個城市">設為主要</button></div>` : ''}
     <div class="wx-main"><div class="wx-icon">${svg(now.icon)}</div>
       <div class="wx-temp">${c.temperature_2m.toFixed(1)}<sup>°C</sup></div>
       <div class="wx-desc"><b>${now.text}</b>${d.temperature_2m_max ? `${Math.round(d.temperature_2m_min[0])}° – ${Math.round(d.temperature_2m_max[0])}°` : ''}</div></div>
@@ -5465,43 +5520,37 @@ function renderWeather() {
       <div class="kv"><span>紫外線</span><b>${(c.uv_index ?? 0).toFixed(0)}<small>最高 ${d.uv_index_max ? Math.round(d.uv_index_max[0]) : '—'}</small></b></div>
     </div>
     <div class="aqi"><i class="dot" style="background:${col}"></i>空氣品質 <b>${a?.us_aqi != null ? Math.round(a.us_aqi) : '—'}</b><span class="lvl">${lvl}</span><span class="pm">PM2.5 ${a?.pm2_5 != null ? a.pm2_5.toFixed(0) : '—'}　PM10 ${a?.pm10 != null ? a.pm10.toFixed(0) : '—'}</span></div>
-    ${wxMore(w)}
     <div class="wx-hours">${hours.join('')}</div>
     <div class="wx-days">${days.join('')}</div>
     <div class="light"><div><span>日出</span><b>${hm(d.sunrise?.[0])}</b></div><div><span>日落</span><b>${hm(d.sunset?.[0])}</b></div>
-      ${lightTimes(Date.now() + skew, w.location, w.utcOffset || 0)}</div>`);
-  wxFit();
+      ${lightTimes(Date.now() + skew, w.location, w.utcOffset || 0)}</div>${wxMore(base, w.location?.name)}`);
 }
-// 城市清單的高度：欄位放得下就露出四列多，放不下就縮到剛好（至少兩列），其餘在清單裡捲；不要讓整個面板掉到畫面外
-let wxFitAt = 0;
-function wxFit(force) {
-  const L = document.querySelector('#weather .wx-list'); if (!L) return;
-  const now = Date.now(); if (!force && now - wxFitAt < 1500) return; wxFitAt = now;
-  const col = L.closest('.col'), p = $('p-weather');
-  L.style.maxHeight = '';
-  if (!col || p.classList.contains('slim') || p.classList.contains('sized') || $('grid').classList.contains('m-tall')) return;
-  const over = col.scrollHeight - col.clientHeight;
-  if (over > 0) L.style.maxHeight = Math.max(112, L.clientHeight - over) + 'px';
-}
-addEventListener('resize', () => setTimeout(() => wxFit(true), 120));
-document.addEventListener('click', (e) => { if (e.target.closest('.slim-tog')) setTimeout(() => wxFit(true), 120); });
-// 清單上其他城市的天氣（「世界時間」裡有座標的每一個城市）：一個城市一列，點一下就把它換成上面的詳細預報
-function wxMore(w) {
-  const more = w.more || {}, main = w.location?.name;
-  const rows = (CFG.clocks || []).filter((c, i, a) => c.name !== main && more[c.name] && a.findIndex((x) => x.name === c.name) === i).map((c) => {
+// 清單上其他城市的天氣（「世界時間」裡有地點的每一個城市），放在最下面，和上面那個城市的內容分開。一個城市一列，點一下上面整塊就換成它
+function wxMore(base, shown) {
+  const more = base.more || {}, main = base.location?.name;
+  const rows = (CFG.clocks || []).filter((c, i, a) => c.name !== shown && more[c.name] && a.findIndex((x) => x.name === c.name) === i).map((c) => {
     const m = more[c.name], ww = wmo(m.code, m.day), [lvl, col] = aqiLevel(m.aqi);
     const sub = [m.lo != null && m.hi != null ? `${Math.round(m.lo)}° – ${Math.round(m.hi)}°` : '', m.pop != null ? `降雨 ${Math.round(m.pop)}%` : '', m.aqi != null ? `<i class="dot" style="background:${col}" title="${lvl}"></i>空氣 ${Math.round(m.aqi)}` : ''].filter(Boolean);
-    return `<button class="wx-c" data-wxmain="${esc(c.name)}" title="點一下，上面就換成「${esc(c.name)}」的詳細預報"><span class="wx-cn">${esc(c.name)}</span><span class="wx-cw">${svg(ww.icon)}${esc(ww.text || '')}</span><b>${Math.round(m.t)}°</b><small>${sub.join('<u>・</u>')}</small></button>`;
+    const busy = wxView && wxView.loading && wxView.name === c.name && !wxView.data;
+    return `<button class="wx-c" data-wxmain="${esc(c.name)}" ${busy ? 'disabled' : ''} title="點一下，上面整塊換成「${esc(c.name)}」的詳細預報"><span class="wx-cn">${esc(c.name)}${c.name === main ? '<i>主要</i>' : ''}</span><span class="wx-cw">${svg(ww.icon)}${esc(ww.text || '')}</span><b>${Math.round(m.t)}°</b><small>${sub.join('<u>・</u>')}</small></button>`;
   });
-  return rows.length ? `<div class="wx-more"><div class="wx-more-h">其他城市<span>${rows.length} 個・點一下看詳細預報</span></div><div class="wx-list">${rows.join('')}</div></div>` : '';
+  return rows.length ? `<div class="wx-more"><div class="wx-more-h">其他城市<span>以上是 ${esc(shown || '')}・點一個換看它的詳細預報</span></div><div class="wx-list">${rows.join('')}</div></div>` : '';
 }
 $('weather').addEventListener('click', async (e) => {
-  const b = e.target.closest('[data-wxmain]'); if (!b) return;
-  const c = (CFG.clocks || []).find((x) => x.name === b.dataset.wxmain); if (!c) return;
-  const lat = c.lat ?? CITY_XY[c.name]?.[0], lon = c.lon ?? CITY_XY[c.name]?.[1]; if (lat == null) return;
-  b.disabled = true;
-  try { await savePrefs({ location: { name: c.name, lat, lon } }); if (globe.setHome) { try { globe.setHome(lat, lon); } catch (err) { /* 地球還沒準備好 */ } } toast(`天氣換成「${c.name}」，詳細預報稍後出現`); }
-  catch (err) { toast('沒有成功：' + err.message); b.disabled = false; }
+  if (e.target.closest('[data-wxback]')) { wxView = null; htmlCache.delete($('weather')); renderWeather(); $('p-weather').scrollTop = 0; return; }
+  const set = e.target.closest('[data-wxset]');
+  if (set) {
+    const c = (CFG.clocks || []).find((x) => x.name === set.dataset.wxset); if (!c) return;
+    const lat = c.lat ?? CITY_XY[c.name]?.[0], lon = c.lon ?? CITY_XY[c.name]?.[1]; if (lat == null) return;
+    set.disabled = true;
+    try { await savePrefs({ location: { name: c.name, lat, lon } }); if (globe.setHome) { try { globe.setHome(lat, lon); } catch (err) { /* 地球還沒準備好 */ } } toast(`主要天氣改成「${c.name}」`); }      // 資料換過來之前，上面繼續顯示剛剛看的這一份
+    catch (err) { toast('沒有成功：' + err.message); set.disabled = false; }
+    return;
+  }
+  const b = e.target.closest('[data-wxmain]'); if (!b || b.disabled) return;
+  const name = b.dataset.wxmain;
+  if (name === S.weather?.data?.location?.name) { wxView = null; htmlCache.delete($('weather')); renderWeather(); $('p-weather').scrollTop = 0; if ($('p-weather').getBoundingClientRect().top < 0) $('p-weather').scrollIntoView({ block: 'start' }); return; }
+  b.disabled = true; wxLoad(name);
 });
 
 // ───────────────────────── 系統 ─────────────────────────
