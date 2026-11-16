@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-JNA6biwclaDQyOwv6SXs4QFb8fzp6h4y8+dOvlmGopc=' 'sha256-Tkh2yVhNu8wCUGvZ2wCpkRSaOiKpHZef6/7b3QY3obI='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-wW8wIP304ccJp1RhvQG89VUMA7mFf6i1ziqsx/r/2KM=' 'sha256-Tkh2yVhNu8wCUGvZ2wCpkRSaOiKpHZef6/7b3QY3obI='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#06090d">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2388,7 +2388,33 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
       const b = boxes[i], r = await read(m, cv, b);
       if (r.t) items.push({ t: r.t, c: r.c, x: b.x, y: b.y, w: b.r - b.x, h: b.b - b.y });
     }
-    return { ok: true, w: cv.width, h: cv.height, items: clean(items) };
+    const out = clean(items);
+    try { await reread(m, cv, out, say); } catch (e) { /* 補讀失敗就用原本讀到的 */ }
+    return { ok: true, w: cv.width, h: cv.height, items: out };
+  }
+  // 「總股數」右邊那個帶底線的小數字（常常只有一位數）偶爾會漏掉：那一列如果沒讀到數字，
+  // 把標籤右邊那一條放大、另外找一次字；讀的時候把最下面的底線切掉再讀一次，取讀得出數字的那個。
+  async function reread(m, cv, items, say) {
+    const labs = items.filter((i) => /股數$/.test(i.t.replace(/\s/g, '')) && i.t.length <= 8).slice(0, 16);
+    for (const L of labs) {
+      const cy = L.y + L.h / 2;
+      if (items.some((i) => i !== L && Math.abs(i.y + i.h / 2 - cy) < L.h * 0.6 && i.x > L.x + L.w * 0.8 && /\d/.test(i.t))) continue;
+      if (say) say('正在補讀股數…');
+      const x0 = Math.min(0.98, L.x + L.w + 0.01), y0 = Math.max(0, L.y - L.h * 0.45), x1 = 0.93, y1 = Math.min(1, L.y + L.h * 1.45);   // 最右邊是展開箭頭，不要
+      if (x1 - x0 < 0.05) continue;
+      const sw = Math.round((x1 - x0) * cv.width), sh = Math.round((y1 - y0) * cv.height), k = Math.max(1, Math.min(3, 110 / Math.max(1, sh)));
+      const st = document.createElement('canvas'); st.width = Math.max(64, Math.round(sw * k)); st.height = Math.max(64, Math.round(sh * k));
+      st.getContext('2d').drawImage(cv, Math.round(x0 * cv.width), Math.round(y0 * cv.height), sw, sh, 0, 0, st.width, st.height);
+      let best = null;
+      for (const b of await detect(m, st)) {
+        for (const cut of [0.16, 0]) {                                         // 先切掉底線讀，再原樣讀
+          const r = await read(m, st, { x: b.x, y: b.y, r: b.r, b: b.b - (b.b - b.y) * cut });
+          const t = r.t.replace(/[\s_＿—–\-]+$/g, '').replace(/[vV﹀∨<>]$/, '');
+          if (/^\d[\d,]*(\.\d+)?$/.test(t) && (!best || r.c > best.c)) best = { t, c: r.c, x: x0 + b.x * (x1 - x0), y: y0 + b.y * (y1 - y0), w: (b.r - b.x) * (x1 - x0), h: (b.b - b.y) * (y1 - y0) };
+        }
+      }
+      if (best && best.c > 0.6) items.push({ ...best, y: L.y, h: L.h, fix: true });        // 排在標籤那一列
+    }
   }
   // 列尾的展開箭頭、小圖示也會被當成字：它們比一般文字矮很多，丟掉
   function clean(items) {
