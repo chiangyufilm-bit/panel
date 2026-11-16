@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-XFk5vljvwvWDxWcs8phAya8rXE6jRfmyN2sLjCkcRDY=' 'sha256-H6Ilie0tleR76j3dZwnWq/UYk0D5RBibel8mVrAKBjk='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-1lyeQj57LXBbfh6VSrpvxE/MgA03w1ZkszIHD+TnBVQ=' 'sha256-9fZD4lrkwGJNVeRaUmWFXn9d2zRnCdU9YUa4BuPn/hc='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://geocoding-api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#06090d">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1359,6 +1359,56 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
 @container watch (max-width: 380px) { .panel-watch h2 { gap: 5px; letter-spacing: .12em; } .panel-watch h2 .pcode { display: none; } .panel-watch h2 .tabs button { padding: 0 7px; } .panel-watch h2 .mini { padding-left: 6px; padding-right: 6px; } }
 @container watch (max-width: 300px) { .edit-btn span i { display: none; } }
 
+/* ───────── 個人化：城市、黃金與匯率自選、新聞主題 ───────── */
+.panel h2 .pf-edit { margin-left: auto; }
+.panel h2 .pf-edit + .slim-tog { margin-left: 0; }
+.panel h2 .h-meta + .pf-edit { margin-left: 6px; }
+.clock { grid-template-columns: minmax(52px, max-content) 1fr auto auto; }
+.clock .c-name { max-width: 110px; overflow: hidden; text-overflow: ellipsis; }
+.clock .c-wx { font: 11px var(--mono); color: var(--ink-3); white-space: nowrap; min-width: 30px; text-align: right; }
+.slim .clock .c-wx { display: none; }
+/* 收成一行的時候：放不下的城市整個不顯示（不要切到一半）；電腦上收合時不放「編輯」，展開才有，位置留給時間 */
+@media (min-width: 640px) { .slim .clocks { flex-wrap: wrap; height: 20px; } }
+.grid:not(.m-phone) .panel.slim .pf-edit { display: none; }
+.dlg-prefs { width: min(560px, 100%); }
+.pf-body { padding: 12px 16px 14px; overflow-y: auto; -webkit-overflow-scrolling: touch; display: grid; gap: 10px; align-content: start; font-size: 12.5px; color: var(--ink-2); }
+.pf-lead { line-height: 1.7; color: var(--ink-2); }
+.pf-sub { font-size: 10.5px; letter-spacing: .14em; color: var(--accent); margin-top: 6px; }
+.pf-search { display: flex; gap: 8px; }
+.pf-search input, .pf-row input, .pf-add input { flex: 1; min-width: 0; height: 32px; padding: 0 10px; border-radius: 7px; border: 1px solid var(--line-2); background: rgba(0,0,0,.3); color: var(--ink); font: inherit; font-size: 13px; }
+.pf-res { display: grid; gap: 4px; }
+.pf-res button { display: flex; align-items: baseline; gap: 8px; text-align: left; padding: 7px 10px; border-radius: 7px; border: 1px solid var(--line); background: rgba(255,255,255,.03); color: var(--ink); }
+.pf-res button small, .pf-row small { color: var(--ink-3); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pf-res button:hover { border-color: var(--accent); }
+.pf-list { display: grid; gap: 4px; }
+.pf-row { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 7px; border: 1px solid var(--line); min-height: 36px; }
+.pf-row > b { font-weight: 500; color: var(--ink); white-space: nowrap; }
+.pf-row > small { flex: 1; min-width: 0; }
+.pf-row label { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; font-size: 11.5px; color: var(--ink-2); }
+.pf-row .pf-ic { width: 26px; height: 26px; flex: none; border-radius: 6px; border: 1px solid var(--line-2); color: var(--ink-2); font-size: 13px; line-height: 1; }
+.pf-row .pf-ic:hover { color: var(--ink); border-color: var(--accent); }
+.pf-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.pf-chip { height: 28px; padding: 0 11px; border-radius: 14px; border: 1px solid var(--line-2); color: var(--ink-2); background: rgba(255,255,255,.03); font-size: 12px; white-space: nowrap; }
+.pf-chip:hover { border-color: var(--accent); color: var(--ink); }
+.pf-chip.on { color: var(--accent); border-color: rgba(127,227,242,.55); background: var(--accent-dim); }
+.pf-add { display: flex; gap: 8px; flex-wrap: wrap; }
+.pf-add input { flex: 1 1 120px; }
+.tp-tabs { display: flex; gap: 5px; overflow-x: auto; scrollbar-width: none; flex: none; margin: -2px 0 7px; -webkit-overflow-scrolling: touch; }
+.tp-tabs::-webkit-scrollbar { display: none; }
+.tp-tabs:empty { display: none; }
+.tp-tabs button { flex: none; height: 22px; padding: 0 9px; border-radius: 11px; border: 1px solid var(--line-2); color: var(--ink-3); font-size: 11px; white-space: nowrap; }
+.tp-tabs button.on { color: var(--accent); border-color: rgba(127,227,242,.5); background: var(--accent-dim); }
+.tp-sug { padding: 10px 2px 4px; display: grid; gap: 7px; font-size: 11.5px; color: var(--ink-3); }
+@media (max-width: 639px) {
+  .pf-body { font-size: 14px; flex: 1 1 auto; min-height: 0; }
+  .pf-search input, .pf-row input, .pf-add input { height: 44px; font-size: 16px; }
+  .pf-row { min-height: 48px; } .pf-row .pf-ic { width: 36px; height: 36px; font-size: 16px; }
+  .pf-chip { height: 36px; padding: 0 14px; font-size: 14px; border-radius: 18px; }
+  .pf-res button { padding: 11px 12px; font-size: 15px; }
+  .grid.m-phone .tp-tabs button { height: 30px; padding: 0 12px; font-size: 13px; border-radius: 15px; }
+  .grid.m-phone .pf-edit { height: 30px; }
+}
+
 </style>
 </head>
 <body>
@@ -1374,7 +1424,7 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
     <!-- 左欄 -->
     <section class="col" id="colA">
       <article class="panel" id="p-clocks">
-        <h2>世界時間<button class="slim-tog" data-slim="p-clocks" title="展開／收合" aria-label="展開或收合"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3"/></svg></button></h2>
+        <h2>世界時間<button class="mini pf-edit" id="clocks-edit" title="搜尋並加入世界各地的城市（時間和天氣）">編輯</button><button class="slim-tog" data-slim="p-clocks" title="展開／收合" aria-label="展開或收合"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3"/></svg></button></h2>
         <div class="clocks" id="clocks"></div>
       </article>
 
@@ -1400,11 +1450,12 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
         <div class="insp" id="insp"><div class="empty">讀取圖片中…</div></div>
       </article>
 
-      <div class="tabbar" id="media-tabs" role="tablist"><button data-tab="p-film">影視產業</button><button data-tab="p-mv">熱門 MV</button><button data-tab="p-news">國際新聞</button></div>
+      <div class="tabbar" id="media-tabs" role="tablist"><button data-tab="p-film">產業新聞</button><button data-tab="p-mv">熱門 MV</button><button data-tab="p-news">國際新聞</button></div>
 
       <article class="panel panel-film tabbed" id="p-film">
-        <h2>影視產業<span class="h-meta" id="film-meta"></span></h2>
-        <div class="film" id="film"><div class="empty">讀取影視新聞中…</div></div>
+        <h2>產業新聞<span class="h-meta" id="film-meta"></span><button class="mini pf-edit" id="topics-edit" title="自己訂要追蹤的產業或主題">編輯</button></h2>
+        <div class="tp-tabs" id="tp-tabs"></div>
+        <div class="film" id="film"><div class="empty">讀取新聞中…</div></div>
       </article>
 
       <article class="panel panel-mv tabbed" id="p-mv">
@@ -1531,7 +1582,7 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
       </article>
 
       <article class="panel" id="p-gold">
-        <h2>黃金與匯率</h2>
+        <h2>黃金與匯率<button class="mini pf-edit" id="macro-edit" title="自己挑要看的匯率、金屬、原物料、指數">編輯</button></h2>
         <div id="gold" class="quotes"><div class="empty">讀取行情中…</div></div>
         <div id="gold-twd" class="note"></div>
         <div class="subhead">匯率與其他</div>
@@ -1692,6 +1743,15 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
 </div>
 <div class="banners" id="banners" aria-live="polite"></div>
 
+<!-- 個人化：城市、黃金與匯率自選、新聞主題（三種共用這個視窗） -->
+<div class="dlg-back" id="prefs" hidden>
+  <section class="dlg dlg-prefs" role="dialog" aria-modal="true" aria-labelledby="pf-title">
+    <header class="dlg-h"><b id="pf-title"></b><button class="dlg-x" data-close aria-label="關閉">×</button></header>
+    <div class="pf-body" id="pf-body"></div>
+    <footer class="dlg-f"><span class="dlg-note" id="pf-msg"></span><button class="btn" data-close>取消</button><button class="btn primary" id="pf-save">儲存</button></footer>
+  </section>
+</div>
+
 <!-- 提醒設定與紀錄 -->
 <div class="dlg-back" id="alerts" hidden>
   <section class="dlg dlg-alerts" role="dialog" aria-modal="true" aria-labelledby="al-title">
@@ -1769,7 +1829,7 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
     clocks: [{ name: '台北', tz: 'Asia/Taipei', market: 'TWSE' }, { name: '東京', tz: 'Asia/Tokyo', market: 'TSE' }, { name: '倫敦', tz: 'Europe/London', market: 'LSE' },
       { name: '紐約', tz: 'America/New_York', market: 'NYSE' }, { name: '洛杉磯', tz: 'America/Los_Angeles' }, { name: 'UTC', tz: 'UTC' }],
     redUp: true, footage: { label: '4K ProRes HQ', mbps: 707 },
-    watchlist: { tw: [], us: [] }, watchlistMeta: null, mvHide: [], trades: [], inspLikes: [], scanAlias: {}, hidePanels: [], panelOrder: [],
+    watchlist: { tw: [], us: [] }, watchlistMeta: null, mvHide: [], trades: [], inspLikes: [], scanAlias: {}, hidePanels: [], panelOrder: [], macroPick: null, macroSyms: [], topics: null,
   };
   let mem = null;                                        // 無痕模式等存不進去的情況：至少這次開著的期間還在
   const load = () => {
@@ -1967,7 +2027,7 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
   }
   // ── 天氣：手機自己向 Open-Meteo 要（只送出座標），10 分鐘更新一次 ──
   let wx = { ts: 0, tried: 0, data: null, error: null };
-  async function weather(loc) {
+  async function weather(loc, clocks) {
     const now = Date.now() / 1000;
     if (now - Math.max(wx.ts, wx.tried) < (wx.error ? 60 : 600)) return;
     wx.tried = now;
@@ -1977,7 +2037,15 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
       if (!w.current || w.current.temperature_2m == null) throw new Error('天氣來源沒有回傳目前天氣');
       let air = wx.data ? wx.data.air : null;
       try { air = (await (await real('https://air-quality-api.open-meteo.com/v1/air-quality?' + q + '&current=us_aqi,pm2_5,pm10,ozone,nitrogen_dioxide')).json()).current || air; } catch (e) { /* 沿用上一筆 */ }
-      wx = { ts: now, tried: now, error: null, fresh: true, data: { location: loc, current: w.current, hourly: w.hourly || {}, daily: w.daily || {}, utcOffset: w.utc_offset_seconds, air } };
+      // 「世界時間」裡有座標的其他城市：一次問完現在的氣溫和天氣
+      let more = (wx.data && wx.data.more) || {};
+      const cs = (clocks || []).filter((c) => c && Number.isFinite(c.lat) && Number.isFinite(c.lon)).slice(0, 16);
+      if (cs.length) try {
+        const m = await (await real('https://api.open-meteo.com/v1/forecast?latitude=' + cs.map((c) => c.lat.toFixed(3)).join(',') + '&longitude=' + cs.map((c) => c.lon.toFixed(3)).join(',') + '&current=temperature_2m,weather_code,is_day')).json();
+        const rows = Array.isArray(m) ? m : [m]; more = {};
+        cs.forEach((c, i) => { const cur = rows[i] && rows[i].current; if (cur && cur.temperature_2m != null) more[c.name] = { t: cur.temperature_2m, code: cur.weather_code, day: cur.is_day }; });
+      } catch (e) { /* 沿用上一筆 */ } else more = {};
+      wx = { ts: now, tried: now, error: null, fresh: true, data: { location: loc, current: w.current, hourly: w.hourly || {}, daily: w.daily || {}, utcOffset: w.utc_offset_seconds, air, more } };
     } catch (e) { wx.error = '天氣暫時連不上'; }
   }
   // ── 點飛機查航線：手機直接問 adsbdb（公開資料），和 Mac 版 lookup_route 回傳同樣的格式 ──
@@ -2050,6 +2118,61 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
     }
     return { ok: true, codes };
   }
+  // ── 個人化設定的檢查（和 Mac 版 clean_prefs 同一套規則）──
+  const txt = (v, n) => String(v == null ? '' : v).replace(/[<>\x00-\x1f]/g, '').trim().slice(0, n);
+  function cleanTopics(v) {
+    const out = [];
+    for (const t of (Array.isArray(v) ? v : []).slice(0, 10)) {
+      if (!t || typeof t !== 'object') continue;
+      const name = txt(t.name, 16), q = txt(t.q || name, 60);
+      if (name && t.builtin === 'film') out.push({ name, builtin: 'film' });
+      else if (name && q && !out.some((o) => o.name === name)) out.push({ name, q });
+    }
+    return out;
+  }
+  function cleanPrefs(b) {
+    if (!b || typeof b !== 'object') throw fail('資料格式不對', 400);
+    const up = {}, num = (v, m) => typeof v === 'number' && Number.isFinite(v) && Math.abs(v) <= m;
+    if ('clocks' in b) {
+      const cl = [];
+      for (const c of (Array.isArray(b.clocks) ? b.clocks : []).slice(0, 16)) {
+        if (!c || typeof c !== 'object') continue;
+        const name = txt(c.name, 20), tz = String(c.tz || '');
+        if (!name || !/^[A-Za-z_]+(\/[A-Za-z0-9_+\-]+){0,2}$/.test(tz)) continue;
+        const o = { name, tz: tz.slice(0, 40) };
+        if (typeof c.market === 'string' && /^[A-Z]{2,6}$/.test(c.market)) o.market = c.market;
+        if (num(c.lat, 90) && num(c.lon, 180)) { o.lat = +c.lat.toFixed(3); o.lon = +c.lon.toFixed(3); }
+        cl.push(o);
+      }
+      if (!cl.length) throw fail('至少要留一個城市', 400);
+      up.clocks = cl;
+    }
+    if ('location' in b) {
+      const l = b.location;
+      if (!l || !num(l.lat, 90) || !num(l.lon, 180)) throw fail('地點格式不對', 400);
+      up.location = { name: txt(l.name, 20) || '我的位置', lat: +l.lat.toFixed(3), lon: +l.lon.toFixed(3) };
+    }
+    if ('macroPick' in b) {
+      up.macroPick = (Array.isArray(b.macroPick) ? b.macroPick : []).map(String).filter((k) => /^[A-Za-z0-9_]{2,16}$/.test(k)).slice(0, 16);
+      up.macroSyms = (Array.isArray(b.macroSyms) ? b.macroSyms : []).map((k) => String(k).toUpperCase()).filter((k) => /^[A-Z0-9.@=]{2,12}$/.test(k)).slice(0, 40);
+    }
+    if ('topics' in b) up.topics = cleanTopics(b.topics);
+    if (!Object.keys(up).length) throw fail('沒有可以存的設定', 400);
+    return up;
+  }
+  // ── 自訂主題新聞：請中轉站用 Google 新聞搜尋（只送出主題的關鍵字），15 分鐘更新一次 ──
+  let tp = { ts: 0, at: 0, data: null, error: null, fresh: false };
+  async function topicsTick(d) {
+    const list = cleanTopics(d.topics).filter((t) => t.q), now = Date.now();
+    if (!list.length) { if (tp.data && Object.keys(tp.data).length) { tp.data = {}; tp.fresh = true; } return; }
+    if (now - tp.at < (tp.error ? 60000 : 900000) || document.hidden) return;
+    tp.at = now;
+    try {
+      const j = await relay('topics', { q: JSON.stringify(list.map((t) => t.q)) });
+      const out = {}; for (const t of list) { const r = j.topics && j.topics[t.q]; if (r && r.items) out[t.name] = r.items; else if (tp.data && tp.data[t.name]) out[t.name] = tp.data[t.name]; }
+      tp = { ...tp, ts: now / 1000, data: out, error: null, fresh: true };
+    } catch (e) { tp.error = '主題新聞暫時連不上'; }
+  }
   // 面板每秒問一次狀態；這裡只在需要的時候才真的去問中轉站（開盤中 15 秒、其他時間 60 秒、頁面在背景不問），省流量
   let nextAt = 0, relaySince = 0, meta = {}, pending = {}, skew = 0;
   async function route(u, init) {
@@ -2063,22 +2186,45 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
         nextAt = now + (document.hidden ? 120000 : (ses.tw === 'open' || ses.us !== 'closed') ? 15000 : 60000);
         const syms = (k, f) => (d.watchlist[k] || []).map((x) => String(x[f] || '').toUpperCase()).filter(Boolean).join(',');
         try {
-          const j = await relay('state', { tw: syms('tw', 'code'), us: syms('us', 'sym'), since: relaySince });
+          const j = await relay('state', { tw: syms('tw', 'code'), us: syms('us', 'sym'), mx: (d.macroSyms || []).join(','), since: relaySince });
           if (j.state) { relaySince = j.now; meta = j.meta || meta; skew = j.now * 1000 - Date.now(); pending = { ...pending, ...j.state }; }
           // 狀態燈的門檻是照 Mac 版「幾秒更新一次」訂的；手機版是每 15～60 秒問一次，中轉站有正常回應、沒有報錯就算正常
           if (j.state) for (const k of ['tw', 'us', 'tx']) if (meta[k] && !meta[k][1]) meta[k] = [Math.max(meta[k][0], j.now - 20), null];
           if (j.state) { for (const k of ['tw', 'us']) if (j.state[k] && j.state[k].w) quotes[k] = j.state[k].w; if (j.state.us && j.state.us.usdtwd) quotes.fx = j.state.us.usdtwd.last || quotes.fx; }
         } catch (e) { nextAt = now + 8000; if (!Object.keys(meta).length) throw e; }
       }
-      weather(d.location).catch(() => {});                // 不等它：抓到了下一輪再帶出去
+      weather(d.location, d.clocks).catch(() => {});
+      topicsTick(d).catch(() => {});
+      if (tp.fresh || (full && tp.data)) { pending.topics = tp.data; tp.fresh = false; }
+      if (tp.ts || tp.error) meta = { ...meta, topics: [tp.ts, tp.error] };                // 不等它：抓到了下一輪再帶出去
       issTick(); if (iss.fresh || (full && iss.data)) { pending.iss = iss.data; iss.fresh = false; }
       if (iss.ts) meta = { ...meta, iss: [iss.ts, null] };
       try { recordAssets(d); } catch (e) { /* 記不了就下次 */ }
       if (wx.fresh || full) { if (wx.data) pending.weather = wx.data; wx.fresh = false; }
       meta = { ...meta, weather: [wx.ts, wx.error] };
       const state = pending; pending = {};
-      const config = {}; for (const k of ['location', 'clocks', 'redUp', 'footage', 'watchlist', 'watchlistMeta', 'mvHide', 'trades', 'inspLikes']) config[k] = d[k];
+      const config = {}; for (const k of ['location', 'clocks', 'redUp', 'footage', 'watchlist', 'watchlistMeta', 'mvHide', 'trades', 'inspLikes', 'macroPick', 'topics']) config[k] = d[k];
       return J({ now: (Date.now() + skew) / 1000, sessions: ses, meta, state, alerts: { seq: 0, items: [] }, config, configBroken: false });
+    }
+    if (post && p === '/api/prefs') {                      // 個人化設定：城市、黃金與匯率自選、新聞主題（只存在這支手機）
+      const up = cleanPrefs(body); Object.assign(d, up);
+      if (!save(d)) throw fail('這個瀏覽器不讓網頁存資料（可能是無痕模式）。', 507);
+      if (up.clocks || up.location) { wx.ts = 0; wx.tried = 0; }
+      if (up.topics) { tp.at = 0; }
+      nextAt = 0;
+      return J({ ok: true, prefs: { clocks: d.clocks, location: d.location, macroPick: d.macroPick, topics: d.topics } });
+    }
+    if (p === '/api/geo') {                                // 找城市：手機直接問 Open-Meteo 的公開地名查詢（只送出打的那幾個字）
+      const qq = String(u.searchParams.get('q') || '').replace(/[\x00-\x1f<>]/g, '').trim().slice(0, 40);
+      if (!qq) return J({ ok: true, results: [] });
+      try {
+        let j = {};
+        for (const lang of ['zh', 'zh-TW']) {                // 有些城市（例如 首爾）用第一種查不到，換另一種寫法的資料再試一次
+          j = await (await real('https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(qq) + '&count=8&language=' + lang + '&format=json')).json();
+          if (j.results && j.results.length) break;
+        }
+        return J({ ok: true, results: (j.results || []).filter((r) => r.timezone && Number.isFinite(r.latitude)).slice(0, 8).map((r) => ({ name: String(r.name).slice(0, 30), area: [r.admin1, r.country].filter(Boolean).join(' ').slice(0, 40), lat: +r.latitude.toFixed(3), lon: +r.longitude.toFixed(3), tz: String(r.timezone).slice(0, 40) })) });
+      } catch (e) { return J({ ok: false, error: '找不到，或地名查詢暫時連不上', results: [] }); }
     }
     if (p === '/api/lookup') return J(await relay('lookup', { m: u.searchParams.get('m') || '', code: u.searchParams.get('c') || '' }));
     if (p === '/api/cables') return GAS ? J({ lines: [] }) : J(await relay('cables'));
@@ -2128,7 +2274,7 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
   window.WP_LOCAL = { load, save, key: KEY };
   // ── 設定：要顯示哪些區塊、天氣的地點、備份 ──
   const PANELS = [['stage', '地球'], ['p-watch', '自選股與總資產'], ['p-tw', '台股'], ['p-us', '美股'], ['p-gold', '黃金與匯率'], ['p-news', '國際新聞'], ['p-weather', '天氣與空氣'], ['p-clocks', '世界時間'],
-    ['p-cal', '財經行事曆'], ['p-strait', '臺海動態'], ['p-film', '影視產業'], ['p-mv', '熱門 MV'], ['p-insp', '靈感']];
+    ['p-cal', '財經行事曆'], ['p-strait', '臺海動態'], ['p-film', '產業新聞'], ['p-mv', '熱門 MV'], ['p-insp', '靈感']];
   const CITIES = [['台北', 25.04, 121.56], ['新北', 25.01, 121.46], ['桃園', 24.99, 121.3], ['新竹', 24.8, 120.97], ['台中', 24.15, 120.67], ['台南', 22.99, 120.21], ['高雄', 22.63, 120.3], ['花蓮', 23.98, 121.6],
     ['香港', 22.32, 114.17], ['東京', 35.68, 139.69], ['首爾', 37.57, 126.98], ['新加坡', 1.35, 103.82], ['上海', 31.23, 121.47], ['倫敦', 51.51, -0.13], ['紐約', 40.71, -74.01], ['洛杉磯', 34.05, -118.24], ['溫哥華', 49.28, -123.12], ['雪梨', -33.87, 151.21]];
   const hideStyle = document.createElement('style'); document.head.appendChild(hideStyle);
@@ -2154,8 +2300,8 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
       <div style="${h3}">要顯示哪些區塊</div>
       <div style="${note}">打勾的才會顯示。按右邊的 ▲ ▼ 可以調整由上到下的順序（地球固定在最上面）。</div>
       <div id="wps-panels"></div>
-      <div style="${h3}">天氣用的地點</div>
-      <select id="wps-city" style="width:100%;height:46px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:#0b1117;color:#e9eef4;font-size:16px;padding:0 10px">${CITIES.map(([n], i) => `<option value="${i}" ${d.location && d.location.name === n ? 'selected' : ''}>${n}</option>`).join('')}</select>
+      <div style="${h3}">城市、匯率、新聞主題</div>
+      <div style="${note}">這三樣在面板上直接改：到「世界時間」「黃金與匯率」「產業新聞」那一區，按右上角的「編輯」。</div>
       <div style="${h3}">備份與換手機</div>
       <div style="${note}">你的持股、買賣紀錄和設定只存在這台裝置。換手機、清除瀏覽器資料前，先按「複製備份」，把文字貼到備忘錄或傳給自己；到新手機按「從備份還原」貼回來。</div>
       <div style="display:flex;gap:10px;flex-wrap:wrap"><button id="wps-exp" style="${btn}">複製備份</button><button id="wps-imp" style="${btn}">從備份還原…</button></div>
@@ -2183,7 +2329,6 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
     q('#wps-panels').addEventListener('change', () => {
       const dd = load(); dd.hidePanels = [...setEl.querySelectorAll('#wps-panels input')].filter((i) => !i.checked).map((i) => i.dataset.id); save(dd); applyHide(); window.dispatchEvent(new Event('resize'));
     });
-    q('#wps-city').addEventListener('change', (e) => { const c = CITIES[+e.target.value], dd = load(); dd.location = { name: c[0], lat: c[1], lon: c[2] }; save(dd); wx.ts = 0; wx.tried = 0; nextAt = 0; msg('地點改成' + c[0] + '，天氣稍後更新'); });
     q('#wps-exp').addEventListener('click', async () => {
       const dd = load(), pack = JSON.stringify({ app: 'worldpanel', v: 1, at: new Date().toISOString(), data: dd, assets: ls.get(AKEY) || '{}' });
       const ta = q('#wps-text'); ta.hidden = false; ta.value = pack; q('#wps-do').hidden = true;
@@ -2212,6 +2357,7 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
       const clean = {}; for (const k of Object.keys(DEF)) if (k in j.data) clean[k] = tidy(j.data[k], 0);
       for (const k of ['watchlist', 'scanAlias', 'location', 'footage']) if (clean[k] && (typeof clean[k] !== 'object' || Array.isArray(clean[k]))) delete clean[k];
       for (const k of ['clocks', 'trades', 'mvHide', 'inspLikes', 'hidePanels', 'panelOrder']) if (k in clean && !Array.isArray(clean[k])) delete clean[k];
+      for (const k of ['macroPick', 'topics', 'macroSyms']) if (k in clean && clean[k] !== null && !Array.isArray(clean[k])) delete clean[k];
       const dd = { ...JSON.parse(JSON.stringify(DEF)), ...clean };
       // 再逐項把關：買賣紀錄用和平常新增時同一套檢查，不合格的那筆略過；圖片與連結只收 https；地點只收清單裡的城市；時鐘用預設
       dd.trades = (dd.trades || []).flatMap((t) => { try { const c = cleanTrade(t); return [{ ...c, side: t && t.side === 'buy' ? 'buy' : 'sell', id: /^[0-9a-f]{12}$/.test(t.id) ? t.id : newId(), at: Number.isFinite(+t.at) ? +t.at : 0 }]; } catch (e) { return []; } });
@@ -2219,8 +2365,12 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
       dd.inspLikes = (dd.inspLikes || []).filter((x) => x && okUrl(x.img)).slice(0, 500).map((x) => ({ img: x.img, link: okUrl(x.link) ? x.link : '', title: String(x.title || '').slice(0, 200), source: String(x.source || '').slice(0, 80) }));
       dd.mvHide = (dd.mvHide || []).filter((x) => typeof x === 'string').slice(0, 300);
       dd.hidePanels = (dd.hidePanels || []).filter((x) => typeof x === 'string'); dd.panelOrder = (dd.panelOrder || []).filter((x) => typeof x === 'string');
-      const city = CITIES.find((x) => dd.location && x[0] === dd.location.name); dd.location = city ? { name: city[0], lat: city[1], lon: city[2] } : JSON.parse(JSON.stringify(DEF.location));
-      dd.clocks = JSON.parse(JSON.stringify(DEF.clocks)); dd.footage = JSON.parse(JSON.stringify(DEF.footage)); dd.redUp = dd.redUp !== false;
+      // 城市、黃金與匯率自選、新聞主題：用和平常儲存時同一套檢查；不合格就用預設
+      try { dd.location = cleanPrefs({ location: dd.location }).location; } catch (e) { dd.location = JSON.parse(JSON.stringify(DEF.location)); }
+      try { dd.clocks = cleanPrefs({ clocks: dd.clocks }).clocks; } catch (e) { dd.clocks = JSON.parse(JSON.stringify(DEF.clocks)); }
+      try { const m = cleanPrefs({ macroPick: dd.macroPick, macroSyms: dd.macroSyms }); dd.macroPick = Array.isArray(dd.macroPick) ? m.macroPick : null; dd.macroSyms = m.macroSyms; } catch (e) { dd.macroPick = null; dd.macroSyms = []; }
+      dd.topics = Array.isArray(dd.topics) ? cleanTopics(dd.topics) : null;
+      dd.footage = JSON.parse(JSON.stringify(DEF.footage)); dd.redUp = dd.redUp !== false;
       const al = {}; for (const [k, v] of Object.entries(dd.scanAlias || {})) { const m = /^(tw|us):/.exec(k); if (m && typeof v === 'string' && PAT[m[1]].test(v)) al[k] = v; } dd.scanAlias = al;
       dd.watchlistMeta = { at: Math.floor(Date.now() / 1000), by: '備份還原', rev: ((load().watchlistMeta || {}).rev || 0) + 1 };
       if (!save(dd)) return msg('這個瀏覽器不讓網頁存資料（可能是無痕模式）。', true);
@@ -4928,6 +5078,11 @@ function partsIn(tz, date) {
 }
 const WEEK = { Sun: '週日', Mon: '週一', Tue: '週二', Wed: '週三', Thu: '週四', Fri: '週五', Sat: '週六' };
 
+// 這個城市現在的氣溫（「世界時間」裡有座標的城市才有）
+function clockWx(c) {
+  const m = S.weather?.data?.more?.[c.name];
+  return `<span class="c-wx" title="${m ? esc(wmo(m.code, m.day).text || '') : ''}">${m && Number.isFinite(+m.t) ? Math.round(m.t) + '°' : ''}</span>`;
+}
 function renderClocks(now) {
   const local = partsIn(Intl.DateTimeFormat().resolvedOptions().timeZone, now);
   $('big-hm').textContent = `${pad(local.h)}:${pad(local.m)}`;
@@ -4946,7 +5101,7 @@ function renderClocks(now) {
                     : `<span class="c-tag">${rel || WEEK[p.weekday]}</span>`;
     return `<div class="clock${i === 0 ? ' local' : ''}"><span class="c-name">${esc(c.name)}</span>
       <span class="c-mid"><span class="daybar"><i style="left:${(mins / 1440 * 100).toFixed(1)}%"></i></span>${tag}</span>
-      <span class="c-time">${pad(p.h)}:${pad(p.m)}${i === 0 ? `<small>${pad(p.s)}</small>` : ''}</span></div>`;
+      ${clockWx(c)}<span class="c-time">${pad(p.h)}:${pad(p.m)}${i === 0 ? `<small>${pad(p.s)}</small>` : ''}</span></div>`;
   });
   setHTML($('clocks'), rows.join(''));
 }
@@ -5012,6 +5167,56 @@ document.addEventListener('mouseleave', hideTip);
 const DEC = { taiex: 2, otc: 2, tsmc: 0, txDay: 0, txNight: 0, spx: 2, ixic: 2, dji: 2, sox: 2, es: 2, nq: 2, ym: 0, xau: 2, gc: 1, si: 2,
               usdtwd: 3, usdjpy: 2, eurusd: 4, btc: 0, cl: 2, vix: 2, us10y: 3, tsm: 2, nvda: 2 };
 const dirCls = (v) => (v > 0 ? 'up' : v < 0 ? 'down' : 'flat');
+// ───── 「黃金與匯率」可以自選的項目 ─────
+// 每一項：[來源, 顯示名稱, 小數位數]。來源有三種：
+//   'b'      面板本來就有的報價（us.usdtwd…）
+//   'GBP='   另外向報價來源要的代號（放在 us.x）
+//   [A,op,B] 兩個報價算出來的（外幣換台幣：例如 日圓／台幣＝美元台幣 ÷ 美元日圓）
+const MACRO_GROUPS = [
+  ['外幣換台幣（1 單位外幣＝多少台幣）', ['usdtwd', 'jpytwd', 'eurtwd', 'cnytwd', 'hkdtwd', 'krwtwd', 'gbptwd', 'audtwd', 'sgdtwd', 'thbtwd', 'cadtwd', 'chftwd', 'nzdtwd', 'myrtwd', 'vndtwd']],
+  ['國際匯率', ['usdjpy', 'eurusd', 'gbpusd', 'audusd', 'usdcny', 'usdhkd', 'usdkrw', 'usdsgd', 'usdcad', 'usdchf', 'dxy']],
+  ['貴金屬', ['si', 'xag', 'pl', 'pa', 'hg']],
+  ['能源與農產品（期貨）', ['cl', 'brent', 'ng', 'corn', 'soy', 'wheat', 'coffee', 'sugar']],
+  ['各國指數', ['n225', 'hsi', 'ssec', 'kospi', 'dax', 'ftse', 'stoxx', 'rut', 'vix']],
+  ['利率', ['us2y', 'us10y', 'us30y', 'jp10y']],
+  ['加密貨幣', ['btc', 'eth', 'sol']],
+  ['個股', ['tsm', 'nvda']],
+];
+const MACRO = {
+  usdtwd: ['b', '美元／台幣', 3], jpytwd: [['usdtwd', '/', 'usdjpy'], '日圓／台幣', 4], eurtwd: [['eurusd', '*', 'usdtwd'], '歐元／台幣', 2], cnytwd: [['usdtwd', '/', 'CNY='], '人民幣／台幣', 3],
+  hkdtwd: [['usdtwd', '/', 'HKD='], '港幣／台幣', 3], krwtwd: [['usdtwd', '/', 'KRW='], '韓元／台幣', 5], gbptwd: [['GBP=', '*', 'usdtwd'], '英鎊／台幣', 2], audtwd: [['AUD=', '*', 'usdtwd'], '澳幣／台幣', 2],
+  sgdtwd: [['usdtwd', '/', 'SGD='], '新加坡幣／台幣', 2], thbtwd: [['usdtwd', '/', 'THB='], '泰銖／台幣', 4], cadtwd: [['usdtwd', '/', 'CAD='], '加幣／台幣', 2], chftwd: [['usdtwd', '/', 'CHF='], '瑞士法郎／台幣', 2],
+  nzdtwd: [['NZD=', '*', 'usdtwd'], '紐幣／台幣', 2], myrtwd: [['usdtwd', '/', 'MYR='], '馬幣／台幣', 3], vndtwd: [['usdtwd', '/', 'VND='], '越南盾／台幣', 5],
+  usdjpy: ['b', '美元／日圓', 2], eurusd: ['b', '歐元／美元', 4], gbpusd: ['GBP=', '英鎊／美元', 4], audusd: ['AUD=', '澳幣／美元', 4], usdcny: ['CNY=', '美元／人民幣', 4], usdhkd: ['HKD=', '美元／港幣', 4],
+  usdkrw: ['KRW=', '美元／韓元', 1], usdsgd: ['SGD=', '美元／新加坡幣', 4], usdcad: ['CAD=', '美元／加幣', 4], usdchf: ['CHF=', '美元／瑞士法郎', 4], dxy: ['.DXY', '美元指數', 2],
+  si: ['b', '白銀期貨', 2], xag: ['XAG=', '現貨白銀', 2], pl: ['@PL.1', '白金', 1], pa: ['@PA.1', '鈀金', 1], hg: ['@HG.1', '銅', 3],
+  cl: ['b', 'WTI 原油', 2], brent: ['@LCO.1', '布蘭特原油', 2], ng: ['@NG.1', '天然氣', 3], corn: ['@C.1', '玉米', 2], soy: ['@S.1', '黃豆', 2], wheat: ['@W.1', '小麥', 2], coffee: ['@KC.1', '咖啡', 2], sugar: ['@SB.1', '糖', 2],
+  n225: ['.N225', '日經 225', 0], hsi: ['.HSI', '恒生指數', 0], ssec: ['.SSEC', '上證指數', 0], kospi: ['.KS11', '韓國綜合', 0], dax: ['.GDAXI', '德國 DAX', 0], ftse: ['.FTSE', '英國富時', 0], stoxx: ['.STOXX50E', '歐洲 50', 0], rut: ['.RUT', '羅素 2000', 0], vix: ['b', 'VIX 恐慌', 2],
+  us2y: ['US2Y', '美債 2 年', 3], us10y: ['b', '美債 10 年', 3], us30y: ['US30Y', '美債 30 年', 3], jp10y: ['JP10Y', '日債 10 年', 3],
+  btc: ['b', '比特幣', 0], eth: ['ETH.CM=', '以太幣', 0], sol: ['SOL.CM=', 'Solana', 2],
+  tsm: ['b', '台積電 ADR', 2], nvda: ['b', '輝達', 2],
+};
+const MACRO_DEFAULT = ['usdtwd', 'usdjpy', 'btc', 'cl', 'si', 'vix', 'us10y', 'tsm', 'nvda'];
+const RATE_KEYS = new Set(['us2y', 'us10y', 'us30y', 'jp10y']);
+for (const k in MACRO) if (!(k in DEC)) DEC[k] = MACRO[k][2];
+const macroOrder = () => { const p = Array.isArray(CFG.macroPick) ? CFG.macroPick.filter((k) => MACRO[k]) : []; return p.length ? p : MACRO_DEFAULT; };
+// 這幾個自選項目需要另外向報價來源要哪些代號
+function macroSyms(keys) {
+  const out = new Set();
+  for (const k of keys) { const src = MACRO[k]?.[0]; if (typeof src === 'string' && src !== 'b') out.add(src); else if (Array.isArray(src)) for (const leg of [src[0], src[2]]) if (/[^a-z0-9]/.test(leg)) out.add(leg); }
+  return [...out];
+}
+function macroQ(us, key) {
+  const def = MACRO[key]; if (!def || !us) return null;
+  const leg = (id) => (/[^a-z0-9]/.test(id) ? us.x?.[id] : us[id]);
+  if (def[0] === 'b') return us[key];
+  if (typeof def[0] === 'string') return us.x?.[def[0]] || null;
+  const a = leg(def[0][0]), b = leg(def[0][2]); if (!a || !b || !(a.last > 0) || !(b.last > 0)) return null;
+  const f = (x, y) => (def[0][1] === '*' ? x * y : x / y), prevOf = (q) => (q.pct != null && q.pct > -100 ? q.last / (1 + q.pct / 100) : q.last);
+  const last = f(a.last, b.last), prev = f(prevOf(a), prevOf(b));
+  return { name: def[1], last, pct: prev > 0 ? (last / prev - 1) * 100 : 0 };
+}
+
 const arrow = (v) => (v > 0 ? '▲' : v < 0 ? '▼' : '–');
 const lastVals = {};
 
@@ -5032,7 +5237,8 @@ function chip(key, q, label) {
   const d = DEC[key] ?? 2;
   let last = q.last, pct = q.pct, tag = '';
   if (q.ext && q.ext.last != null) { last = q.ext.last; pct = q.ext.pct; tag = q.ext.type === 'PRE_MKT' ? '盤前' : '盤後'; }
-  return `<div class="chip" data-key="${key}"><span>${esc(label || q.name)}</span><b data-k="${key}" data-v="${last}" data-d="${d}" data-s="${key === 'us10y' ? '%' : ''}">${fmt(last, d)}${key === 'us10y' ? '%' : ''}</b>
+  const suf = RATE_KEYS.has(key) ? '%' : '';
+  return `<div class="chip" data-key="${key}"><span>${esc(label || q.name)}</span><b data-k="${key}" data-v="${last}" data-d="${d}" data-s="${suf}">${fmt(last, d)}${suf}</b>
     <em class="${dirCls(pct)}">${arrow(pct)} ${fmt(Math.abs(pct ?? 0), 2)}%${tag ? `<i>${tag}</i>` : ''}</em></div>`;
 }
 function flash(root) {
@@ -5095,8 +5301,7 @@ function renderMarkets() {
       const g = us.xau.last * us.usdtwd.last / 31.1034768;
       setHTML($('gold-twd'), `折合台幣約 <b>${fmt(g, 0)}</b> 元／公克　<b>${fmt(g * 3.75, 0)}</b> 元／錢（國際價換算）`);
     }
-    const order = ['usdtwd', 'usdjpy', 'btc', 'cl', 'si', 'vix', 'us10y', 'tsm', 'nvda'];
-    if (setHTML($('macro'), order.map((k) => chip(k, us[k])).join(''))) flash($('macro'));
+    if (setHTML($('macro'), macroOrder().map((k) => chip(k, macroQ(us, k), MACRO[k]?.[1])).join(''))) flash($('macro'));
   }
 }
 
@@ -7220,12 +7425,150 @@ $('mv-meta').addEventListener('click', async (e) => {
   try { const j = await postJSON('/api/mv/hide', { clear: true }); CFG.mvHide = j.mvHide; renderMV(); } catch (err) { toast('沒有成功：' + err.message); }
 });
 
+// 產業新聞：使用者自己訂的主題一個一個分頁；還沒設定時先顯示「影視產業」，並建議幾個常用主題
+const TOPIC_SUGGEST = ['科技', '人工智慧', '半導體', '財經', '影視', '攝影', '設計', '廣告行銷', '遊戲', '汽車', '房地產', '運動', '健康醫療', '旅遊', '音樂', '時尚'];
+const TOPIC_DEFAULT = [{ name: '影視產業', builtin: 'film' }];
+const topicList = () => (Array.isArray(CFG.topics) ? CFG.topics : TOPIC_DEFAULT);
+let topicTab = lsGet('topicTab', '');
 function renderFilm() {
-  const list = S.film?.data;
-  if (!list) { if (S.film?.error) setHTML($('film'), '<div class="empty">影視新聞來源暫時連不上</div>'); return; }
-  setHTML($('film'), list.map((n) => `<a class="fl-row" href="${esc(safeUrl(n.link))}" target="_blank" rel="noopener"><time>${n.ts ? ago(n.ts) : ''}</time><span><b>${esc(n.title)}</b><small>${esc(n.source)}</small></span></a>`).join(''));
-  $('film-meta').textContent = `${list.length} 則`;
+  const tl = topicList();
+  if (!tl.some((t) => t.name === topicTab)) topicTab = tl[0]?.name || '';
+  setHTML($('tp-tabs'), tl.length > 1 ? tl.map((t) => `<button data-tp="${esc(t.name)}" class="${t.name === topicTab ? 'on' : ''}">${esc(t.name)}</button>`).join('') : '');
+  const cur = tl.find((t) => t.name === topicTab);
+  const sug = Array.isArray(CFG.topics) ? '' : `<div class="tp-sug"><span>加入你關心的主題（之後可以按右上角「編輯」調整）：</span><div class="pf-chips">${TOPIC_SUGGEST.slice(0, 8).map((t) => `<button class="pf-chip" data-tpadd="${esc(t)}">＋ ${esc(t)}</button>`).join('')}<button class="pf-chip" data-tpmore="1">更多…</button></div></div>`;
+  if (!cur) { setHTML($('film'), '<div class="empty">還沒有主題。按右上角「編輯」加入你想追蹤的產業或主題。</div>' + sug); $('film-meta').textContent = ''; return; }
+  const src = cur.builtin === 'film' ? S.film : S.topics, list = cur.builtin === 'film' ? S.film?.data : S.topics?.data?.[cur.name];
+  if (!list) { setHTML($('film'), `<div class="empty">${src?.error ? '新聞來源暫時連不上' : '讀取新聞中…'}</div>` + sug); $('film-meta').textContent = ''; return; }
+  setHTML($('film'), (list.length ? list.map((n) => `<a class="fl-row" href="${esc(safeUrl(n.link))}" target="_blank" rel="noopener"><time>${n.ts ? ago(n.ts) : ''}</time><span><b>${esc(n.title)}</b><small>${esc(n.source)}</small></span></a>`).join('') : '<div class="empty">這個主題最近三天沒有新聞</div>') + sug);
+  $('film-meta').textContent = list.length ? `${list.length} 則` : '';
 }
+$('tp-tabs').addEventListener('click', (e) => { const b = e.target.closest('[data-tp]'); if (!b) return; topicTab = b.dataset.tp; lsSet('topicTab', topicTab); htmlCache.delete($('film')); renderFilm(); $('film').scrollTop = 0; });
+$('film').addEventListener('click', async (e) => {
+  if (e.target.closest('[data-tpmore]')) return openPrefs('topics');
+  const b = e.target.closest('[data-tpadd]'); if (!b) return;
+  const name = b.dataset.tpadd, list = [...topicList().filter((t) => t.name !== name), { name, q: name }];
+  try { await savePrefs({ topics: list }); topicTab = name; lsSet('topicTab', name); renderFilm(); toast(`已加入「${name}」，新聞稍後出現`); } catch (err) { toast('沒有成功：' + err.message); }
+});
+
+// ───────────────────────── 個人化設定：城市、黃金與匯率、新聞主題 ─────────────────────────
+// 三種設定共用同一個視窗；按「儲存」才寫入（電腦版存在設定檔，手機網頁版只存在這支手機）。
+const TZ_MARKET = { 'Asia/Taipei': 'TWSE', 'Asia/Tokyo': 'TSE', 'Europe/London': 'LSE', 'America/New_York': 'NYSE' };
+const CITY_XY = { 台北: [25.04, 121.56], 東京: [35.68, 139.69], 倫敦: [51.51, -0.13], 紐約: [40.71, -74.01], 洛杉磯: [34.05, -118.24] };   // 預設那幾個城市的座標（原本只有時區）
+let pfKind = '', pfDraft = null, pfSeq = 0;
+async function savePrefs(up) {
+  const j = await postJSON('/api/prefs', up);
+  if (j.prefs) CFG = { ...CFG, ...j.prefs };
+  return j;
+}
+const pfMsg = (t, err) => { $('pf-msg').className = 'dlg-note' + (err ? ' err' : ''); $('pf-msg').textContent = t || ''; };
+function openPrefs(kind) {
+  pfKind = kind; pfMsg('');
+  if (kind === 'cities') {
+    $('pf-title').textContent = '世界時間與天氣的城市';
+    pfDraft = { list: (CFG.clocks || []).map((c) => ({ ...c, ...(c.lat == null && CITY_XY[c.name] ? { lat: CITY_XY[c.name][0], lon: CITY_XY[c.name][1] } : {}) })), main: CFG.location?.name || '' };
+    if (!pfDraft.list.some((c) => c.name === pfDraft.main && c.lat != null)) pfDraft.main = '';
+  } else if (kind === 'macro') {
+    $('pf-title').textContent = '黃金與匯率：自選項目';
+    pfDraft = { pick: macroOrder().slice() };
+  } else {
+    $('pf-title').textContent = '產業新聞：自訂主題';
+    pfDraft = { list: topicList().map((t) => ({ ...t })) };
+  }
+  drawPrefs(); openDialog('prefs');
+}
+function drawPrefs() {
+  const b = $('pf-body');
+  if (pfKind === 'cities') {
+    const rows = pfDraft.list.map((c, i) => `<div class="pf-row"><b>${esc(c.name)}</b><small>${esc(c.tz)}</small>
+      ${c.lat != null ? `<label title="天氣那一區顯示這個城市的詳細預報"><input type="radio" name="pf-main" data-main="${i}" ${pfDraft.main === c.name ? 'checked' : ''}>主要天氣</label>` : ''}
+      <button class="pf-ic" data-up="${i}" aria-label="往上移" ${i ? '' : 'disabled'}>↑</button><button class="pf-ic" data-del="${i}" aria-label="移除">×</button></div>`).join('');
+    b.innerHTML = `<p class="pf-lead">搜尋世界各地的城市加進來：「世界時間」會顯示當地時間和現在氣溫；選一個當「主要天氣」，天氣那一區就顯示它的詳細預報。</p>
+      <div class="pf-search"><input id="pf-q" placeholder="輸入城市名稱，例如 京都、巴黎、Seattle" autocomplete="off" spellcheck="false" enterkeyhint="search"><button class="btn" id="pf-find">搜尋</button></div>
+      <div class="pf-res" id="pf-res"></div>
+      <div class="pf-sub">目前的城市（最上面那個是面板左上角的大時鐘旁第一列）</div><div class="pf-list">${rows || '<div class="empty">還沒有城市</div>'}</div>`;
+  } else if (pfKind === 'macro') {
+    const on = new Set(pfDraft.pick);
+    b.innerHTML = `<p class="pf-lead">點一下就加入或移除，最多 12 項。黃金（現貨與期貨）固定在最上面，不用選。外幣換台幣是用國際匯率換算的參考價，不是銀行牌告。</p>
+      <div class="pf-sub">已選（照這個順序顯示）</div><div class="pf-chips">${pfDraft.pick.map((k) => `<button class="pf-chip on" data-mk="${k}">${esc(MACRO[k][1])} ×</button>`).join('') || '<span class="dim">還沒選</span>'}</div>
+      ${MACRO_GROUPS.map(([g, ks]) => `<div class="pf-sub">${esc(g)}</div><div class="pf-chips">${ks.map((k) => `<button class="pf-chip${on.has(k) ? ' on' : ''}" data-mk="${k}">${esc(MACRO[k][1])}</button>`).join('')}</div>`).join('')}`;
+  } else {
+    const have = new Set(pfDraft.list.map((t) => t.name));
+    b.innerHTML = `<p class="pf-lead">每個主題是一個分頁，內容是最近三天的相關新聞（用 Google 新聞搜尋）。可以用建議的，也可以自己打關鍵字，最多 10 個。</p>
+      <div class="pf-sub">目前的主題</div><div class="pf-list">${pfDraft.list.map((t, i) => `<div class="pf-row"><b>${esc(t.name)}</b><small>${t.builtin ? '內建：好萊塢與影視產業媒體' : '關鍵字：' + esc(t.q)}</small>
+        <button class="pf-ic" data-up="${i}" aria-label="往上移" ${i ? '' : 'disabled'}>↑</button><button class="pf-ic" data-del="${i}" aria-label="移除">×</button></div>`).join('') || '<div class="empty">還沒有主題</div>'}</div>
+      <div class="pf-sub">常用主題</div><div class="pf-chips">${[...(have.has('影視產業') ? [] : ['影視產業']), ...TOPIC_SUGGEST.filter((t) => !have.has(t))].map((t) => `<button class="pf-chip" data-sug="${esc(t)}">＋ ${esc(t)}</button>`).join('')}</div>
+      <div class="pf-sub">自己訂</div>
+      <div class="pf-add"><input id="pf-tn" placeholder="分頁名稱，例如 紀錄片" maxlength="16" autocomplete="off"><input id="pf-tq" placeholder="搜尋關鍵字（可留空，就用名稱）" maxlength="60" autocomplete="off"><button class="btn" id="pf-tadd">加入</button></div>`;
+  }
+}
+async function pfSearch() {
+  const q = $('pf-q').value.trim(), box = $('pf-res'), seq = ++pfSeq;
+  if (!q) { box.innerHTML = ''; return; }
+  box.innerHTML = '<div class="empty">搜尋中…</div>';
+  try {
+    const j = await (await fetch('/api/geo?q=' + encodeURIComponent(q))).json();
+    if (seq !== pfSeq || pfKind !== 'cities') return;
+    pfDraft.found = j.results || [];
+    box.innerHTML = pfDraft.found.length ? pfDraft.found.map((r, i) => `<button data-pick="${i}"><b>${esc(r.name)}</b><small>${esc(r.area)}・${esc(r.tz)}</small></button>`).join('') : `<div class="empty">${esc(j.error || '找不到這個城市，換個寫法試試（英文名稱也可以）')}</div>`;
+  } catch (e) { if (seq === pfSeq) box.innerHTML = '<div class="empty">地名查詢暫時連不上</div>'; }
+}
+$('pf-body').addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter' || e.isComposing || e.keyCode === 229) return;
+  if (e.target.id === 'pf-q') { e.preventDefault(); pfSearch(); } else if (e.target.id === 'pf-tn' || e.target.id === 'pf-tq') { e.preventDefault(); $('pf-tadd').click(); }
+});
+$('pf-body').addEventListener('change', (e) => { const m = e.target.closest('[data-main]'); if (m && pfKind === 'cities') pfDraft.main = pfDraft.list[+m.dataset.main].name; });
+$('pf-body').addEventListener('click', (e) => {
+  const t = (sel) => e.target.closest(sel), L = pfDraft && pfDraft.list;
+  if (t('#pf-find')) return pfSearch();
+  let b;
+  if ((b = t('[data-pick]'))) {
+    const r = pfDraft.found[+b.dataset.pick];
+    if (L.length >= 16) return pfMsg('最多 16 個城市，先移除一個', true);
+    if (L.some((c) => c.name === r.name)) return pfMsg(`「${r.name}」已經在清單裡了`, true);
+    L.push({ name: r.name, tz: r.tz, lat: r.lat, lon: r.lon, ...(TZ_MARKET[r.tz] && !L.some((c) => c.market === TZ_MARKET[r.tz]) ? { market: TZ_MARKET[r.tz] } : {}) });
+    if (!pfDraft.main) pfDraft.main = r.name;
+    pfMsg(`已加入「${r.name}」，按「儲存」才會生效`); drawPrefs(); return;
+  }
+  if ((b = t('[data-up]'))) { const i = +b.dataset.up; if (i > 0) { [L[i - 1], L[i]] = [L[i], L[i - 1]]; drawPrefs(); } return; }
+  if ((b = t('[data-del]'))) { const [x] = L.splice(+b.dataset.del, 1); if (pfKind === 'cities' && pfDraft.main === x.name) pfDraft.main = (L.find((c) => c.lat != null) || {}).name || ''; drawPrefs(); return; }
+  if ((b = t('[data-mk]'))) {
+    const k = b.dataset.mk, i = pfDraft.pick.indexOf(k);
+    if (i >= 0) pfDraft.pick.splice(i, 1); else if (pfDraft.pick.length >= 12) return pfMsg('最多 12 項，先移除一個', true); else pfDraft.pick.push(k);
+    pfMsg(''); drawPrefs(); return;
+  }
+  const addTopic = (name, q, builtin) => {
+    name = String(name || '').replace(/[<>]/g, '').trim().slice(0, 16); q = String(q || name).replace(/[<>]/g, '').trim().slice(0, 60);
+    if (!name) return pfMsg('請先打分頁名稱', true);
+    if (L.length >= 10) return pfMsg('最多 10 個主題，先移除一個', true);
+    if (L.some((x) => x.name === name)) return pfMsg(`「${name}」已經有了`, true);
+    L.push(builtin ? { name, builtin: 'film' } : { name, q }); pfMsg(''); drawPrefs();
+  };
+  if ((b = t('[data-sug]'))) return addTopic(b.dataset.sug, b.dataset.sug, b.dataset.sug === '影視產業');
+  if (t('#pf-tadd')) return addTopic($('pf-tn').value, $('pf-tq').value);
+});
+$('pf-save').addEventListener('click', async () => {
+  const btn = $('pf-save'); btn.disabled = true; pfMsg('儲存中…');
+  try {
+    if (pfKind === 'cities') {
+      if (!pfDraft.list.length) throw new Error('至少要留一個城市');
+      const main = pfDraft.list.find((c) => c.name === pfDraft.main && c.lat != null);
+      await savePrefs({ clocks: pfDraft.list, ...(main ? { location: { name: main.name, lat: main.lat, lon: main.lon } } : {}) });
+      if (main && globe.setHome) { try { globe.setHome(main.lat, main.lon); } catch (e) { /* 地球還沒準備好 */ } }
+      toast('城市已更新，氣溫和天氣稍後出現');
+    } else if (pfKind === 'macro') {
+      await savePrefs({ macroPick: pfDraft.pick, macroSyms: macroSyms(pfDraft.pick) });
+      htmlCache.delete($('macro')); toast('已更新，新加的報價稍後出現');
+    } else {
+      await savePrefs({ topics: pfDraft.list });
+      htmlCache.delete($('film')); renderFilm(); toast('主題已更新，新聞稍後出現');
+    }
+    closeDialog($('prefs'));
+  } catch (e) { pfMsg('沒有存成功：' + e.message, true); }
+  btn.disabled = false;
+});
+$('clocks-edit').addEventListener('click', () => openPrefs('cities'));
+$('macro-edit').addEventListener('click', () => openPrefs('macro'));
+$('topics-edit').addEventListener('click', () => openPrefs('topics'));
 
 // 靈感模式：中央舞台整塊換成大圖。地球在這個模式下暫停繪製（省電），按鈕或「大圖」再按一次切回來。
 let stageMode = 'globe';
