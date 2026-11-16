@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-Zcb7wP1a2hqpNOFJHFlB9WoRCKmIpfANHfSs/YrKWWs=' 'sha256-milxen7RoFLY+7HOzGT2mM3Zuv7iqqTXIOeQyjMFOGg='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-xIV/lZMxTLal+FC1ffkl7g0ONvxUa190oXtX+xUCnjo=' 'sha256-yFS/SLFqBQEgSHpSqJvHOq8Xcn/1BuBCunzeAfCVxOU='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#06090d">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2306,12 +2306,19 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
     for (let i = 0; i < n; i++) for (let c = 0; c < 3; c++) out[c * n + i] = (px[i * 4 + (2 - c)] / 255 - mean[c]) / std[c];
     return new ort.Tensor('float32', out, [1, 3, H, W]);
   }
-  // 找出文字框：模型給一張「這裡是不是字」的機率圖，把連在一起的亮點圈成一個框，再往外擴一點
-  async function detect(m, cv) {
-    const lim = 1280, k = Math.min(1, lim / Math.max(cv.width, cv.height));
-    const W = Math.max(32, Math.round(cv.width * k / 32) * 32), H = Math.max(32, Math.round(cv.height * k / 32) * 32);
-    const out = await m.det.run({ [m.det.inputNames[0]]: tensor(cv, 0, 0, cv.width, cv.height, W, H, [0.485, 0.456, 0.406], [0.229, 0.224, 0.225]) });
-    const p = out[m.det.outputNames[0]].data, seen = new Uint8Array(W * H), boxes = [], stack = [];
+  // 找出文字框：模型給一張「這裡是不是字」的機率圖，把連在一起的亮點圈成一個框，再往外擴一點。
+  // 長截圖不整張縮小（字會糊掉、最後幾檔讀不到）：寬度縮到最多 960，再由上到下切成一段一段（互相重疊一點）各自找字。
+  // iPhone 的瀏覽器縮圖比較粗糙，縮超過一半時先對半縮幾次再縮到定位。
+  function shrink(cv, k) {
+    let cur = cv, w = cv.width, h = cv.height;
+    while (k < 0.5) {
+      w = Math.max(1, Math.round(w / 2)); h = Math.max(1, Math.round(h / 2));
+      const t = document.createElement('canvas'); t.width = w; t.height = h; t.getContext('2d').drawImage(cur, 0, 0, w, h); cur = t; k *= 2;
+    }
+    return cur;
+  }
+  function grow(p, W, H) {
+    const seen = new Uint8Array(W * H), boxes = [], stack = [];
     for (let i = 0; i < W * H; i++) {
       if (seen[i] || p[i] < 0.3) continue;
       let x0 = W, y0 = H, x1 = 0, y1 = 0, n = 0, sum = 0; stack.push(i); seen[i] = 1;
@@ -2326,9 +2333,35 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
       const bw = x1 - x0 + 1, bh = y1 - y0 + 1;
       if (n < 12 || bh < 4 || sum / n < 0.5) continue;
       const pad = bw * bh * 1.6 / (2 * (bw + bh));       // 機率圖圈到的比實際的字小一圈，照官方的比例往外擴
-      boxes.push({ x: Math.max(0, (x0 - pad) / W), y: Math.max(0, (y0 - pad) / H), r: Math.min(1, (x1 + 1 + pad) / W), b: Math.min(1, (y1 + 1 + pad) / H) });
+      boxes.push({ x0, y0, x1, y1, pad });
     }
-    return boxes.sort((a, b) => a.y - b.y || a.x - b.x);
+    return boxes;
+  }
+  async function detect(m, cv, say) {
+    const k = Math.min(1, 960 / cv.width);
+    const src = shrink(cv, k), ks = k * cv.width / src.width;                // src 已經先縮過幾次；ks 是從 src 再縮的比例
+    const W = Math.max(32, Math.round(cv.width * k / 32) * 32), HS = Math.max(32, Math.round(cv.height * k));
+    const BAND = 1280, LAP = 192, one = HS <= 1408;
+    const tops = []; if (one) tops.push(0); else { for (let y = 0; ; y += BAND - LAP) { if (y + BAND >= HS) { tops.push(HS - BAND); break; } tops.push(y); } }
+    const all = [];
+    for (let b = 0; b < tops.length; b++) {
+      if (say && tops.length > 1) say(`正在找出畫面上的文字…（${b + 1}／${tops.length}）`);
+      const top = tops[b], H = one ? Math.max(32, Math.round(HS / 32) * 32) : BAND, hs = one ? HS : BAND;
+      const out = await m.det.run({ [m.det.inputNames[0]]: tensor(src, 0, top / ks, src.width, hs / ks, W, H, [0.485, 0.456, 0.406], [0.229, 0.224, 0.225]) });
+      const fy = hs / H;                                                    // 這一段裡的一格相當於縮小後畫面的幾格
+      for (const q of grow(out[m.det.outputNames[0]].data, W, H)) {
+        if (b > 0 && q.y0 <= 3) continue;                                   // 被切線切到的字：交給隔壁那一段（兩段有重疊）
+        if (b < tops.length - 1 && q.y1 >= H - 4) continue;
+        all.push({ x: Math.max(0, (q.x0 - q.pad) / W), r: Math.min(1, (q.x1 + 1 + q.pad) / W), y: Math.max(0, (top + (q.y0 - q.pad) * fy) / HS), b: Math.min(1, (top + (q.y1 + 1 + q.pad) * fy) / HS) });
+      }
+    }
+    // 重疊區裡兩段都圈到的同一個字：留大的那個
+    const keep = [];
+    for (const a of all.sort((p, q) => (q.r - q.x) * (q.b - q.y) - (p.r - p.x) * (p.b - p.y))) {
+      const dup = keep.some((o) => { const ix = Math.min(a.r, o.r) - Math.max(a.x, o.x), iy = Math.min(a.b, o.b) - Math.max(a.y, o.y); return ix > 0 && iy > 0 && ix * iy > 0.5 * (a.r - a.x) * (a.b - a.y); });
+      if (!dup) keep.push(a);
+    }
+    return keep.sort((a, b) => a.y - b.y || a.x - b.x);
   }
   // 認出一個框裡的字
   async function read(m, cv, bx) {
@@ -2348,7 +2381,7 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
   async function recognize(src, say) {
     const m = await init(say), cv = await toCanvas(src);
     if (say) say('正在找出畫面上的文字…');
-    const boxes = await detect(m, cv), items = [];
+    const boxes = await detect(m, cv, say), items = [];
     for (let i = 0; i < boxes.length; i++) {
       if (say && i % 6 === 0) say(`正在辨識文字… ${Math.round(i / boxes.length * 100)}%`);
       const b = boxes[i], r = await read(m, cv, b);
@@ -4004,7 +4037,8 @@ function split(c, out, ln, lab) {
   if ((m = c.match(/^(.*?[\d.])\s*[(（]\s*([+\-−]?[\d.,]+%)\s*[)）]$/))) {      // 金額(％)：括號裡的％可能是損益％，也可能只是今天的漲跌
     split(m[1], out, ln, lab); out.push({ t: m[2], ln, paren: true }); return;
   }
-  if ((m = c.match(/^[(（]\s*([+\-−]?[\d.,]+%)\s*[)）]$/))) { out.push({ t: m[1], ln, paren: true }); return; }
+  if ((m = c.match(/^(.*?[\d.])\s*[(（]\s*([+\-−]?[\d.,]+%)$/))) { split(m[1], out, ln, lab); out.push({ t: m[2], ln, paren: true }); return; }   // 右括號沒讀到
+  if ((m = c.match(/^[(（]\s*([+\-−]?[\d.,]+%)\s*[)）]?$/))) { out.push({ t: m[1], ln, paren: true }); return; }
   if ((m = c.match(/^(.*\S)\s*[(（]\s*(\d{4,6}[A-Z]?|[A-Z]{1,5})\s*[)）]$/)) && !UI.test(m[2])) { split(m[1], out, ln); out.push({ t: m[2], ln, code: true }); return; }   // 名稱（代號）
   if ((m = c.match(/^[^\x00-\x7f\d]\s?(\d{4}|00\d{3,4}[A-Z]?)$/))) { out.push({ t: m[1], ln, code: true }); return; }   // 「市2330」「用3231」：代號前面的小徽章
   if (/^[▲▼△▽↑↓]/.test(c) || /^[4AV]\s+[+\-]?[\d.,]+%?$/.test(c)) { out.push({ t: c, ln, chg: true }); return; }      // 今天的漲跌（▲ 常被讀成 4 或 A），不是損益
@@ -4042,6 +4076,24 @@ const nameOk = (x) => x.n === null && !NOTNAME.test(x.t) && !x.pct && !x.label &
 
 function parseGeneric(text) {
   const toks = tokens(text);
+  // 卡片式（國泰）：一檔的「總股數、成交均價」都讀到了，但後面那行損益％沒讀到（或讀壞了）——補一個空的％當作這一檔的結尾，
+  // 這一檔才不會整個不見。只在「標籤排在％前面」的版面這樣做。
+  {
+    const isC = (x) => x.n !== null && !x.pct && x.role === 'cost', isS = (x) => x.n !== null && !x.pct && x.role === 'shares';
+    let before = 0, after = 0;                       // ％的前面幾個詞裡有沒有帶標籤的股數或均價
+    toks.forEach((x, k) => { if (!x.pct) return; if (toks.slice(Math.max(0, k - 6), k).some((y) => isC(y) || isS(y))) before++; else after++; });
+    if (before >= after) {
+      let c = -1, sh = -1, saw = false;
+      const add = [];
+      const close = () => { if (c >= 0 && sh >= 0 && !saw) { let at = Math.max(c, sh); const nx = toks[at + 1]; if (nx && nx.n !== null && !nx.pct && nx.role === 'pl') at++; add.push(at); } c = -1; sh = -1; saw = false; };
+      toks.forEach((x, k) => {
+        if (x.pct) { if (c >= 0 || sh >= 0) saw = true; return; }
+        if (isC(x)) { if (c >= 0) close(); c = k; } else if (isS(x)) { if (sh >= 0) close(); sh = k; }
+      });
+      close();
+      for (const at of add.reverse()) toks.splice(at + 1, 0, { t: '0%', ln: toks[at].ln, n: 0, pct: true, paren: true, label: false, chg: false, role: null, code: null, usCode: false, synth: true });
+    }
+  }
   const all = [], pcts = [];
   toks.forEach((x, k) => {
     if (x.pct) pcts.push(k);
@@ -4100,23 +4152,25 @@ function parseGeneric(text) {
       else if (x.role === 'shares' && js < 0) js = j;
       else if (jl < 0 && j >= k - 2 && x.role !== 'cost' && x.role !== 'shares') jl = j;
     }
-    if (jc < 0 || jl < 0 || (js < 0 && !shLabel)) return null;
-    const cost = toks[jc].n, pl = toks[jl].n;
-    if (!(cost > 0) || (pl === 0) !== (p === 0)) return null;
-    const dec = (toks[k].t.split('.')[1] || '').replace(/\D/g, '').length, rel = (Math.pow(10, -dec) * 0.51) / Math.max(Math.abs(p), 0.01) + 0.5 / Math.max(Math.abs(pl), 1);
-    const price = Math.round(cost * (1 + p / 100) * 1e4) / 1e4, used = [jc, js >= 0 ? js : jc, jl];
-    if (js >= 0) {
-      const sh = toks[js].n, base = cost * sh;
-      if (!(sh > 0) || (!us && !Number.isInteger(sh))) return null;
-      if (p === 0) return { shares: sh, cost, price: cost, used };
-      const fx = pl * 100 / p / base;
-      if (!us) return Math.abs(fx - 1) <= rel + 0.002 || Math.abs(fx * 1.001425 - 1) <= rel + 0.002 ? { shares: sh, cost, price, used } : null;
-      if (Math.abs(fx - 1) <= rel + 0.003) return { shares: sh, cost, price, used };
-      if (fx >= 25 && fx <= 40) { if (Math.abs(pl) >= 100 && Math.abs(p) >= 1) fxSeen.push(fx); return { shares: sh, cost, price, used }; }
-      return null;
+    if (js >= 0 && (jc < 0 || jc < js)) {              // 台股卡片：成交均價排在損益％的後面
+      for (let j = k + 1; j < toks.length && j <= k + 6; j++) { const x = toks[j]; if (x.pct || (x.n !== null && x.role === 'shares')) break; if (x.n !== null && x.role === 'cost') { jc = j; break; } }
     }
+    if (jc < 0 || (js < 0 && (jl < 0 || !shLabel))) return null;
+    const cost = toks[jc].n, pl = jl >= 0 ? toks[jl].n : 0;
+    if (!(cost > 0)) return null;
+    const dec = (toks[k].t.split('.')[1] || '').replace(/\D/g, '').length, rel = (Math.pow(10, -dec) * 0.51) / Math.max(Math.abs(p), 0.01) + 0.5 / Math.max(Math.abs(pl), 1);
+    const price = Math.round(cost * (1 + p / 100) * 1e4) / 1e4, used = [jc, js >= 0 ? js : jc, jl >= 0 ? jl : jc];
+    if (js >= 0) {
+      // 股數和均價都有標籤、也都讀到了：直接採用。損益和％只是拿來核對、順便記下匯率，
+      // 它們讀錯（少了負號、少了括號、整行沒讀到）不應該讓這一檔消失。
+      const sh = toks[js].n, base = cost * sh;
+      if (!(sh > 0) || (!us && !Number.isInteger(sh)) || !sane(cost, null, sh, us)) return null;
+      if (us && p !== 0 && pl !== 0) { const fx = Math.abs(pl * 100 / p / base); if (fx >= 25 && fx <= 40 && Math.abs(pl) >= 100 && Math.abs(p) >= 1) fxSeen.push(fx); }
+      return { shares: sh, cost, price, used, card: true };
+    }
+    if ((pl === 0) !== (p === 0)) return null;
     if (!us || p === 0 || Math.abs(pl) < 1) return null;                   // 股數沒讀到：只有複委託、而且損益不是 0 才能推
-    const ref = fxSeen.length ? fxSeen.slice().sort((a, b) => a - b)[fxSeen.length >> 1] : 31.5, baseT = pl * 100 / p;
+    const ref = fxSeen.length ? fxSeen.slice().sort((a, b) => a - b)[fxSeen.length >> 1] : 31.5, baseT = Math.abs(pl * 100 / p);          // 負號有時讀不到，只看大小
     const devs = [];
     for (let n = 1; n <= 5000; n++) { const fx = baseT / (cost * n); if (fx < 20) break; if (fx <= 45) devs.push([Math.abs(fx / ref - 1), n]); }
     devs.sort((a, b) => a[0] - b[0]);
@@ -4206,7 +4260,7 @@ function parseGeneric(text) {
     if (!name && cd && us) name = cd.code;            // 美股只寫代號（AAPL）
     rows.push({ name: name.slice(0, 40), kind: us ? 'us' : 'tw', ok: !!(best && name), shares: best ? best.shares : null, cost: best ? best.cost : null, price: best ? best.price : null,
       ...(cd ? { hint: cd.code } : {}), ...(best && best.derived ? { derived: true } : {}), ...(best && best.est ? { est: true } : {}) });
-    if (best) lo = k;
+    if (best) lo = best.card ? Math.max(k, ...best.used) : k;
   }
   for (let i = rows.length - 1; i >= 0; i--) if (!rows[i].name) rows.splice(i, 1);     // 連名稱都沒有的（畫面邊緣被切到）沒有用
   // 同一張截圖裡同一檔出現好幾列（現股＋融資、一筆一筆的明細）：合成一列，股數相加、均價加權
