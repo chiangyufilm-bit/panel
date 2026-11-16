@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-d/KP5olXP3iPVmWewxgbI/22ydSxQWwr/i/tOoCNeao=' 'sha256-TYhNf4rQecuCwyfw/eD0Ma3kB7z2Cc59zZHodVIrci4='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-d/KP5olXP3iPVmWewxgbI/22ydSxQWwr/i/tOoCNeao=' 'sha256-naEuNVX3MlNmdYceJ8qRz9E09fLZYYe7UVYChfx815c='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#06090d">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1348,6 +1348,10 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
 .h-crop { grid-column: 1 / -1; max-width: 460px; overflow: hidden; border-radius: 8px; border: 1px solid var(--line-2); background: #fff; margin: 2px 0 4px; }
 .h-crop img { display: block; width: 100%; height: auto; max-width: none; }
 .hold-row.scan-fill input.h-sh:placeholder-shown, .hold-row.scan-fill input.h-cost:placeholder-shown { border-color: rgba(243,198,77,.75); }
+
+/* 截圖結果：這批是「更新」還是「另一家券商」 */
+.scan-mode-tip { margin-top: 6px; font-size: 12px; color: var(--ink-2); }
+.scan-status .scan-mode { display: block; margin-top: 8px; height: auto; min-height: 34px; padding: 6px 12px; white-space: normal; text-align: left; line-height: 1.4; color: var(--accent); border-color: rgba(127,227,242,.5); }
 
 </style>
 </head>
@@ -6115,6 +6119,7 @@ function scanNote(kind, it) {
     if (!sameVal(sc.old.shares, it.shares)) was.push(sc.old.shares === '' || sc.old.shares == null ? '原本沒填股數' : `原本 ${dS(sc.old.shares)} 股`);
     if (!sameVal(sc.old.cost, it.cost)) was.push(sc.old.cost === '' || sc.old.cost == null ? '原本沒填均價' : `原本均價 ${dC(sc.old.cost)}`);
     t = was.join('・') || '數字已照截圖更新';
+    if (sc.plus) t = `原本 ${dS(sc.old.shares)} 股＋這次截圖 ${dS(sc.plus)} 股，加在一起；均價照股數平均`;
   } else if (st === 'new') t = sc.st === 'need' ? `截圖上的名稱「${sc.raw}」：填好代號，下次會自動配對` : '截圖裡有、清單裡原本沒有';
   if (st === 'need') t = `截圖上的名稱「${sc.raw}」配不到代號，請填一次，之後會記住`;
   else if (st === 'chk') t = '截圖裡這檔讀不完整（可能被畫面邊緣切到），數字沒改，請對照截圖';
@@ -6189,7 +6194,12 @@ async function scanText(text) {
   } catch (e) { rows.forEach((r) => { r.code = ''; r.from = ''; }); scanHint(rows); }
   scanApply(rows, [], '文字');
 }
-function scanApply(all, errs, what) {
+// 同一檔股票分散在好幾家券商：一次選好幾張不同券商的截圖會自動相加；
+// 分次上傳（先存了甲券商，之後再丟乙券商的截圖）預設是「用截圖取代原本的」，結果列會出現一個按鈕可以改成「和原本的加在一起」。
+let scanLast = null;
+function scanApply(all, errs, what, mode = 'replace') {
+  scanLast = { all: all.map((r) => ({ ...r })), errs, what, mode };
+  all = all.map((r) => ({ ...r }));
   // 好幾張截圖會重複到同一檔：同名只留一筆，優先留數字對得上的；被切到一半、名稱讀壞的那一列，如果股數和均價和別列相同就丟掉
   const m = new Map();
   const scanSame = (o, r) => o.shares === r.shares && (o.cost === r.cost || ((o.approx || r.approx) && Math.abs(o.cost - r.cost) <= Math.max(o.cost, r.cost) * 0.035));
@@ -6233,9 +6243,11 @@ function scanApply(all, errs, what) {
       continue;
     }
     const sv = valid ? ((CFG.watchlist || {})[kind] || []).find((x) => String(x[k] || '').toUpperCase() === code) : null;
-    const sh = String(r.shares), co = String(r.cost);
-    const st = !valid ? 'need' : !sv ? 'new' : (+sv.shares === r.shares && +sv.cost === r.cost ? 'same' : 'upd');
-    const sc = { ...base, st, old: sv ? { shares: sv.shares ?? '', cost: sv.cost ?? '' } : null };
+    const plus = mode === 'add' && sv && +sv.shares > 0;          // 另一家券商：和已經存的加在一起（每次都從存檔的數字算起，按幾次結果都一樣）
+    const shN = plus ? +(+sv.shares + r.shares).toFixed(6) : r.shares, coN = plus ? +((+sv.shares * (+sv.cost || r.cost) + r.shares * r.cost) / shN).toFixed(4) : r.cost;
+    const sh = String(shN), co = String(coN);
+    const st = !valid ? 'need' : !sv ? 'new' : (+sv.shares === shN && +sv.cost === coN ? 'same' : 'upd');
+    const sc = { ...base, st, old: sv ? { shares: sv.shares ?? '', cost: sv.cost ?? '' } : null, ...(plus ? { plus: r.shares } : {}) };
     if (cur) { if (valid) cur[k] = code; cur.shares = sh; cur.cost = co; if (!cur.name && name) cur.name = name; cur._scan = sc; }
     else { cur = { [k]: valid ? code : '', name: name || (valid ? '' : r.name), shares: sh, cost: co, _scan: sc }; list.push(cur); }
     hit.add(cur); n[st]++;
@@ -6243,7 +6255,7 @@ function scanApply(all, errs, what) {
   // 截圖裡沒有出現、但清單上有股數的：只標出來，不刪（可能只是沒截到那一頁）
   for (const kind of new Set(rows.map((r) => r.kind))) for (const o of holdDraft[kind]) {
     if (o._scan?.st === 'miss') delete o._scan;
-    if (!o._scan && !hit.has(o) && +o.shares > 0) { o._scan = { st: 'miss' }; n.miss++; }
+    if (mode !== 'add' && !o._scan && !hit.has(o) && +o.shares > 0) { o._scan = { st: 'miss' }; n.miss++; }      // 加另一家券商時，沒出現的本來就在別家，不用標
   }
   const nk = (kd) => rows.filter((r) => r.kind === kd).length;      // 切到這次截圖讀到最多的那一邊
   holdTab = nk('us') > nk('tw') ? 'us' : nk('tw') ? 'tw' : holdTab;
@@ -6257,6 +6269,13 @@ function scanApply(all, errs, what) {
   $('hold-msg').className = 'dlg-note err'; $('hold-msg').textContent = msg;
   const todo = n.need + n.chk + n.fill;
   scanStatus(todo || lost.length || errs.length ? 'warn' : 'ok', (todo ? '⚠ ' : '✓ ') + msg);
+  if (n.upd > 0 || mode === 'add') {                 // 有已經存過的持股被改到：讓使用者選這批截圖是「更新」還是「另一家券商」
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'btn scan-mode'; b.id = 'scan-mode';
+    b.textContent = mode === 'add' ? '改回：用截圖的數字取代原本的' : '這是另一家券商的截圖：和原本的加在一起';
+    const tip = document.createElement('div'); tip.className = 'scan-mode-tip';
+    tip.textContent = mode === 'add' ? '已經把截圖上的股數和原本存的加在一起，均價照股數平均。' : '同一檔股票如果放在不同券商，請按下面的按鈕，不然原本的數字會被這張截圖取代。';
+    $('scan-status').append(tip, b);
+  }
   $('scan-status').scrollIntoView({ block: 'start' });         // 結果和下面標了顏色的清單一起看得到
   toast(`${what}讀到 ${rows.length} 檔` + (todo ? `，有 ${todo} 檔要你看一下` : '，核對後按「儲存」'));
 }
@@ -6269,6 +6288,7 @@ function scanLearn() {
   }
   if (pairs.length) postJSON('/api/holdings/alias', { pairs }).catch(() => {});
 }
+$('scan-status').addEventListener('click', (e) => { if (e.target.closest('#scan-mode') && scanLast) { holdCollect(); scanApply(scanLast.all, scanLast.errs, scanLast.what, scanLast.mode === 'add' ? 'replace' : 'add'); } });
 $('hold-scan').addEventListener('click', () => { $('hold-scan-file').value = ''; $('hold-scan-file').click(); });
 $('hold-scan-file').addEventListener('change', (e) => scanFiles([...e.target.files]));
 // 也可以把截圖直接拖進編輯持股，或複製圖片後貼上
