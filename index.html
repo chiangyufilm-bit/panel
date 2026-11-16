@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-zZtkN2eXkbntg6sSj9NKhrQ50kd8T8SIKxBYA2ZaRDk=' 'sha256-UyEvdft+wo97piGJjakOkCUJl4TTQms2jyVfcdSrlS0='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://geocoding-api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-1/x9ozAs/ypN13Ptgy81PsrtI1WOmBKsDq4Gu+yUZ9o=' 'sha256-2LzBSQPxCRWWTzQ7O4l6N/VI6VJ8fHcVXzFszAER8Xg='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://geocoding-api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#06090d">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1449,6 +1449,14 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
   .grid.m-phone .pf-edit { height: 30px; }
 }
 
+/* 主題分頁列：還有分頁藏在旁邊時，那一邊淡出當提示（可以左右滑） */
+.tp-tabs.more-r { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 30px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 30px), transparent); }
+.tp-tabs.more-l { -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 30px), transparent); mask-image: linear-gradient(to left, #000 calc(100% - 30px), transparent); }
+.tp-tabs.more-l.more-r { -webkit-mask-image: linear-gradient(to right, transparent, #000 30px, #000 calc(100% - 30px), transparent); mask-image: linear-gradient(to right, transparent, #000 30px, #000 calc(100% - 30px), transparent); }
+/* 台股休市日（國定假日等）：狀態徽章與世界時間的市場標籤用紅燈＋文字 */
+.badge.hol { color: var(--ink-2); } .badge.hol::before { background: #ff6b63; }
+.c-tag.hol::before { content: ""; display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: #ff6b63; margin-right: 4px; vertical-align: 1px; }
+
 </style>
 </head>
 <body>
@@ -1932,6 +1940,7 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
     if (msg) { CODE = ''; gateEl.querySelector('#wp-gate-msg').textContent = msg; }
   }
   // 各市場現在有沒有開盤（和 Mac 版 sessions() 同一套時間）
+  let hol = null; try { hol = JSON.parse(ls.get('wp.hol') || 'null'); } catch (e) { hol = null; }      // 上次從中轉站拿到的休市日名單
   function sessions() {
     const at = (tz) => { const p = new Intl.DateTimeFormat('en-US', { timeZone: tz, weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(new Date());
       const g = (t) => p.find((x) => x.type === t).value; return [['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].indexOf(g('weekday')), +g('hour') * 60 + +g('minute')]; };
@@ -1941,6 +1950,10 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
     s.txNight = (twd < 5 && twm >= 900) || (twd >= 1 && twd <= 5 && twm < 300) ? 'open' : 'closed';
     s.us = nyd < 5 && nym >= 570 && nym < 960 ? 'open' : nyd < 5 && nym >= 240 && nym < 570 ? 'pre' : nyd < 5 && nym >= 960 && nym < 1200 ? 'post' : 'closed';
     s.usFut = (nyd === 6 && nym >= 1080) || (nyd < 4 && !(nym >= 1020 && nym < 1080)) || (nyd === 4 && nym < 1020) ? 'open' : 'closed';
+    // 證交所公布的休市日（國定假日、補假、只辦結算不交易的日子）：現貨與期貨日盤不開、當天晚上也沒有夜盤。沒有名單時照上面原本的判斷
+    const today = ls.get('wp.fakeToday') || new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Taipei' });
+    const name = hol && hol.days && String(hol.year) === today.slice(0, 4) ? hol.days[today] : null;
+    if (name && twd < 5) { s.tw = 'closed'; s.txDay = 'closed'; if (twm >= 900) s.txNight = 'closed'; s.twHoliday = String(name).slice(0, 20); }
     return s;
   }
   // 和 Mac 版 clean_watchlist 同一套檢查：任何一格不合理就整批拒絕
@@ -1950,7 +1963,7 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
     for (const [kind, key] of [['tw', 'code'], ['us', 'sym']]) {
       const rows = obj[kind];
       if (!Array.isArray(rows)) throw fail('資料不完整');
-      if (rows.length > 40) throw fail('每邊最多 40 檔');
+      if (rows.length > 300) throw fail('每邊最多 300 檔');
       const seen = new Set();
       for (const r of rows) {
         if (!r || typeof r !== 'object') throw fail('格式不對');
@@ -2256,7 +2269,11 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
         nextAt = now + (document.hidden ? 120000 : (ses.tw === 'open' || ses.us !== 'closed') ? 15000 : 60000);
         const syms = (k, f) => (d.watchlist[k] || []).map((x) => String(x[f] || '').toUpperCase()).filter(Boolean).join(',');
         try {
-          const j = await relay('state', { tw: syms('tw', 'code'), us: syms('us', 'sym'), mx: (d.macroSyms || []).join(','), since: relaySince });
+          // 持股很多時代號放在本文裡送（放在網址會太長）；平常檔數少的照原本的方式
+          const sy = { tw: syms('tw', 'code'), us: syms('us', 'sym'), mx: (d.macroSyms || []).join(',') };
+          const big = GAS && sy.tw.length + sy.us.length + sy.mx.length > 1200;
+          const j = big ? await relay('state', { since: relaySince }, sy) : await relay('state', { ...sy, since: relaySince });
+          if (j.state && j.state.holidays && j.state.holidays.days) { hol = j.state.holidays; ls.set('wp.hol', JSON.stringify(hol)); }
           if (j.state) { relaySince = j.now; meta = j.meta || meta; skew = j.now * 1000 - Date.now(); pending = { ...pending, ...j.state }; }
           // 狀態燈的門檻是照 Mac 版「幾秒更新一次」訂的；手機版是每 15～60 秒問一次，中轉站有正常回應、沒有報錯就算正常
           if (j.state) for (const k of ['tw', 'us', 'tx']) if (meta[k] && !meta[k][1]) meta[k] = [Math.max(meta[k][0], j.now - 20), null];
@@ -5182,8 +5199,9 @@ function renderClocks(now) {
     const mins = p.h * 60 + p.m;
     const hrs = MARKET_HOURS[c.market];
     const wk = p.weekday !== 'Sat' && p.weekday !== 'Sun';
-    const open = hrs && wk && hrs.some(([a, b]) => mins >= a && mins < b);
-    const tag = hrs ? (open ? `<span class="c-tag open">${c.market} 開盤</span>` : `<span class="c-tag">${rel || c.market + ' 休市'}</span>`)
+    const hol = c.market === 'TWSE' && SESS.twHoliday;      // 台股休市日（國定假日等）
+    const open = hrs && wk && !hol && hrs.some(([a, b]) => mins >= a && mins < b);
+    const tag = hrs ? (open ? `<span class="c-tag open">${c.market} 開盤</span>` : hol ? `<span class="c-tag hol" title="${esc(SESS.twHoliday)}">${c.market} 假日休市</span>` : `<span class="c-tag">${rel || c.market + ' 休市'}</span>`)
                     : `<span class="c-tag">${rel || WEEK[p.weekday]}</span>`;
     return `<div class="clock${i === 0 ? ' local' : ''}"><span class="c-name">${esc(c.name)}</span>
       <span class="c-mid"><span class="daybar"><i style="left:${(mins / 1440 * 100).toFixed(1)}%"></i></span>${tag}</span>
@@ -5394,8 +5412,11 @@ function renderMarkets() {
       qrow('txDay', tw.txDay, twc.txDay, txDown ? `來源暫時無回應　${tw.txDay?.time || ''}` : dayF ? `日盤交易中 ${tw.txDay?.time || ''}` : `日盤已收 ${tw.txDay?.time || ''}`, dayF),
       qrow('txNight', tw.txNight, twc.txNight, txDown ? `來源暫時無回應　${tw.txNight?.time || ''}` : night ? `夜盤交易中 ${tw.txNight?.time || ''}` : `夜盤已收 ${tw.txNight?.time || ''}`, night),
     ].join('') + (txDown && !tw.txDay && !tw.txNight ? '<div class="note">台指期（含夜盤）：期交所暫時沒有回應，恢復後會自動顯示</div>' : '');
-    if (setHTML($('tw'), html)) flash($('tw'));
-    badge($('tw-badge'), open ? '現貨盤中' : night ? '夜盤交易中' : txDown && SESS.txNight === 'open' ? '夜盤資料中斷' : '已收盤', open || night ? 'on' : txDown && SESS.txNight === 'open' ? 'semi' : '');
+    const twOld = S.tw?.error && open && (Date.now() + skew) / 1000 - (S.tw.ts || 0) > 120;
+    if (setHTML($('tw'), html + (twOld ? `<div class="note">證交所的報價暫時連不上，現在顯示的是 ${esc(tw.taiex?.time || '稍早')} 的報價，恢復後會自動更新</div>` : ''))) flash($('tw'));
+    const hol = SESS.twHoliday;                           // 證交所公布的休市日（國定假日、補假、只結算不交易）：紅燈＋文字，和漲跌的紅色不同位置
+    badge($('tw-badge'), open ? '現貨盤中' : night ? '夜盤交易中' : txDown && SESS.txNight === 'open' ? '夜盤資料中斷' : hol ? (hol === '市場無交易' ? '今日休市' : '國定假日休市') : '已收盤', open || night ? 'on' : txDown && SESS.txNight === 'open' ? 'semi' : hol ? 'hol' : '');
+    $('tw-badge').title = hol ? `今天台股休市：${hol}` : '';
   }
   if (us) {
     const live = SESS.us === 'open';
@@ -7618,7 +7639,7 @@ let topicTab = lsGet('topicTab', '');
 function renderFilm() {
   const tl = topicList();
   if (!tl.some((t) => t.name === topicTab)) topicTab = tl[0]?.name || '';
-  setHTML($('tp-tabs'), tl.length > 1 ? tl.map((t) => `<button data-tp="${esc(t.name)}" class="${t.name === topicTab ? 'on' : ''}">${esc(t.name)}</button>`).join('') : '');
+  if (setHTML($('tp-tabs'), tl.length > 1 ? tl.map((t) => `<button data-tp="${esc(t.name)}" class="${t.name === topicTab ? 'on' : ''}">${esc(t.name)}</button>`).join('') : '')) tpShow(); else tpFade();
   const cur = tl.find((t) => t.name === topicTab);
   const sug = Array.isArray(CFG.topics) ? '' : `<div class="tp-sug"><span>加入你關心的主題（之後可以按右上角「編輯」調整）：</span><div class="pf-chips">${TOPIC_SUGGEST.slice(0, 8).map((t) => `<button class="pf-chip" data-tpadd="${esc(t)}">＋ ${esc(t)}</button>`).join('')}<button class="pf-chip" data-tpmore="1">更多…</button></div></div>`;
   if (!cur) { setHTML($('film'), '<div class="empty">還沒有主題。按右上角「編輯」加入你想追蹤的產業或主題。</div>' + sug); $('film-meta').textContent = ''; return; }
@@ -7628,6 +7649,30 @@ function renderFilm() {
   $('film-meta').textContent = list.length ? `${list.length} 則` : '';
 }
 $('tp-tabs').addEventListener('click', (e) => { const b = e.target.closest('[data-tp]'); if (!b) return; topicTab = b.dataset.tp; lsSet('topicTab', topicTab); htmlCache.delete($('film')); renderFilm(); $('film').scrollTop = 0; });
+// 主題很多時分頁列可以左右滑：手機用手指、觸控板直接滑；一般滑鼠的滾輪（上下滾）在這一列上會變成左右捲。
+// 還有分頁藏在旁邊時，那一邊的邊緣會淡出當提示；選到的分頁會自動捲進看得到的範圍。
+function tpFade() {
+  const el = $('tp-tabs'), max = el.scrollWidth - el.clientWidth;
+  el.classList.toggle('more-l', max > 1 && el.scrollLeft > 2);
+  el.classList.toggle('more-r', max > 1 && el.scrollLeft < max - 2);
+}
+function tpShow() {
+  const el = $('tp-tabs'), b = el.querySelector('button.on');
+  if (b && el.scrollWidth > el.clientWidth) {
+    const l = b.offsetLeft - el.offsetLeft, r = l + b.offsetWidth;
+    if (l < el.scrollLeft + 24) el.scrollLeft = Math.max(0, l - 24); else if (r > el.scrollLeft + el.clientWidth - 24) el.scrollLeft = r - el.clientWidth + 24;
+  }
+  tpFade();
+}
+$('tp-tabs').addEventListener('scroll', tpFade, { passive: true });
+$('tp-tabs').addEventListener('wheel', (e) => {
+  const el = $('tp-tabs'), max = el.scrollWidth - el.clientWidth;
+  if (max <= 1 || Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;       // 沒有東西可捲，或本來就是左右滑（觸控板）：照原本的
+  const to = Math.max(0, Math.min(max, el.scrollLeft + e.deltaY));
+  if (to === el.scrollLeft) return;                        // 已經到頭了：放掉，讓外面照常捲
+  el.scrollLeft = to; e.preventDefault(); tpFade();
+}, { passive: false });
+addEventListener('resize', () => setTimeout(tpFade, 150));
 $('film').addEventListener('click', async (e) => {
   if (e.target.closest('[data-tpmore]')) return openPrefs('topics');
   const b = e.target.closest('[data-tpadd]'); if (!b) return;
