@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-Vd2AaqieKqcvVFwHxPCpwkODshnyjrvswF1fODfGCfI=' 'sha256-ZDsmikuqxOzSVMFNbKNOKaKo+uN+DAIv3DTTHasvV3c='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-XFk5vljvwvWDxWcs8phAya8rXE6jRfmyN2sLjCkcRDY=' 'sha256-+1duyEKsN/qwXrIsI3dlLDGtn5/3/gpTsRtIGnoDOOY='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#06090d">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2096,7 +2096,7 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
       let r;
       try { r = await window.WP_OCR.recognize(new Blob([buf]), (t) => { if (window.WP_SAY) window.WP_SAY(t); }); }
       catch (e) { throw fail(/下載|網路|fetch/i.test(String(e && e.message)) ? '辨識工具下載失敗，請檢查網路後再試一次' : '這張圖片讀不了：' + ((e && e.message) || e)); }
-      return J({ ok: true, text: window.WP_OCR.toText(r.items), lines: window.WP_OCR.toLines(r.items), geo: window.WP_OCR.toGeo(r.items), w: r.w, h: r.h });
+      return J({ ok: true, text: window.WP_OCR.toText(r.items), lines: window.WP_OCR.toLines(r.items), geo: window.WP_OCR.toGeo(r.items), items: r.items.map((i) => ({ t: i.t, x: +i.x.toFixed(4), y: +i.y.toFixed(4), w: +i.w.toFixed(4), h: +i.h.toFixed(4) })), w: r.w, h: r.h });
     }
     if (post && p === '/api/holdings/scan') return J(await scanNames(body));
     if (post && p === '/api/holdings/alias') {
@@ -4520,12 +4520,108 @@ const parseYuanta = (() => {
 })();
 
 // ───────── 入口：兩種讀法都跑，挑比較可信的 ─────────
-function parseBrokerText(text, geo) {
+// ───────── 照位置讀表格（中國信託「即時庫存／未實現損益」這一類）─────────
+// 需要每個字在圖上的位置（手機辨識才有）。這種畫面：最上面一列是欄位標題；名稱會折成兩三行、代號印在名稱下面；
+// 同一檔可能拆成「現股 1張」「零股 239股」兩列（要加起來）；股數和均價不在同一個畫面（要往右滑），
+// 最右邊那一欄的數字會被螢幕切掉最後一位——均價被切到時，用旁邊的「損益兩平價」把那一位推回來。
+function parseTableItems(items) {
+  if (!Array.isArray(items) || items.length < 6) return [];
+  const its = items.map((i) => ({ t: String(i.t || '').normalize('NFKC').trim(), x0: +i.x, x1: +i.x + +i.w, y0: +i.y, y1: +i.y + +i.h, cx: +i.x + i.w / 2, cy: +i.y + i.h / 2, h: +i.h })).filter((i) => i.t && i.h > 0);
+  const HL = [['name', /^(商品|商品名稱|名稱|股名|股票名稱|股票)$/], ['shares', /^(庫存股數|股數|(今餘|昨餘|庫存|餘額)(\(?[張股]\)?)?)$/], ['cost', /^(成交均價|均價|成本均價|平均成本|買進均價)$/], ['be', /兩平/],
+    ['value', /^(市值|現值)$/], ['price', /^(現價|市價)$/], ['tag', /^(類別|委託別|交易別)$/], ['act', /^動作$/]];
+  const role = (t) => { for (const [r, re] of HL) if (re.test(t)) return r; return null; };
+  let hd = null;
+  for (const a of its) {
+    if (role(a.t) !== 'name') continue;
+    const cols = [];
+    for (const b of its.filter((x) => Math.abs(x.cy - a.cy) < a.h * 0.6)) {
+      const parts = b.t.split(/\s+/);
+      if (parts.length > 1 && parts.every((q) => role(q))) {                   // 兩個標題被讀成一格（「市值 損益兩平價」）：照字數把寬度分開
+        const tot = parts.reduce((n, q) => n + q.length, 0) + (parts.length - 1) * 0.5;
+        let x = b.x0;
+        for (const q of parts) { const w = (b.x1 - b.x0) * q.length / tot; cols.push({ r: role(q), x0: x, x1: x + w }); x += w + (b.x1 - b.x0) * 0.5 / tot; }
+      } else { const r = role(b.t.replace(/\s/g, '')); cols.push({ r: r || 'other', x0: b.x0, x1: b.x1 }); }
+    }
+    const n = cols.filter((c) => !['act', 'other', 'name'].includes(c.r)).length;
+    if (n >= 1 && cols.length >= 3 && (!hd || cols.length > hd.cols.length)) hd = { y: a.y1, cols, name: a };
+  }
+  if (!hd) return [];
+  const foot = its.filter((i) => i.y0 > hd.y && /總市值|投資損益|^市值\s*[:：]/.test(i.t)).map((i) => i.y0), yMax = foot.length ? Math.min(...foot) : 2;
+  const body = its.filter((i) => i.cy > hd.y && i.cy < yMax);
+  const act = hd.cols.find((c) => c.r === 'act'), right = hd.cols.filter((c) => c.x0 > hd.name.x1 - 0.01 && c.r !== 'name').sort((p, q) => p.x0 - q.x0)[0];
+  const nL = act ? act.x1 - 0.01 : 0, nR = right ? right.x0 : hd.name.cx + 0.14;
+  const inName = (i) => i.cx > nL && i.cx < nR;
+  const stocks = [];
+  let pend = [];
+  for (const i of body.filter(inName).sort((p, q) => p.cy - q.cy)) {
+    if (CODE_TW.test(i.t) && pend.length) { stocks.push({ code: i.t, parts: pend, y0: pend[0].y0, y1: i.y1, v: {} }); pend = []; }
+    else if (!/^(下單|明細)$/.test(i.t) && !CODE_TW.test(i.t)) pend.push(i);
+  }
+  if (!stocks.length) return [];
+  const hMed = body.map((i) => i.h).sort((p, q) => p - q)[body.length >> 1] || 0.03, yCut = pend.length ? pend[0].y0 - 0.004 : 2;   // 最下面那檔被畫面切到（看不到代號）：它的數字不要算到上一檔
+  for (const v of body) {
+    if (inName(v) || !/\d/.test(v.t) || v.cy >= yCut) continue;
+    let bs = null, bd = 1e9;
+    for (const st of stocks) { const d = v.cy < st.y0 ? st.y0 - v.cy : v.cy > st.y1 ? v.cy - st.y1 : 0; if (d < bd) { bd = d; bs = st; } }
+    if (!bs || bd > hMed * 0.9) continue;
+    let col = null, cd = 1e9;
+    for (const c of hd.cols) { if (['name', 'act', 'tag'].includes(c.r)) continue; const d = Math.abs(c.x1 - v.x1); if (d < cd) { cd = d; col = c; } }      // 數字靠右對齊：看右邊緣對到哪一欄
+    if (!col || cd > 0.07 || col.r === 'other') continue;
+    (bs.v[col.r] = bs.v[col.r] || []).push(v); bs.y0 = Math.min(bs.y0, v.y0); bs.y1 = Math.max(bs.y1, v.y1);
+  }
+  const unit = (t) => { const m = t.replace(/[\s,]/g, '').match(/^(\d+(?:\.\d+)?)(張|股)?$/); return m ? +m[1] * (m[2] === '張' ? 1000 : 1) : null; };
+  const out = stocks.map((st) => {
+    const name = st.parts.map((q) => q.t).reduce((a, b) => a + (/[A-Za-z0-9]$/.test(a) && /^[A-Za-z0-9]/.test(b) ? ' ' : '') + b, '');
+    const shs = (st.v.shares || []).map((c) => unit(c.t)).filter((n) => n > 0), sh = shs.length ? shs.reduce((a, b) => a + b, 0) : null;
+    const cc = (st.v.cost || [])[0], be = st.v.be && st.v.be[0] ? scanNum(st.v.be[0].t) : null;
+    let cost = cc ? scanNum(cc.t) : null, cut = false;
+    if (cc && cost !== null) { const dec = (cc.t.split('.')[1] || '').replace(/\D/g, '').length; cut = cc.x1 >= 0.975 && dec < 2; }
+    return { name, code: st.code, sh, cost, be, cut, dec: cc ? (cc.t.split('.')[1] || '').replace(/\D/g, '').length : 0, y0: st.y0, y1: st.y1 };
+  });
+  const ratios = out.filter((o) => o.cost > 0 && o.be > 0 && !o.cut).map((o) => o.be / o.cost).filter((r) => r > 1 && r < 1.02).sort((a, b) => a - b), ratio = ratios.length ? ratios[ratios.length >> 1] : 1.0058;
+  return out.filter((o) => o.sh > 0 || o.cost > 0).map((o) => {
+    let cost = o.cost, approx = false;
+    if (o.cut && cost > 0) {                                                   // 均價最後一位被切掉：用損益兩平價推回來（只會落在看得到的那幾位數後面）
+      approx = true;
+      if (o.be > 0) { const step = Math.pow(10, -o.dec), est = Math.round(o.be / ratio * 100) / 100; cost = Math.round(Math.min(Math.max(est, cost), cost + step - 0.01) * 100) / 100; }
+    }
+    const good = o.sh > 0 && cost > 0 && Number.isInteger(o.sh);
+    return { name: o.name.slice(0, 40), kind: 'tw', ok: !!good, shares: o.sh > 0 ? o.sh : null, cost: cost > 0 ? cost : null, price: null, hint: o.code, yr: [o.y0, o.y1], table: true, ...(approx ? { cutCost: true } : {}) };
+  });
+}
+// 好幾張截圖合起來才完整的（中國信託：一張有股數、往右滑的那張才有均價）：同一個代號的「只有股數」和「只有均價」合成一檔。
+// 已經有完整的一筆時，多出來的那些「只有一半」而且對得上的就不要了。
+function joinParts(rows) {
+  const key = (r) => r.kind + ':' + (r.hint ? String(r.hint).toUpperCase() : String(r.name || '').replace(/\s/g, ''));
+  const groups = new Map();
+  rows.forEach((r) => { const k = key(r); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(r); });
+  const drop = new Set(), add = new Map();
+  for (const g of groups.values()) {
+    if (g.length < 2) continue;
+    const full = g.filter((r) => r.ok), part = g.filter((r) => !r.ok);
+    const sOnly = part.filter((r) => r.shares > 0 && !(r.cost > 0)), cOnly = part.filter((r) => r.cost > 0 && !(r.shares > 0));
+    if (full.length) { for (const r of part) if (!(r.shares > 0) || full.some((f) => f.shares === r.shares)) drop.add(r); continue; }
+    const shVals = [...new Set(sOnly.map((r) => r.shares))];
+    if (shVals.length === 1 && cOnly.length) {
+      const c = cOnly.find((r) => !r.cutCost) || cOnly[0], sr = sOnly[0];
+      add.set(g[0], { ...sr, ...c, name: (sr.name || '').length >= (c.name || '').length ? sr.name : c.name, shares: shVals[0], cost: c.cost, ok: true, joined: true });
+      part.forEach((r) => drop.add(r));
+    } else { const seen = new Set(); for (const r of part) { const k2 = r.shares + '|' + r.cost; if (seen.has(k2)) drop.add(r); else seen.add(k2); } }   // 同一張圖丟兩次、或兩個畫面都只有股數：留一筆
+  }
+  const out = [];
+  for (const r of rows) { if (add.has(r)) out.push(add.get(r)); else if (!drop.has(r)) out.push(r); }
+  return out;
+}
+function parseBrokerText(text, geo, items) {
   let y = [], g = [];
   try { y = parseYuanta(String(text || '').replace(/\t/g, '\n')); } catch (e) { y = []; }
   try { g = parseGeneric(text, geo); } catch (e) { g = []; }
   const key = (r) => r.shares + '|' + r.cost;
   const yo = y.filter((r) => r.ok), go = g.filter((r) => r.ok);
+  // 有欄位標題、代號印在名稱下面的表格（中國信託）：照位置讀到的檔數比文字讀法讀完整的多，就用它
+  let tb = [];
+  try { tb = items ? parseTableItems(items) : []; } catch (e) { tb = []; }
+  if (tb.length >= 2 && tb.length > Math.max(yo.length, go.length)) return tb;
   // 元大的版面：讀出來的檔數不比通用讀法少、讀不完整的列也不比它多，就用它
   if (yo.length > 0 && yo.length >= go.length && y.length - yo.length <= g.length - go.length) {
     // 名稱前後若黏著欄位字（「交易別台泥」「庫存明細元大台灣50 0050」），而通用讀法同一檔讀到乾淨的名稱，就換成乾淨的
@@ -4539,7 +4635,7 @@ function parseBrokerText(text, geo) {
   return go.length >= yo.length ? g : y;
 }
 
-return { scanNum, parseBrokerText };
+return { scanNum, parseTableItems, joinParts, parseBrokerText };
 })();
 // ── layout.js ──
 const __m_layout_js = (() => {
@@ -4682,7 +4778,7 @@ const { geotag, CITIES, PLACES } = __m_geo_js;
 const { COUNTRIES } = __m_world_js;
 const { createFx } = __m_fx_js;
 const { matchCommands, matchSpoken, scoreCmd, pushRecent, nextGroup } = __m_palette_js;
-const { parseBrokerText } = __m_scantext_js;
+const { parseBrokerText, joinParts } = __m_scantext_js;
 const { PANELS, PANEL_CODE, PANEL_NAME, BP_COLS, COLS, COL_DEFAULT, SCENES, SCENE_IDS, defaultLayout, sanitizeLayout, visiblePanels, hiddenPanels, layoutDiff } = __m_layout_js;
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -6039,7 +6135,7 @@ const sameVal = (a, b) => { const x = numIn(a), y = numIn(b); return x === null 
 function scanCrop(sc) {
   const c = sc && sc.crop;
   if (!c || !/^blob:/.test(String(c.u)) || !(c.y1 > c.y0) || !(c.a > 0)) return '';
-  if (!(sc.st === 'fill' || sc.st === 'chk' || sc.st === 'need' || sc.approx || sc.est || sc.derived || sc.from === 'hint')) return '';
+  if (!(sc.st === 'fill' || sc.st === 'chk' || sc.st === 'need' || sc.approx || sc.est || sc.derived || sc.cutCost || sc.from === 'hint')) return '';
   return `<div class="h-crop" style="aspect-ratio:1/${(c.a * (c.y1 - c.y0)).toFixed(4)}"><img src="${esc(c.u)}" alt="截圖上的這一檔" style="margin-top:-${(c.y0 * c.a * 100).toFixed(3)}%"></div>`;
 }
 function holdRow(kind, it = {}) {
@@ -6178,6 +6274,8 @@ function scanNote(kind, it) {
   if (sc.from === 'hint' && st === 'new') t += (t ? '・' : '') + '代號是照截圖上印的字帶入的，請對照';
   if (sc.derived && (st === 'upd' || st === 'new' || st === 'need')) t += (t ? '・' : '') + '截圖上沒有均價，用「現值−損益」÷股數推算（含買進手續費），請對照';
   if (sc.multi && (st === 'upd' || st === 'new' || st === 'need')) t += (t ? '・' : '') + `這一檔在 ${sc.multi} 張截圖裡都有（不同券商），股數已相加、均價照股數平均，請對照`;
+  if (sc.joined && (st === 'upd' || st === 'new' || st === 'need')) t += (t ? '・' : '') + '股數和均價是從兩張截圖合起來的';
+  if (sc.cutCost && (st === 'upd' || st === 'new' || st === 'need')) t += (t ? '・' : '') + '均價最後一位被畫面邊緣切到，用旁邊的損益兩平價推回來，可能差幾分錢，請對照';
   if (sc.approx && (st === 'upd' || st === 'new' || st === 'need')) t += (t ? '・' : '') + '截圖上這一檔沒展開、看不到均價，用損益和報酬率推算（可能差一點點）；點卡片右邊的箭頭展開再截圖會更準';
   if (sc.est && (st === 'upd' || st === 'new' || st === 'need')) t += (t ? '・' : '') + '股數沒讀清楚，用台幣損益和匯率推算，請對照截圖';
   else if (st === 'miss') t = '這檔沒出現在截圖裡，沒有更動；已經賣掉的話請按「賣出」或右邊 × 移除';
@@ -6204,13 +6302,13 @@ async function scanFiles(files) {
       window.WP_SAY = (t) => scanStatus('busy', files.length > 1 ? `第 ${i + 1}／${files.length} 張：${t}` : t);   // 手機獨立版在裝置上辨識時回報進度
       const j = await postJSON('/api/holdings/scan', { img: await fileB64(files[i]) });
       if (typeof j.text === 'string') {                  // 回來的是辨識出的文字（手機獨立版，或 Mac 上元大以外的券商）：在這裡整理成一檔一列，再配代號
-        const rs = parseBrokerText(j.text, Array.isArray(j.geo) ? j.geo : null);
+        const rs = parseBrokerText(j.text, Array.isArray(j.geo) ? j.geo : null, Array.isArray(j.items) ? j.items : null);
         if (!rs.length) throw new Error('這張圖裡沒有讀到持股，請確認是券商「庫存」頁的截圖');
         if (Array.isArray(j.lines) && j.w > 0 && j.h > 0) {            // 每一檔在截圖上的那一段：要核對或要補數字時，直接顯示在那一列下面
           let url = ''; try { url = URL.createObjectURL(files[i]); } catch (e) { url = ''; }
           if (url) for (const r of rs) {
-            if (!r.ln) continue;
-            const a = j.lines[Math.max(0, r.ln[0])], b = j.lines[Math.min(j.lines.length - 1, r.ln[1])];
+            if (!r.ln && !r.yr) continue;
+            const a = r.yr ? [r.yr[0], r.yr[0]] : j.lines[Math.max(0, r.ln[0])], b = r.yr ? [r.yr[1], r.yr[1]] : j.lines[Math.min(j.lines.length - 1, r.ln[1])];
             if (!a || !b || !(b[1] > a[0])) continue;
             const pad = Math.max(0.006, (b[1] - a[0]) * 0.12);
             r.crop = { u: url, y0: +Math.max(0, a[0] - pad).toFixed(4), y1: +Math.min(1, b[1] + pad).toFixed(4), a: +(j.h / j.w).toFixed(4) };
@@ -6251,6 +6349,7 @@ let scanLast = null;
 function scanApply(all, errs, what, mode = 'replace') {
   scanLast = { all: all.map((r) => ({ ...r })), errs, what, mode };
   all = all.map((r) => ({ ...r }));
+  all = joinParts(all);                              // 一張有股數、另一張才有均價（中國信託要往右滑）：先合成一檔
   // 好幾張截圖會重複到同一檔：同名只留一筆，優先留數字對得上的；被切到一半、名稱讀壞的那一列，如果股數和均價和別列相同就丟掉
   const m = new Map();
   const scanSame = (o, r) => o.shares === r.shares && (o.cost === r.cost || ((o.approx || r.approx) && Math.abs(o.cost - r.cost) <= Math.max(o.cost, r.cost) * 0.035));
@@ -6280,7 +6379,7 @@ function scanApply(all, errs, what, mode = 'replace') {
   for (const r of rows) {
     const kind = r.kind, k = kind === 'tw' ? 'code' : 'sym', list = holdDraft[kind];
     const code = String(r.code || '').toUpperCase(), name = kind === 'tw' ? String(r.name || '').replace(/\*/g, '') : '';
-    const base = { raw: r.name, auto: code, from: r.from || '', ...(r.derived ? { derived: 1 } : {}), ...(r.est ? { est: 1 } : {}), ...(r.approx ? { approx: 1 } : {}), ...(r.multi ? { multi: r.multi } : {}), ...(r.crop && !r.multi ? { crop: r.crop } : {}) };
+    const base = { raw: r.name, auto: code, from: r.from || '', ...(r.derived ? { derived: 1 } : {}), ...(r.est ? { est: 1 } : {}), ...(r.approx ? { approx: 1 } : {}), ...(r.multi ? { multi: r.multi } : {}), ...(r.crop && !r.multi ? { crop: r.crop } : {}), ...(r.joined ? { joined: 1 } : {}), ...(r.cutCost ? { cutCost: 1 } : {}) };
     const valid = code && scanCodeOk(kind, code);
     let cur = valid ? list.find((x) => String(x[k] || '').toUpperCase() === code) : null;
     if (!cur) cur = list.find((x) => x._scan?.raw && scanNorm(x._scan.raw) === scanNorm(r.name));      // 同一張圖再丟一次：配到上次那一列
@@ -6288,6 +6387,10 @@ function scanApply(all, errs, what, mode = 'replace') {
       if (cur && hit.has(cur) && r.shares > 0) {     // 這次已經帶入同一檔（另一張截圖讀完整了）：這張只讀到股數，另外列一筆請使用者補均價，不要默默丟掉
         list.push({ [k]: '', name: (valid ? code + ' ' : '') + r.name, shares: String(r.shares), cost: r.cost != null ? String(r.cost) : '', _scan: { ...base, st: 'fill', dup: 1 } });
         n.fill++; continue;
+      }
+      if (cur && !hit.has(cur) && ((r.cost > 0 && String(cur.cost || '') === '' && +cur.shares > 0) || (r.shares > 0 && String(cur.shares || '') === '' && +cur.cost > 0))) {
+        if (r.cost > 0 && String(cur.cost || '') === '') cur.cost = String(r.cost); else cur.shares = String(r.shares);      // 上一張只讀到一半、這一張補上另一半（分兩次上傳）
+        cur._scan = { ...base, st: valid ? 'new' : 'need', joined: 1, old: null }; hit.add(cur); n[valid ? 'new' : 'need']++; continue;
       }
       if (cur && +cur.shares > 0) { cur._scan = { ...base, st: 'chk' }; hit.add(cur); n.chk++; }
       else {                                       // 清單上還沒有這一檔：照樣列出來，讀到的先填，空的請使用者對著下面的截圖補
