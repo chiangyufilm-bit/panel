@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-wW8wIP304ccJp1RhvQG89VUMA7mFf6i1ziqsx/r/2KM=' 'sha256-Tkh2yVhNu8wCUGvZ2wCpkRSaOiKpHZef6/7b3QY3obI='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-d/KP5olXP3iPVmWewxgbI/22ydSxQWwr/i/tOoCNeao=' 'sha256-TYhNf4rQecuCwyfw/eD0Ma3kB7z2Cc59zZHodVIrci4='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#06090d">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1226,9 +1226,9 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
 .h-scan { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; font-size: 11px; line-height: 16px; color: var(--ink-2); padding-left: 2px; }
 .h-tag { font-size: 10.5px; padding: 0 7px; border-radius: 5px; border: 1px solid var(--line-2); color: var(--ink-3); white-space: nowrap; }
 .h-tag.upd, .h-tag.new { color: var(--accent); border-color: rgba(127,227,242,.45); background: var(--accent-dim); }
-.h-tag.need, .h-tag.chk, .h-tag.miss { color: var(--warn); border-color: rgba(243,198,77,.5); background: rgba(243,198,77,.08); }
+.h-tag.need, .h-tag.chk, .h-tag.miss, .h-tag.fill { color: var(--warn); border-color: rgba(243,198,77,.5); background: rgba(243,198,77,.08); }
 .hold-row.scan-upd, .hold-row.scan-new { background: rgba(127,227,242,.04); }
-.hold-row.scan-need, .hold-row.scan-chk, .hold-row.scan-miss { background: rgba(243,198,77,.04); }
+.hold-row.scan-need, .hold-row.scan-chk, .hold-row.scan-miss, .hold-row.scan-fill { background: rgba(243,198,77,.04); }
 .hold-row input.chg { border-color: rgba(127,227,242,.6); background: rgba(127,227,242,.1); }
 .hold-row.scan-need input.h-code { border-color: rgba(243,198,77,.75); }
 @media (max-width: 639px) {
@@ -1241,7 +1241,7 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
   .h-scan { font-size: 12.5px; line-height: 1.6; }
   .h-tag { font-size: 12px; padding: 1px 8px; }
   .hold-row.scan-upd, .hold-row.scan-new { border-color: rgba(127,227,242,.4); }
-  .hold-row.scan-need, .hold-row.scan-chk, .hold-row.scan-miss { border-color: rgba(243,198,77,.45); }
+  .hold-row.scan-need, .hold-row.scan-chk, .hold-row.scan-miss, .hold-row.scan-fill { border-color: rgba(243,198,77,.45); }
 }
 
 .as-cap { font-size: 10px; letter-spacing: .08em; color: var(--ink-3); margin-top: 8px; }
@@ -1343,6 +1343,11 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
 .empty.welcome b { font-size: 15px; color: var(--ink-1, #e9eef4); font-weight: 600; }
 .empty.welcome p { margin: 0; font-size: 12.5px; line-height: 1.7; color: var(--ink-2); }
 .empty.welcome .btn { min-height: 44px; font-size: 14px; }
+
+/* 截圖上的這一檔（要核對或要補數字時顯示） */
+.h-crop { grid-column: 1 / -1; max-width: 460px; overflow: hidden; border-radius: 8px; border: 1px solid var(--line-2); background: #fff; margin: 2px 0 4px; }
+.h-crop img { display: block; width: 100%; height: auto; max-width: none; }
+.hold-row.scan-fill input.h-sh:placeholder-shown, .hold-row.scan-fill input.h-cost:placeholder-shown { border-color: rgba(243,198,77,.75); }
 
 </style>
 </head>
@@ -2087,7 +2092,7 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
       let r;
       try { r = await window.WP_OCR.recognize(new Blob([buf]), (t) => { if (window.WP_SAY) window.WP_SAY(t); }); }
       catch (e) { throw fail(/下載|網路|fetch/i.test(String(e && e.message)) ? '辨識工具下載失敗，請檢查網路後再試一次' : '這張圖片讀不了：' + ((e && e.message) || e)); }
-      return J({ ok: true, text: window.WP_OCR.toText(r.items) });
+      return J({ ok: true, text: window.WP_OCR.toText(r.items), lines: window.WP_OCR.toLines(r.items), w: r.w, h: r.h });
     }
     if (post && p === '/api/holdings/scan') return J(await scanNames(body));
     if (post && p === '/api/holdings/alias') {
@@ -2431,7 +2436,16 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
     }
     return rows.map((r) => r.it.sort((a, b) => a.x - b.x).map((i) => i.t.replace(/\t/g, ' ')).join('\t')).join('\n');      // 同一列的格子用 Tab 隔開
   }
-  window.WP_OCR = { recognize, warm: init, toText };
+  // 每一行文字在圖上的上下位置（0–1），順序和 toText 的每一行一樣：用來把「這一檔」在截圖上的那一段切出來給使用者對照
+  function toLines(items) {
+    const its = items.slice().sort((a, b) => a.y - b.y), rows = [];
+    for (const i of its) {
+      const r = rows[rows.length - 1];
+      if (r && Math.abs(r.y - i.y) < Math.max(r.h, i.h) * 0.4) { r.h = Math.max(r.h, i.h); r.y0 = Math.min(r.y0, i.y); r.y1 = Math.max(r.y1, i.y + i.h); } else rows.push({ y: i.y, h: i.h, y0: i.y, y1: i.y + i.h });
+    }
+    return rows.map((r) => [+r.y0.toFixed(4), +r.y1.toFixed(4)]);
+  }
+  window.WP_OCR = { recognize, warm: init, toText, toLines };
 })();
 
 </script>
@@ -4103,7 +4117,7 @@ function tokens(text) {
     const n = x.label || x.chg ? null : scanNum(t);
     const pct = n !== null && /%[.。]?$/.test(t.normalize('NFKC').trim());
     const cdTw = !pct && CODE_TW.test(t), cdUs = !pct && n === null && t.length >= 2 && CODE_US.test(t) && !UI.test(t);
-    return { t, ln: x.ln, n, pct, paren: !!x.paren, label: !!x.label, chg: !!x.chg, role: x.role || null, code: x.code || cdTw || cdUs ? t : null, usCode: cdUs };
+    return { t, ln: x.ln, n, pct, paren: !!x.paren, label: !!x.label, chg: !!x.chg, role: x.role || null, code: x.code || cdTw || cdUs ? t : null, usCode: cdUs, xc: !!x.code };
   });
 }
 const NOTNAME = /占比|佔比|申購|櫃買|加權|應付|紀錄|交割|健診|新聞|分析|帳號|帳戶|委託|回報|成交|條件單|注意|時間|日期|市場|修改|刪除|搜尋|請輸入|功能|資產|總值|總額/;
@@ -4301,9 +4315,44 @@ function parseGeneric(text) {
     const used = new Set(best ? best.used : []);
     const cd = toks.find((x, j) => j > lo && j <= Math.min(toks.length - 1, k + 3) && x.ln >= line - 1 && x.ln <= line + 2 && x.code && !used.has(j) && (us ? x.usCode : CODE_TW.test(x.code)));
     if (!name && cd && us) name = cd.code;            // 美股只寫代號（AAPL）
-    rows.push({ name: name.slice(0, 40), kind: us ? 'us' : 'tw', ok: !!(best && name), shares: best ? best.shares : null, cost: best ? best.cost : null, price: best ? best.price : null,
+    // 沒對上的：有標籤的股數、均價如果讀到了，先帶著（畫面上會列出這一檔，請使用者補空的那格）
+    let part = null;
+    if (!best) {
+      const seg2 = toks.slice(lo + 1, Math.min(toks.length, k + 7)), fs = seg2.find((x) => x.n !== null && !x.pct && x.role === 'shares' && x.n > 0), fc = seg2.find((x) => x.n !== null && !x.pct && x.role === 'cost' && x.n > 0);
+      if (fs || fc) part = { shares: fs ? fs.n : null, cost: fc ? fc.n : null };
+    }
+    const lns = [line, toks[k].ln, ...(best ? best.used.map((u) => toks[u].ln) : []), ...(cd ? [cd.ln] : [])];
+    rows.push({ name: name.slice(0, 40), kind: us ? 'us' : 'tw', ok: !!(best && name), shares: best ? best.shares : part ? part.shares : null, cost: best ? best.cost : part ? part.cost : null, price: best ? best.price : null, ln: [Math.min(...lns), Math.max(...lns)],
       ...(cd ? { hint: cd.code } : {}), ...(best && best.derived ? { derived: true } : {}), ...(best && best.est ? { est: true } : {}), ...(best && best.approx ? { approx: true } : {}) });
     if (best) lo = best.card ? Math.max(k, ...best.used) : k;
+  }
+  // 保底：畫面上印著「名稱＋代號」、上面卻沒有整理出來的股票，也列出來（讀到的股數、均價先帶著，其餘請使用者補），
+  // 不管是哪一家券商的排法，圖裡看得到的股票都不會整檔消失。
+  {
+    const inRow = (ln) => rows.some((r) => r.ln && ln >= r.ln[0] && ln <= r.ln[1]);
+    const anchors = [];
+    toks.forEach((x, j) => {
+      if (!x.code || x.pct || inRow(x.ln) || anchors.some((a) => a.ln === x.ln)) return;
+      const pv = toks[j - 1], same = pv && pv.ln === x.ln;
+      const ok = x.usCode ? same && TAG.test(pv.t) : CODE_TW.test(x.code) && (x.xc || (same && nameOk(pv) && /[一-鿿]{2}/.test(pv.t)));
+      if (ok) anchors.push({ j, ln: x.ln, us: !!x.usCode });
+    });
+    anchors.forEach((a, i) => {
+      let end = Math.min(toks.length, a.j + 26);
+      if (anchors[i + 1]) end = Math.min(end, anchors[i + 1].j);
+      for (let j = a.j + 1; j < end; j++) if (inRow(toks[j].ln)) { end = j; break; }
+      const blk = toks.slice(a.j + 1, end);
+      let nm = toks.filter((x) => x.ln === a.ln && nameOk(x));
+      if (!nm.length) nm = toks.filter((x) => x.ln === a.ln + 1 && nameOk(x));
+      if (!nm.length) nm = toks.filter((x) => x.ln === a.ln - 1 && nameOk(x) && !inRow(x.ln));
+      const name = nm.map((x) => (/[^\x00-\x7f]/.test(x.t) ? x.t : ' ' + x.t + ' ')).join('').replace(/\s+/g, ' ').trim() || (a.us ? toks[a.j].code : '');
+      if (!name) return;
+      const fs = blk.find((x) => x.n !== null && !x.pct && x.role === 'shares' && x.n > 0), fc = blk.find((x) => x.n !== null && !x.pct && x.role === 'cost' && x.n > 0);
+      const good = fs && fc && (a.us || Number.isInteger(fs.n)) && sane(fc.n, null, fs.n, a.us);
+      const last = Math.max(a.ln, ...[fs, fc].filter(Boolean).map((x) => x.ln), Math.min(a.ln + 3, blk.length ? blk[blk.length - 1].ln : a.ln));
+      rows.push({ name: name.slice(0, 40), kind: a.us ? 'us' : 'tw', ok: !!good, shares: fs ? fs.n : null, cost: fc ? fc.n : null, price: null, hint: toks[a.j].code, ln: [Math.min(a.ln, ...nm.map((x) => x.ln)), last] });
+    });
+    rows.sort((p, q) => (p.ln && q.ln ? p.ln[0] - q.ln[0] : 0));
   }
   for (let i = rows.length - 1; i >= 0; i--) if (!rows[i].name) rows.splice(i, 1);     // 連名稱都沒有的（畫面邊緣被切到）沒有用
   // 同一張截圖裡同一檔出現好幾列（現股＋融資、一筆一筆的明細）：合成一列，股數相加、均價加權
@@ -5933,6 +5982,13 @@ function toast(text) {
 const half = (v) => String(v ?? '').replace(/[０-９．Ａ-Ｚａ-ｚ]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xFEE0)).replace(/[,，\s]/g, '');   // 全形轉半形、去掉千分位
 const numIn = (v) => { const t = half(v); return t === '' ? null : /^\d+(\.\d+)?$/.test(t) ? +t : NaN; };
 const sameVal = (a, b) => { const x = numIn(a), y = numIn(b); return x === null || y === null || Number.isNaN(x) || Number.isNaN(y) ? half(a) === half(b) : x === y; };   // 35 和 35.0 算一樣
+// 要核對或要補數字的那一檔：把截圖上那一段直接顯示在下面（圖片只在這台裝置上，不會送出去）
+function scanCrop(sc) {
+  const c = sc && sc.crop;
+  if (!c || !/^blob:/.test(String(c.u)) || !(c.y1 > c.y0) || !(c.a > 0)) return '';
+  if (!(sc.st === 'fill' || sc.st === 'chk' || sc.st === 'need' || sc.approx || sc.est || sc.derived || sc.from === 'hint')) return '';
+  return `<div class="h-crop" style="aspect-ratio:1/${(c.a * (c.y1 - c.y0)).toFixed(4)}"><img src="${esc(c.u)}" alt="截圖上的這一檔" style="margin-top:-${(c.y0 * c.a * 100).toFixed(3)}%"></div>`;
+}
 function holdRow(kind, it = {}) {
   const id = kind === 'tw' ? it.code : it.sym;
   const v = (x) => (x == null || x === '' ? '' : String(x));
@@ -5943,7 +5999,7 @@ function holdRow(kind, it = {}) {
     <label class="hf hf-sh"><span>股數</span><input class="h-sh${chg('shares')}" value="${esc(v(it.shares))}" inputmode="decimal" placeholder="留空" autocomplete="off"></label>
     <label class="hf hf-cost"><span>均價</span><input class="h-cost${chg('cost')}" value="${esc(v(it.cost))}" inputmode="decimal" placeholder="留空" autocomplete="off"></label>
     <button class="h-del" title="移除這檔" aria-label="移除這檔">×</button>
-    ${sc ? `<div class="h-scan">${scanNote(kind, it)}</div>` : ''}<div class="h-info"></div></div>`;
+    ${sc ? `<div class="h-scan">${scanNote(kind, it)}</div>` : ''}${scanCrop(sc)}<div class="h-info"></div></div>`;
 }
 function holdRead(r) {
   const key = holdTab === 'tw' ? 'code' : 'sym';
@@ -6049,7 +6105,7 @@ $('hold-cancel').addEventListener('click', holdClose);
 const scanNorm = (t) => String(t || '').normalize('NFKC').replace(/[\s*]/g, '').toUpperCase();
 const fileB64 = (f) => new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(',').pop()); r.onerror = () => no(new Error('讀不到檔案')); r.readAsDataURL(f); });
 const scanCodeOk = (kind, c) => (kind === 'tw' ? /^[0-9A-Z]{2,8}$/ : /^[A-Z][A-Z0-9.\-]{0,9}$/).test(c);
-const SCAN_TAG = { upd: '已更新', new: '新增', same: '和截圖一致', need: '請填代號', chk: '請核對', miss: '截圖裡沒有' };
+const SCAN_TAG = { upd: '已更新', new: '新增', same: '和截圖一致', need: '請填代號', chk: '請核對', fill: '請補數字', miss: '截圖裡沒有' };
 function scanNote(kind, it) {
   const sc = it._scan, dS = (n) => fmt(+n, +n % 1 ? 4 : 0), dC = (n) => fmt(+n, kind === 'tw' ? 2 : 3);
   let st = sc.st, t = '';
@@ -6062,6 +6118,7 @@ function scanNote(kind, it) {
   } else if (st === 'new') t = sc.st === 'need' ? `截圖上的名稱「${sc.raw}」：填好代號，下次會自動配對` : '截圖裡有、清單裡原本沒有';
   if (st === 'need') t = `截圖上的名稱「${sc.raw}」配不到代號，請填一次，之後會記住`;
   else if (st === 'chk') t = '截圖裡這檔讀不完整（可能被畫面邊緣切到），數字沒改，請對照截圖';
+  else if (st === 'fill') t = (it.code || it.sym ? '' : `截圖上的名稱「${sc.raw}」・`) + '這一檔的數字沒有讀完整，請對照' + (sc.crop ? '下面這段截圖' : '截圖') + '，把空的那格填上';
   if (sc.from === 'hint' && st === 'new') t += (t ? '・' : '') + '代號是照截圖上印的字帶入的，請對照';
   if (sc.derived && (st === 'upd' || st === 'new' || st === 'need')) t += (t ? '・' : '') + '截圖上沒有均價，用「現值−損益」÷股數推算（含買進手續費），請對照';
   if (sc.multi && (st === 'upd' || st === 'new' || st === 'need')) t += (t ? '・' : '') + `這一檔在 ${sc.multi} 張截圖裡都有（不同券商），股數已相加、均價照股數平均，請對照`;
@@ -6093,6 +6150,16 @@ async function scanFiles(files) {
       if (typeof j.text === 'string') {                  // 回來的是辨識出的文字（手機獨立版，或 Mac 上元大以外的券商）：在這裡整理成一檔一列，再配代號
         const rs = parseBrokerText(j.text);
         if (!rs.length) throw new Error('這張圖裡沒有讀到持股，請確認是券商「庫存」頁的截圖');
+        if (Array.isArray(j.lines) && j.w > 0 && j.h > 0) {            // 每一檔在截圖上的那一段：要核對或要補數字時，直接顯示在那一列下面
+          let url = ''; try { url = URL.createObjectURL(files[i]); } catch (e) { url = ''; }
+          if (url) for (const r of rs) {
+            if (!r.ln) continue;
+            const a = j.lines[Math.max(0, r.ln[0])], b = j.lines[Math.min(j.lines.length - 1, r.ln[1])];
+            if (!a || !b || !(b[1] > a[0])) continue;
+            const pad = Math.max(0.006, (b[1] - a[0]) * 0.12);
+            r.crop = { u: url, y0: +Math.max(0, a[0] - pad).toFixed(4), y1: +Math.min(1, b[1] + pad).toFixed(4), a: +(j.h / j.w).toFixed(4) };
+          }
+        }
         scanStatus('busy', `讀到 ${rs.length} 檔，正在配對代號…`);
         try {
           const m = await postJSON('/api/holdings/scan', { names: rs.map((r) => ({ kind: r.kind, name: r.name, price: r.price, ...(r.hint ? { hint: r.hint } : {}) })) });
@@ -6147,16 +6214,22 @@ function scanApply(all, errs, what) {
   });
   if (!rows.length) { const m = '沒有讀到持股：' + (errs[0] || '請選庫存頁的截圖'); scanStatus('err', m); $('hold-msg').className = 'dlg-note err'; $('hold-msg').textContent = m; return; }
   if (what === '文字') for (const o of [...holdDraft.tw, ...holdDraft.us]) if (o._scan?.st === 'miss') delete o._scan;
-  const n = { upd: 0, new: 0, same: 0, need: 0, chk: 0, miss: 0 }, lost = [], hit = new Set();
+  const n = { upd: 0, new: 0, same: 0, need: 0, chk: 0, miss: 0, fill: 0 }, lost = [], hit = new Set();
   for (const r of rows) {
     const kind = r.kind, k = kind === 'tw' ? 'code' : 'sym', list = holdDraft[kind];
     const code = String(r.code || '').toUpperCase(), name = kind === 'tw' ? String(r.name || '').replace(/\*/g, '') : '';
-    const base = { raw: r.name, auto: code, from: r.from || '', ...(r.derived ? { derived: 1 } : {}), ...(r.est ? { est: 1 } : {}), ...(r.approx ? { approx: 1 } : {}), ...(r.multi ? { multi: r.multi } : {}) };
+    const base = { raw: r.name, auto: code, from: r.from || '', ...(r.derived ? { derived: 1 } : {}), ...(r.est ? { est: 1 } : {}), ...(r.approx ? { approx: 1 } : {}), ...(r.multi ? { multi: r.multi } : {}), ...(r.crop && !r.multi ? { crop: r.crop } : {}) };
     const valid = code && scanCodeOk(kind, code);
     let cur = valid ? list.find((x) => String(x[k] || '').toUpperCase() === code) : null;
     if (!cur) cur = list.find((x) => x._scan?.raw && scanNorm(x._scan.raw) === scanNorm(r.name));      // 同一張圖再丟一次：配到上次那一列
     if (!r.ok) {                                   // 數字和截圖上的損益對不起來：不改數字，只標出來
-      if (cur) { cur._scan = { ...base, st: 'chk' }; hit.add(cur); n.chk++; } else lost.push(r.name);
+      if (cur && +cur.shares > 0) { cur._scan = { ...base, st: 'chk' }; hit.add(cur); n.chk++; }
+      else {                                       // 清單上還沒有這一檔：照樣列出來，讀到的先填，空的請使用者對著下面的截圖補
+        const sh = r.shares != null ? String(r.shares) : '', co = r.cost != null ? String(r.cost) : '';
+        if (cur) { if (valid) cur[k] = code; if (sh) cur.shares = sh; if (co) cur.cost = co; cur._scan = { ...base, st: 'fill' }; }
+        else { cur = { [k]: valid ? code : '', name: name || (valid ? '' : r.name), shares: sh, cost: co, _scan: { ...base, st: 'fill' } }; list.push(cur); }
+        hit.add(cur); n.fill++;
+      }
       continue;
     }
     const sv = valid ? ((CFG.watchlist || {})[kind] || []).find((x) => String(x[k] || '').toUpperCase() === code) : null;
@@ -6175,14 +6248,14 @@ function scanApply(all, errs, what) {
   const nk = (kd) => rows.filter((r) => r.kind === kd).length;      // 切到這次截圖讀到最多的那一邊
   holdTab = nk('us') > nk('tw') ? 'us' : nk('tw') ? 'tw' : holdTab;
   holdDraw();
-  const first = $('hold-rows').querySelector('.scan-need, .scan-chk, .scan-upd, .scan-new, .scan-miss');
+  const first = $('hold-rows').querySelector('.scan-fill, .scan-need, .scan-chk, .scan-upd, .scan-new, .scan-miss');
   if (first) first.scrollIntoView({ block: 'nearest' });
-  const parts = [n.upd && `更新 ${n.upd}`, n.new && `新增 ${n.new}`, n.same && `沒變 ${n.same}`, n.need && `要填代號 ${n.need}`, n.chk && `要核對 ${n.chk}`, n.miss && `截圖裡沒有 ${n.miss}`].filter(Boolean);
+  const parts = [n.upd && `更新 ${n.upd}`, n.new && `新增 ${n.new}`, n.same && `沒變 ${n.same}`, n.need && `要填代號 ${n.need}`, n.fill && `要補數字 ${n.fill}`, n.chk && `要核對 ${n.chk}`, n.miss && `截圖裡沒有 ${n.miss}`].filter(Boolean);
   let msg = `${what}讀到 ${rows.length} 檔：${parts.join('、')}。標顏色的地方請對照截圖，沒問題按「儲存」。`;
   if (lost.length) msg += `有 ${lost.length} 檔讀不完整沒有帶入：${lost.join('、')}，請重截一張或手動新增。`;
   if (errs.length) msg += `有 ${errs.length} 張沒讀成功：${errs[0]}。`;
   $('hold-msg').className = 'dlg-note err'; $('hold-msg').textContent = msg;
-  const todo = n.need + n.chk;
+  const todo = n.need + n.chk + n.fill;
   scanStatus(todo || lost.length || errs.length ? 'warn' : 'ok', (todo ? '⚠ ' : '✓ ') + msg);
   $('scan-status').scrollIntoView({ block: 'start' });         // 結果和下面標了顏色的清單一起看得到
   toast(`${what}讀到 ${rows.length} 檔` + (todo ? `，有 ${todo} 檔要你看一下` : '，核對後按「儲存」'));
