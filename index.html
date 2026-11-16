@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-XFk5vljvwvWDxWcs8phAya8rXE6jRfmyN2sLjCkcRDY=' 'sha256-sNc1kaeOQWD+oejnLS4IPz9JXYeFA7s2G3Z5NSRxbYY='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-XFk5vljvwvWDxWcs8phAya8rXE6jRfmyN2sLjCkcRDY=' 'sha256-H6Ilie0tleR76j3dZwnWq/UYk0D5RBibel8mVrAKBjk='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#06090d">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1353,6 +1353,12 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
 .scan-mode-tip { margin-top: 6px; font-size: 12px; color: var(--ink-2); }
 .scan-status .scan-mode { display: block; margin-top: 8px; height: auto; min-height: 34px; padding: 6px 12px; white-space: normal; text-align: left; line-height: 1.4; color: var(--accent); border-color: rgba(127,227,242,.5); }
 
+/* 自選股標題列：欄位窄的時候按鈕不可以被切到——先把代碼小字收起來、間距縮小，再窄就把「編輯持股」縮成「編輯」 */
+.panel-watch { container-type: inline-size; container-name: watch; }
+.edit-btn span i { font-style: normal; }
+@container watch (max-width: 380px) { .panel-watch h2 { gap: 5px; letter-spacing: .12em; } .panel-watch h2 .pcode { display: none; } .panel-watch h2 .tabs button { padding: 0 7px; } .panel-watch h2 .mini { padding-left: 6px; padding-right: 6px; } }
+@container watch (max-width: 300px) { .edit-btn span i { display: none; } }
+
 </style>
 </head>
 <body>
@@ -1537,7 +1543,7 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
           <span class="tabs" id="watch-tabs"><button data-tab="tw" class="on">台股</button><button data-tab="us">美股</button></span>
           <button class="mini" id="watch-pl" title="顯示／隱藏持股損益">損益</button>
           <button class="mini" id="watch-health" title="持股健檢：把你的持股現況整理成一頁（集中度、配置、股性）">健檢</button>
-          <button class="mini edit-btn" id="watch-edit" title="新增、刪除股票，或修改股數和均價"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 13l.6-2.6L10.8 3.2a1.2 1.2 0 011.7 0l.3.3a1.2 1.2 0 010 1.7L5.6 12.4z"/></svg>編輯持股</button>
+          <button class="mini edit-btn" id="watch-edit" title="新增、刪除股票，或修改股數和均價"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 13l.6-2.6L10.8 3.2a1.2 1.2 0 011.7 0l.3.3a1.2 1.2 0 010 1.7L5.6 12.4z"/></svg><span>編輯<i>持股</i></span></button>
         </h2>
         <div id="assets" class="assets"></div>
         <div id="watch-sum" class="watch-sum"></div>
@@ -5725,7 +5731,8 @@ function applySizes() {
     if ($('stage').getBoundingClientRect().width < 200) grid.style.gridTemplateColumns = '';
   } else if (layoutMode !== 'tall') grid.style.gridTemplateColumns = '';
   document.querySelectorAll('.panel').forEach((p) => {
-    const h = p.classList.contains('slim') ? 0 : sz.panels[p.id];          // 精簡狀態下不套用手動調過的高度
+    let h = p.classList.contains('slim') ? 0 : sz.panels[p.id];          // 精簡狀態下不套用手動調過的高度
+    if (h && h < 64) h = 0;                                              // 被拖到只剩標題、內容全部看不到的：當作沒調過，回到原本的高度
     p.classList.toggle('sized', !!h);
     p.style.height = h ? h + 'px' : '';
   });
@@ -5780,7 +5787,7 @@ function moveResize(e) {
   const sz = sizesFor();
   if (rz.row) {
     const colH = $(rz.id).parentElement.clientHeight || 2000;
-    sz.panels[rz.id] = Math.round(clamp(rz.start + (e.clientY - rz.y), 44, Math.max(120, colH - 20)));
+    sz.panels[rz.id] = Math.round(clamp(rz.start + (e.clientY - rz.y), 64, Math.max(120, colH - 20)));
   } else {
     // 側欄最寬只能寬到讓中間的地球還剩 STAGE_MIN 像素
     sz.cols[rz.id] = Math.round(clamp(rz.start + (e.clientX - rz.x) * rz.dir, COL_MIN, Math.max(COL_MIN, rz.start + rz.stage0 - STAGE_MIN)));
