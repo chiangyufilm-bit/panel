@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-SR62m6ogMQd1HWa5oa7l+dG9XV74WSbk3YEhEM5ZESg=' 'sha256-Ee4H79OZPOO72hTla0PlWCQMa8PwtVMrhVpSVmcvw4M='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://geocoding-api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-zZtkN2eXkbntg6sSj9NKhrQ50kd8T8SIKxBYA2ZaRDk=' 'sha256-UyEvdft+wo97piGJjakOkCUJl4TTQms2jyVfcdSrlS0='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://geocoding-api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#06090d">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1417,11 +1417,11 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
 .pf-res button:hover { border-color: var(--accent); }
 .pf-list { display: grid; gap: 4px; }
 .pf-row { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 7px; border: 1px solid var(--line); min-height: 36px; }
-.pf-row > b { font-weight: 500; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 3em; flex: 0 1 auto; }
+.pf-row > b { font-weight: 500; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 0 1 auto; }
 /* 名稱或時區很長（布宜諾斯艾利斯、America/Argentina/Buenos_Aires）時不可以把整列撐出視窗外 */
 .pf-body > *, .pf-list, .pf-row, .pf-res button { min-width: 0; max-width: 100%; }
 .pf-body { grid-template-columns: minmax(0, 1fr); }
-.pf-res button b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 0 1 auto; min-width: 3em; }
+.pf-res button b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 0 1 auto; min-width: 0; }
 .pf-res button small { flex: 1 1 0; min-width: 0; }
 .pf-row > small { flex: 1; min-width: 0; }
 .pf-row label { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; font-size: 11.5px; color: var(--ink-2); }
@@ -1443,20 +1443,11 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
   .pf-body { font-size: 14px; flex: 1 1 auto; min-height: 0; }
   .pf-search input, .pf-row input, .pf-add input { height: 44px; font-size: 16px; }
   .pf-row { min-height: 48px; } .pf-row .pf-ic { width: 36px; height: 36px; font-size: 16px; }
-  /* 手機上一列放不下：名稱和按鈕在第一行，時區／關鍵字的小字換到第二行；「搜尋」「加入」和輸入框一樣高 */
-  .pf-row { flex-wrap: wrap; row-gap: 2px; padding-top: 7px; padding-bottom: 7px; }
-  .pf-row > b { flex: 1 1 0; }
-  .pf-row > small { order: 9; flex: 1 1 100%; white-space: normal; overflow-wrap: anywhere; }
-  .pf-fxrow > small { order: 0; flex: 1 1 0; white-space: nowrap; }
-  .pf-search .btn, .pf-add .btn { height: 44px; padding: 0 16px; font-size: 15px; }
   .pf-chip { height: 36px; padding: 0 14px; font-size: 14px; border-radius: 18px; }
   .pf-res button { padding: 11px 12px; font-size: 15px; }
   .grid.m-phone .tp-tabs button { height: 30px; padding: 0 12px; font-size: 13px; border-radius: 15px; }
   .grid.m-phone .pf-edit { height: 30px; }
 }
-.macro-none { grid-column: 1 / -1; padding: 8px 2px; text-align: left; }
-/* 電腦上主題多的時候分成兩行（滑鼠不好橫向捲），手機維持左右滑 */
-.grid:not(.m-phone) .tp-tabs { flex-wrap: wrap; overflow: visible; row-gap: 5px; }
 
 </style>
 </head>
@@ -1902,12 +1893,7 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
     let url;
     if (GAS) { q.set('a', action); q.set('k', CODE); q.set('d', DEV); url = RELAY + '?' + q; } else url = `${RELAY}/relay/${action}?${q}`;
     const init = body ? { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body) } : {};
-    // 中轉站偶爾會卡住不回：最多等 45 秒就放棄這一次，下一輪再問（不然會一直停在同一個請求上）
-    const ac = typeof AbortController === 'function' ? new AbortController() : null, timer = ac ? setTimeout(() => ac.abort(), 45000) : 0;
-    let r;
-    try { r = await real(url, { cache: 'no-store', redirect: 'follow', ...init, ...(ac ? { signal: ac.signal } : {}) }); }
-    catch (e) { throw fail(ac && ac.signal.aborted ? '資料中轉站太久沒有回應' : '連不上資料中轉站', 502); }
-    finally { clearTimeout(timer); }
+    const r = await real(url, { cache: 'no-store', redirect: 'follow', ...init });
     if (!r.ok && r.status >= 500) throw fail('資料中轉站暫時沒有回應', 502);
     const j = await r.json();
     if (j && j.auth) { gate(j.error); throw fail(j.error || '啟用碼無效', 401); }
@@ -2259,12 +2245,6 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
   }
   // 面板每秒問一次狀態；這裡只在需要的時候才真的去問中轉站（開盤中 15 秒、其他時間 60 秒、頁面在背景不問），省流量
   let nextAt = 0, relaySince = 0, meta = {}, pending = {}, skew = 0;
-  let relayFails = 0, gotState = false;
-  // 還沒拿到過任何行情就失敗時，把那幾區的「讀取中…」換成原因（拿到資料後面板會自己重畫蓋掉）
-  function relayNote(why) {
-    if (gotState) return;
-    for (const id of ['tw', 'us', 'gold', 'watch']) { const el = document.querySelector('#' + id + ' > .empty:only-child'); if (el && (why || el.dataset.why)) { if (!el.dataset.orig) el.dataset.orig = el.textContent; el.dataset.why = why ? '1' : ''; el.textContent = why || el.dataset.orig; } }
-  }
   async function route(u, init) {
     const p = u.pathname, post = (init.method || 'GET').toUpperCase() === 'POST';
     const body = post ? JSON.parse(init.body || 'null') : null, d = load();
@@ -2281,16 +2261,7 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
           // 狀態燈的門檻是照 Mac 版「幾秒更新一次」訂的；手機版是每 15～60 秒問一次，中轉站有正常回應、沒有報錯就算正常
           if (j.state) for (const k of ['tw', 'us', 'tx']) if (meta[k] && !meta[k][1]) meta[k] = [Math.max(meta[k][0], j.now - 20), null];
           if (j.state) { for (const k of ['tw', 'us']) if (j.state[k] && j.state[k].w) quotes[k] = j.state[k].w; if (j.state.us && j.state.us.usdtwd) quotes.fx = j.state.us.usdtwd.last || quotes.fx; }
-          if (!j || !j.state) throw fail((j && j.error) || '資料中轉站沒有回傳資料', 502);      // 例如當天額度用完：有回應但沒有資料，也算失敗
-          relayFails = 0; gotState = true; relayNote('');
-        } catch (e) {
-          // 連不上、回錯誤、額度用完：不要一直顯示「讀取中」。說明原因，燈號標成延遲，重試間隔越拉越長（8 秒 → 最長 2 分鐘），免得一直去敲
-          relayFails++;
-          nextAt = now + [8000, 20000, 60000, 120000][Math.min(relayFails - 1, 3)];
-          const why = /too many times|quota|額度/i.test(String(e && e.message)) ? '今天的資料額度用完了，明天會自動恢復' : (e && e.status === 401) ? '' : '資料來源暫時連不上，會自動再試';
-          if (why) { for (const k of ['tw', 'us', 'news']) meta = { ...meta, [k]: [(meta[k] && meta[k][0]) || 0, why] }; relayNote(why); }
-          if (!Object.keys(meta).length) throw e;
-        }
+        } catch (e) { nextAt = now + 8000; if (!Object.keys(meta).length) throw e; }
       }
       weather(d.location, d.clocks).catch(() => {});
       topicsTick(d).catch(() => {});
@@ -5339,7 +5310,7 @@ function fxFind(q) {
 const MACRO_DEFAULT = ['usdtwd', 'usdjpy', 'btc', 'cl', 'si', 'vix', 'us10y', 'tsm', 'nvda'];
 const RATE_KEYS = new Set(['us2y', 'us10y', 'us30y', 'jp10y']);
 for (const k in MACRO) if (!(k in DEC)) DEC[k] = MACRO[k][2];
-const macroOrder = () => (Array.isArray(CFG.macroPick) ? [...new Set(CFG.macroPick)].filter((k) => macroDef(k)).slice(0, FX_MAX) : MACRO_DEFAULT);      // 沒設定過用預設；使用者自己清空就是空的
+const macroOrder = () => { const p = Array.isArray(CFG.macroPick) ? CFG.macroPick.filter((k) => macroDef(k)) : []; return p.length ? p : MACRO_DEFAULT; };
 // 這幾個自選項目需要另外向報價來源要哪些代號
 function macroSyms(keys) {
   const out = new Set();
@@ -5441,7 +5412,7 @@ function renderMarkets() {
       const g = us.xau.last * us.usdtwd.last / 31.1034768;
       setHTML($('gold-twd'), `折合台幣約 <b>${fmt(g, 0)}</b> 元／公克　<b>${fmt(g * 3.75, 0)}</b> 元／錢（國際價換算）`);
     }
-    if (setHTML($('macro'), macroOrder().map((k) => { const d = macroDef(k); return chip(k, macroQ(us, k), d?.[3] || d?.[1]); }).join('') || (macroOrder().length ? '' : '<div class="empty macro-none">還沒選項目。按右上角「編輯」加入匯率、原物料或指數。</div>'))) flash($('macro'));
+    if (setHTML($('macro'), macroOrder().map((k) => { const d = macroDef(k); return chip(k, macroQ(us, k), d?.[3] || d?.[1]); }).join(''))) flash($('macro'));
   }
 }
 
