@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-Zcb7wP1a2hqpNOFJHFlB9WoRCKmIpfANHfSs/YrKWWs=' 'sha256-q5eyk9ZwXFhwdl/0/SwR/2qAHMNmq6u+eKPQsSlXC1Q='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-Zcb7wP1a2hqpNOFJHFlB9WoRCKmIpfANHfSs/YrKWWs=' 'sha256-+eTp48JgiI+rR1P6ehQWko3R1VXuW415bbs27uFKvo8='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#06090d">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -604,10 +604,12 @@ html.dlg-lock, html.dlg-lock body { overflow: hidden !important; }
 .grid.m-phone .rz-row, .grid.m-phone .rz-col { display: none !important; }
 .grid.m-phone .watch { max-height: none; }
 .grid.m-phone .panel-news { min-height: 0; }
-/* 有瀏海／動態島的手機：整列往下讓出狀態列的高度（--sat 測試時可以代入假的高度） */
-body.tall .topbar { height: calc(38px + var(--sat, env(safe-area-inset-top, 0px))); padding-top: var(--sat, env(safe-area-inset-top, 0px)); }
-/* 手機：最上面那一列固定在畫面頂端，往下滑再遠都按得到「設定」；點一下標題回到最上面 */
-@media (max-width: 639px) { body.tall .topbar { position: sticky; top: 0; z-index: 30; background: rgba(8,11,15,.94); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); } }
+body.tall .topbar { padding-top: max(8px, env(safe-area-inset-top)); }
+/* ── 以下只給「朋友用的手機網頁版」（html.standalone）；自己用的電腦版、自己手機連 Mac 的版本不受影響 ──
+   有瀏海／動態島的手機：整列往下讓出狀態列的高度（--sat 測試時可以代入假的高度）；
+   最上面那一列固定在畫面頂端，往下滑再遠都按得到「設定」 */
+html.standalone body.tall .topbar { height: calc(38px + var(--sat, env(safe-area-inset-top, 0px))); padding-top: var(--sat, env(safe-area-inset-top, 0px)); }
+@media (max-width: 639px) { html.standalone body.tall .topbar { position: sticky; top: 0; z-index: 30; background: rgba(8,11,15,.94); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); } }
 body.remote .topbar { padding-left: max(14px, env(safe-area-inset-left)); padding-right: max(14px, env(safe-area-inset-right)); }
 .grid.m-phone .bigclock { font-size: 30px; }
 .grid.m-phone .bigdate { font-size: 10px; }
@@ -7393,8 +7395,8 @@ if (QS_TEST && QS.has('stage')) setTimeout(() => setStageMode(QS.get('stage')), 
 if (QS_TEST && QS.has('tab')) setTimeout(() => setMediaTab(QS.get('tab')), 400);
 if (QS_TEST && QS.has('wall')) setTimeout(() => $('insp-wall').click(), 9000);
 
-// 手機：點最上面的標題回到頂端
-document.querySelector('.topbar .brand')?.addEventListener('click', (e) => { if (!document.body.classList.contains('tall') || e.target.closest('button')) return; (document.scrollingElement || document.documentElement).scrollTop = 0; document.body.scrollTop = 0; });
+// 朋友用的手機網頁版：點最上面的標題回到頂端
+document.querySelector('.topbar .brand')?.addEventListener('click', (e) => { if (!document.documentElement.classList.contains('standalone') || !document.body.classList.contains('tall') || e.target.closest('button')) return; (document.scrollingElement || document.documentElement).scrollTop = 0; document.body.scrollTop = 0; });
 
 </script>
 </body>
