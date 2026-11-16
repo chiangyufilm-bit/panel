@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-xIV/lZMxTLal+FC1ffkl7g0ONvxUa190oXtX+xUCnjo=' 'sha256-yFS/SLFqBQEgSHpSqJvHOq8Xcn/1BuBCunzeAfCVxOU='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-JNA6biwclaDQyOwv6SXs4QFb8fzp6h4y8+dOvlmGopc=' 'sha256-yFS/SLFqBQEgSHpSqJvHOq8Xcn/1BuBCunzeAfCVxOU='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#06090d">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -609,6 +609,7 @@ body.tall .topbar { padding-top: max(8px, env(safe-area-inset-top)); }
    有瀏海／動態島的手機：整列往下讓出狀態列的高度（--sat 測試時可以代入假的高度）；
    最上面那一列固定在畫面頂端，往下滑再遠都按得到「設定」 */
 html.standalone body.tall .topbar { height: calc(38px + var(--sat, env(safe-area-inset-top, 0px))); padding-top: var(--sat, env(safe-area-inset-top, 0px)); }
+html.standalone .topbar { padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }   /* 手機橫著拿：左右也讓開 */
 @media (max-width: 639px) { html.standalone body.tall .topbar { position: sticky; top: 0; z-index: 30; background: rgba(8,11,15,.94); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); } }
 body.remote .topbar { padding-left: max(14px, env(safe-area-inset-left)); padding-right: max(14px, env(safe-area-inset-right)); }
 .grid.m-phone .bigclock { font-size: 30px; }
@@ -2133,8 +2134,8 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
     setEl.style.cssText = 'position:fixed;inset:0;z-index:9000;background:rgba(6,9,13,.98);overflow-y:auto;-webkit-overflow-scrolling:touch;font:15px -apple-system,BlinkMacSystemFont,"PingFang TC",sans-serif;color:#e9eef4';
     const row = 'display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid rgba(255,255,255,.07);font-size:16px', btn = 'height:44px;padding:0 16px;border-radius:10px;border:1px solid rgba(127,227,242,.45);background:transparent;color:#7fe3f2;font:15px -apple-system,sans-serif',
       h3 = 'margin:26px 0 6px;font-size:12px;letter-spacing:.14em;color:#7fe3f2;font-weight:600', note = 'font-size:13px;line-height:1.7;color:#9ba8b6;margin:6px 0 10px';
-    setEl.innerHTML = `<div style="max-width:560px;margin:0 auto;padding:18px 18px 60px">
-      <div style="display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:rgba(6,9,13,.98);padding:6px 0 10px;z-index:1"><b style="font-size:20px">設定</b><button id="wps-x" style="${btn};border-color:#7fe3f2;background:#7fe3f2;color:#04121a;font-weight:600">完成</button></div>
+    setEl.innerHTML = `<div style="max-width:560px;margin:0 auto;padding:0 max(18px, env(safe-area-inset-right)) calc(60px + env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left))">
+      <div style="display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:rgba(6,9,13,.98);padding:calc(14px + var(--sat, env(safe-area-inset-top, 0px))) 0 10px;z-index:1"><b style="font-size:20px">設定</b><button id="wps-x" style="${btn};border-color:#7fe3f2;background:#7fe3f2;color:#04121a;font-weight:600">完成</button></div>
       <div style="${h3}">要顯示哪些區塊</div>
       <div style="${note}">打勾的才會顯示。按右邊的 ▲ ▼ 可以調整由上到下的順序（地球固定在最上面）。</div>
       <div id="wps-panels"></div>
