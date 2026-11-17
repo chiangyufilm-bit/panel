@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-1/x9ozAs/ypN13Ptgy81PsrtI1WOmBKsDq4Gu+yUZ9o=' 'sha256-2LzBSQPxCRWWTzQ7O4l6N/VI6VJ8fHcVXzFszAER8Xg='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://geocoding-api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-1/x9ozAs/ypN13Ptgy81PsrtI1WOmBKsDq4Gu+yUZ9o=' 'sha256-PDV+MD0mhfZdXtWmTkF5++7t/EjvRjsQPYNuoScDxCc='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://geocoding-api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#06090d">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -5882,7 +5882,7 @@ function renderWatch() {
     const name = it.name || q?.name || id, sh = +it.shares, c = +it.cost;
     if (!q) {
       if (sh > 0) noQuote++;
-      return `<div class="w"><span class="w-name">${esc(name)}<small>${esc(id)}</small></span><span class="w-px flat">—</span><span class="w-day flat">—</span>${watchPL ? '<span class="w-pl"></span>' : ''}</div>`;
+      return { g: null, html: `<div class="w"><span class="w-name">${esc(name)}<small>${esc(id)}</small></span><span class="w-px flat">—</span><span class="w-day flat">—</span>${watchPL ? '<span class="w-pl"></span>' : ''}</div>` };
     }
     // 盤前盤後報價只在非正常交易時段採用
     const ext = !isTW && q.ext && q.ext.last != null && q.status !== 'REG_MKT' ? q.ext : null;
@@ -5890,23 +5890,26 @@ function renderWatch() {
     // 今日漲跌的基準：盤前＝最近一次收盤價；盤中與盤後＝前一日收盤價（盤後的變動併入當日）
     const base = ext && ext.type === 'PRE_MKT' ? q.last : q.prev;
     const dayPct = base ? (px - base) / base * 100 : q.pct;
-    let pl = '<span class="w-pl"></span>';
+    let pl = '<span class="w-pl"></span>', gain = null;
     if (sh > 0) {
       held++; mv += px * sh;
       if (base) dayPL += (px - base) * sh;
       if (c > 0) {
         const g = (px - c) * sh, gp = (px - c) / c * 100;
+        gain = g;
         costMv += px * sh; cost += c * sh;
         pl = `<span class="w-pl ${dirCls(g)}">${g >= 0 ? '+' : ''}${money(g, isTW ? 0 : 2)}<small>${gp >= 0 ? '+' : '−'}${fmt(Math.abs(gp), 2)}%</small></span>`;
       } else { noCost++; pl = '<span class="w-pl flat" data-tip="這檔沒有填均價，無法計算損益">—</span>'; }
     }
-    return `<div class="w" data-id="${esc(id)}"><span class="w-name">${esc(name)}<small>${esc(id)}</small></span>
+    return { g: gain, html: `<div class="w" data-id="${esc(id)}"><span class="w-name">${esc(name)}<small>${esc(id)}</small></span>
       <span class="w-px">${ext ? `<i class="w-ext" style="font-style:normal">${ext.type === 'PRE_MKT' ? '盤前' : '盤後'}</i>` : ''}<span data-k="w${esc(id)}" data-v="${px}" data-d="${d}" data-s="">${fmt(px, d)}</span></span>
-      <span class="w-day ${dirCls(dayPct)}">${arrow(dayPct)} ${fmt(Math.abs(dayPct ?? 0), 2)}%</span>${watchPL ? pl : ''}</div>`;
+      <span class="w-day ${dirCls(dayPct)}">${arrow(dayPct)} ${fmt(Math.abs(dayPct ?? 0), 2)}%</span>${watchPL ? pl : ''}</div>` };
   });
   const box = $('watch');
   box.classList.toggle('pl', watchPL);
-  if (setHTML(box, rows.join(''))) flash(box);
+  // 打開「損益」時：由賺最多排到賠最多（金額）；沒有均價或沒有報價的照原本順序放在最後
+  const order = watchPL ? rows.map((r, i) => [r, i]).sort((a, b) => (a[0].g === null) - (b[0].g === null) || (b[0].g ?? 0) - (a[0].g ?? 0) || a[1] - b[1]).map((x) => x[0]) : rows;
+  if (setHTML(box, order.map((r) => r.html).join(''))) flash(box);
   const cur = isTW ? 'NT$' : 'US$', g = costMv - cost;
   const notes = [noCost ? `${noCost} 檔未填均價，不計入未實現` : '', noQuote ? `${noQuote} 檔暫無報價，未計入` : '', '未扣手續費與交易稅'].filter(Boolean).join('；');
   setHTML($('watch-sum'), watchPL && held
