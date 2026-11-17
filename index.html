@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-1/x9ozAs/ypN13Ptgy81PsrtI1WOmBKsDq4Gu+yUZ9o=' 'sha256-PDV+MD0mhfZdXtWmTkF5++7t/EjvRjsQPYNuoScDxCc='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://geocoding-api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-1/x9ozAs/ypN13Ptgy81PsrtI1WOmBKsDq4Gu+yUZ9o=' 'sha256-Px86dqDAbWTNqZSKa+Z19ustc1w970kuQS+UDLHy9NA='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://geocoding-api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#06090d">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1457,6 +1457,46 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
 .badge.hol { color: var(--ink-2); } .badge.hol::before { background: #ff6b63; }
 .c-tag.hol::before { content: ""; display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: #ff6b63; margin-right: 4px; vertical-align: 1px; }
 
+/* ───────── 版面更自由：並排的列、分隔線、角落把手、直接拖標題搬區塊 ───────── */
+/* 並排的列：一個橫向的容器，裡面 2～3 個區塊；在欄裡的行為和一個區塊一樣 */
+.prow { display: flex; flex-wrap: wrap; gap: var(--gap); min-width: 0; min-height: 0; flex: none; align-items: stretch; }
+/* 每個區塊至少 --pmin 寬（一般 250、精簡 150；和 app.js 的 pmin 一致），剩下的空間照比例分；欄太窄放不下時自動換行，變回上下疊 */
+.prow > .panel { --pmin: 250px; flex: var(--rw, 1) 1 var(--pmin) !important; min-width: 0; overflow: hidden; }
+.prow > .panel.slim { --pmin: 150px; }
+/* 換行（變回上下疊）時，內容會自己捲的區塊（自選股、新聞…）不要無限長 */
+.prow.wrapped > .panel[data-flexy="1"] { max-height: 420px; }
+.prow.sized { flex: none !important; }
+.prow.sized > .panel { overflow-y: auto; scrollbar-width: none; min-height: 0; max-height: 100%; }
+.prow.sized > .panel::-webkit-scrollbar { display: none; }
+.grid.m-tall .prow { display: contents; }                 /* 直式與手機沒有並排（資料上也不會有，這裡只是保險） */
+/* 把手加大、提示更明顯 */
+.rz-row { height: 18px; }
+.rz-row::after { top: 7px; width: 64px; margin-left: -32px; height: 4px; }
+.rz-col { width: 16px; }
+.rz-col::after { left: 6px; width: 4px; height: 64px; margin-top: -32px; }
+.rz-split { position: absolute; cursor: col-resize; z-index: 9; }
+.rz-split::after { content: ""; position: absolute; top: 50%; left: 50%; width: 4px; height: 44px; margin: -22px 0 0 -2px; border-radius: 2px; background: var(--accent); opacity: 0; transition: opacity .15s; }
+.rz-split:hover::after, .rz-split.drag::after { opacity: .85; }
+.rz-corner { position: absolute; width: 18px; height: 18px; z-index: 10; }
+.rz-corner[data-dir="1"] { cursor: nwse-resize; } .rz-corner[data-dir="-1"] { cursor: nesw-resize; }
+.rz-corner::after { content: ""; position: absolute; inset: 5px; border-radius: 50%; background: var(--accent); opacity: 0; transition: opacity .15s; }
+.rz-corner:hover::after, .rz-corner.drag::after { opacity: .9; }
+.grid.m-tall .rz-split, .grid.m-tall .rz-corner, .grid.m-phone .rz-split, .grid.m-phone .rz-corner { display: none !important; }
+/* 直接拖標題搬區塊（只有多欄的橫式版面） */
+.grid.m-narrow .col .panel:not(.slim) > h2, .grid.m-mid .col .panel:not(.slim) > h2, .grid.m-wide .col .panel:not(.slim) > h2 { cursor: grab; }
+body.moving, body.moving * { cursor: grabbing !important; }
+.drop-side { position: fixed; z-index: 86; width: 4px; border-radius: 2px; background: var(--accent); box-shadow: 0 0 12px var(--accent), 0 0 2px #fff; pointer-events: none; }
+
+/* 區塊很窄的時候（並排，或把欄拉得很窄）：報價列收起中間的走勢小圖，數字才不會被切；自選股標題列的「編輯」只留圖示 */
+.quotes { container-type: inline-size; container-name: quotes; }
+@container quotes (max-width: 262px) { .q { grid-template-columns: minmax(0, 1fr) auto; } .q > .spark-wrap { display: none; } }
+@container watch (max-width: 262px) { .panel-watch h2 .edit-btn span { display: none; } .as-top { flex-wrap: wrap; } .as-v { font-size: 16px; } }
+/* 精簡的天氣列很窄時（和別的區塊並排）：收起天氣文字，只留圖示和氣溫，不要切到一半 */
+.prow > .panel.slim > .weather { container-type: inline-size; container-name: wxslim; }
+@container wxslim (max-width: 150px) { .wx-desc { display: none !important; } }
+/* 並排時區塊比較窄：這兩行原本一行放不下會超出去，改成自動換行（只在並排的列裡，單獨一列時維持原樣） */
+.prow .disk-sub, .prow .watch-sum { flex-wrap: wrap; row-gap: 2px; }
+
 </style>
 </head>
 <body>
@@ -1777,8 +1817,8 @@ button.du-row:hover { background: rgba(255,255,255,.035); }
 <div class="fx-pulse" id="fx-pulse"></div>
 
 <!-- 編輯版面：上方工具列、下方托盤 -->
-<div class="edit-bar" id="edit-bar"><b id="eb-title">編輯版面</b><span class="eb-tip">拖曳標題左邊的握把搬移・眼睛收起來・區塊下緣可調高度</span>
-  <button class="btn" id="eb-reset-all">還原全部</button><button class="btn" id="eb-reset">還原這個情境</button><button class="btn" id="eb-cancel">取消</button><button class="btn primary" id="eb-done">完成</button></div>
+<div class="edit-bar" id="edit-bar"><b id="eb-title">編輯版面</b><span class="eb-tip">拖曳握把搬移・拖到別的區塊左右側＝並排・眼睛收起來・邊緣可調大小</span>
+  <button class="btn" id="eb-undo" title="復原上一步（⌘Z）">復原</button><button class="btn" id="eb-reset-all">還原全部</button><button class="btn" id="eb-reset">還原這個情境</button><button class="btn" id="eb-cancel">取消</button><button class="btn primary" id="eb-done">完成</button></div>
 <div class="edit-tray" id="edit-tray"></div>
 
 <!-- 手機的版面編輯：清單 -->
@@ -4990,7 +5030,29 @@ const SCENE_DEFAULTS = { overview: OVERVIEW, trading: TRADING, creation: CREATIO
 function defaultLayout(scene, bp) {
   const d = (SCENE_DEFAULTS[scene] || OVERVIEW)[bp] || OVERVIEW[bp] || OVERVIEW.narrow;
   return { cols: { A: [...d.cols.A], B: [...d.cols.B], C: [...d.cols.C], D: [...d.cols.D], S: [...(d.cols.S || [])] }, slim: { ...(d.slim || {}) }, stage: d.stage ?? null,
-    tabs: !!d.tabs, colW: { ...(d.colW || {}) }, stageW: d.stageW || null, flags: [...(d.flags || [])] };
+    tabs: !!d.tabs, colW: { ...(d.colW || {}) }, stageW: d.stageW || null, flags: [...(d.flags || [])], join: {} };
+}
+
+// 左右並排：join[區塊] = 1 表示「這個區塊和同一欄裡排在它前面的那個區塊放在同一列」。一列最多 3 個。
+// 只有多欄的橫式版面（narrow／mid／wide）才有並排；沒有這個記號的版面（包含所有舊存檔）每個區塊各佔一列，和以前完全一樣。
+const ROW_MAX = 3;
+const ROW_BPS = ['narrow', 'mid', 'wide'];
+function normJoin(lay, bp) {
+  const out = {};
+  if (!ROW_BPS.includes(bp) || !lay.join || typeof lay.join !== 'object') return out;
+  for (const c of COLS) {
+    let n = 1;
+    (lay.cols[c] || []).forEach((id, i) => {
+      if (i > 0 && lay.join[id] && n < ROW_MAX) { out[id] = 1; n++; } else n = 1;
+    });
+  }
+  return out;
+}
+// 一欄裡的列：[[區塊, 區塊], [區塊], …]
+function rowsOf(lay, c) {
+  const rows = [];
+  for (const id of lay.cols[c] || []) { if (lay.join && lay.join[id] && rows.length) rows[rows.length - 1].push(id); else rows.push([id]); }
+  return rows;
 }
 
 // 檢查並修復一份版面（從存檔讀進來的不可信資料）：
@@ -5017,6 +5079,7 @@ function sanitizeLayout(raw, scene, bp) {
   if (raw.slim && typeof raw.slim === 'object') for (const id of ['p-clocks', 'p-weather', 'p-cal']) if (id in raw.slim) out.slim[id] = raw.slim[id] ? 1 : 0;
   if (raw.stage === 'globe' || raw.stage === 'insp') out.stage = raw.stage;
   if (typeof raw.tabs === 'boolean') out.tabs = raw.tabs;
+  if (raw.join && typeof raw.join === 'object' && !Array.isArray(raw.join)) { const j = {}; for (const id of PANELS) if (raw.join[id]) j[id] = 1; out.join = normJoin({ cols: out.cols, join: j }, bp); }
   return out;
 }
 
@@ -5031,10 +5094,11 @@ function layoutDiff(lay, scene, bp) {
   if (JSON.stringify(lay.slim) !== JSON.stringify(def.slim)) o.slim = lay.slim;
   if (lay.stage !== def.stage && lay.stage) o.stage = lay.stage;
   if (lay.tabs !== def.tabs) o.tabs = lay.tabs;
+  if (lay.join && Object.keys(lay.join).length) { o.join = lay.join; if (!o.cols) { o.cols = lay.cols; o.hidden = hiddenPanels(lay); } }      // 有並排時連順序一起存（並排是照順序記的）
   return Object.keys(o).length ? o : null;
 }
 
-return { PANELS, PANEL_CODE, PANEL_NAME, BP_COLS, COLS, COL_DEFAULT, SCENES, SCENE_IDS, SCENE_DEFAULTS, defaultLayout, sanitizeLayout, visiblePanels, hiddenPanels, layoutDiff };
+return { PANELS, PANEL_CODE, PANEL_NAME, BP_COLS, COLS, COL_DEFAULT, SCENES, SCENE_IDS, SCENE_DEFAULTS, defaultLayout, ROW_MAX, ROW_BPS, normJoin, rowsOf, sanitizeLayout, visiblePanels, hiddenPanels, layoutDiff };
 })();
 // ── app.js ──
 // 全球面板 — 介面邏輯
@@ -5044,7 +5108,7 @@ const { COUNTRIES } = __m_world_js;
 const { createFx } = __m_fx_js;
 const { matchCommands, matchSpoken, scoreCmd, pushRecent, nextGroup } = __m_palette_js;
 const { parseBrokerText, joinParts } = __m_scantext_js;
-const { PANELS, PANEL_CODE, PANEL_NAME, BP_COLS, COLS, COL_DEFAULT, SCENES, SCENE_IDS, defaultLayout, sanitizeLayout, visiblePanels, hiddenPanels, layoutDiff } = __m_layout_js;
+const { PANELS, PANEL_CODE, PANEL_NAME, BP_COLS, COLS, COL_DEFAULT, SCENES, SCENE_IDS, defaultLayout, sanitizeLayout, visiblePanels, hiddenPanels, layoutDiff, normJoin, rowsOf, ROW_MAX, ROW_BPS } = __m_layout_js;
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 // 連結只收一般網址（http／https）：外面來的資料就算夾了別種連結也點不出去
@@ -5113,6 +5177,8 @@ function applyLayout(keep) {
   const bp = layoutMode;
   if (!keep || !LAY) LAY = loadLay(scene, bp);
   const allowed = BP_COLS[bp];
+  LAY.join = normJoin(LAY, bp);
+  unwrapRows();
   for (const c of COLS) for (const id of LAY.cols[c]) $('col' + c).appendChild($(id));
   for (const id of hiddenPanels(LAY)) $('shelf').appendChild($(id));
   $('grid').className = 'grid m-' + bp + (bp === 'phone' ? ' m-tall' : '');
@@ -5133,11 +5199,64 @@ function applyLayout(keep) {
     if (!media.includes(mediaTab)) mediaTab = media[0];
   } else $('shelf').appendChild($('media-tabs'));
   setMediaTab(mediaTab);
-  if (!layoutReady) return;                       // 第一次（其他功能還沒載入）只先把區塊放好
+  if (!layoutReady) { buildRows(tabs); return; }  // 第一次（其他功能還沒載入）只先把區塊放好
   for (const id of ['p-clocks', 'p-weather', 'p-cal']) $(id).classList.toggle('slim', !!LAY.slim[id]);
+  buildRows(tabs);
   setStageMode(LAY.stage || lsGet('stageMode', 'globe'), false);
   drawSceneBar();
   if (sizesReady) applySizes();
+}
+// 左右並排的「列」：版面裡記了並排的區塊（LAY.join），在畫面上用一個橫向的容器包起來。
+// 沒有並排的區塊仍然直接放在欄裡，和以前完全一樣（舊版面不會多出任何東西）。
+function unwrapRows() { document.querySelectorAll('.prow').forEach((w) => { while (w.firstChild) { const k = w.firstChild; if (k.dataset) { delete k.dataset.flexy; delete k.dataset.minh; } w.before(k); } w.remove(); }); }
+function buildRows(tabsOn) {
+  unwrapRows();
+  if (!LAY || !ROW_BPS.includes(layoutMode)) return;
+  const media = ['p-film', 'p-mv', 'p-news'];
+  for (const c of COLS) for (const row of rowsOf(LAY, c)) {
+    if (row.length < 2 || (tabsOn && row.some((id) => media.includes(id)))) continue;      // 合成分頁的那一組不並排
+    const els = row.map((id) => $(id));
+    // 這一列在欄裡要不要跟著撐開、最矮多少：照裡面的區塊原本的設定（趁它們還直接放在欄裡時量）
+    let grow = 0;
+    for (const el of els) {
+      const cs = getComputedStyle(el), g = parseFloat(cs.flexGrow) || 0;
+      grow = Math.max(grow, g);
+      el.dataset.flexy = g > 0 ? '1' : '';                 // 會跟著欄撐開、內容自己會捲的區塊（自選股、新聞…）
+      el.dataset.minh = String(Math.max(parseFloat(cs.minHeight) || 0, parseFloat(cs.flexBasis) || 0));
+    }
+    const w = document.createElement('div');
+    w.className = 'prow'; w.dataset.row = row[0]; w.dataset.grow = String(grow);
+    els[0].before(w); for (const el of els) w.appendChild(el);
+  }
+  fitRows();
+}
+// 並排的列要多高：一定要容得下裡面「內容不會自己捲」的區塊（報價、系統狀態…），不然內容會被切掉或疊到下面的區塊。
+// 內容會變（報價多一列、自選項目變多），所以每秒檢查一次；高度有變才重新擺把手。
+function fitRows() {
+  let changed = false;
+  for (const w of document.querySelectorAll('.prow')) {
+    const kids = [...w.children].filter((el) => el.classList.contains('panel') && el.getBoundingClientRect().width);
+    if (!kids.length) continue;
+    const wrapped = kids.length > 1 && kids.some((el) => el.offsetTop !== kids[0].offsetTop);      // 欄太窄放不下，已經自動換行（變回上下疊）
+    w.classList.toggle('wrapped', wrapped);
+    let flex, minH;
+    if (wrapped) { flex = 'none'; minH = ''; if (w.classList.contains('sized')) { w.classList.remove('sized'); w.style.height = ''; } }
+    else if (w.classList.contains('sized')) { flex = ''; minH = ''; }                             // 使用者自己調過高度：照他調的，內容在區塊裡捲
+    else {
+      let need = 0;
+      for (const el of kids) {
+        if (el.dataset.flexy) { need = Math.max(need, +el.dataset.minh || 0); continue; }
+        const top = el.getBoundingClientRect().top; let bottom = top;
+        for (const c of el.children) { const r = c.getBoundingClientRect(); if (r.height) bottom = Math.max(bottom, r.bottom); }
+        need = Math.max(need, Math.ceil(bottom - top + (parseFloat(getComputedStyle(el).paddingBottom) || 0) + 1));
+      }
+      const grow = +w.dataset.grow || 0;
+      flex = grow ? `${grow} 1 ${need}px` : 'none'; minH = need + 'px';
+    }
+    if (w.style.flex !== flex && w.dataset.flexSet !== flex) { w.style.flex = flex; w.dataset.flexSet = flex; changed = true; }
+    if (w.style.minHeight !== minH) { w.style.minHeight = minH; changed = true; }
+  }
+  return changed;
 }
 function layout() {
   const bp = bpNow();
@@ -6073,7 +6192,10 @@ $('btn-eco').addEventListener('click', () => {
 // ───────────────────────── 拖曳調整區塊大小 ─────────────────────────
 // 每個區塊下緣可以上下拖（改高度），欄與欄之間可以左右拖（改寬度）；同一欄裡有彈性的區塊和中間的地球會自動讓出或補上空間。
 // 大小依版面模式分開記住；在把手上點兩下恢復該項的預設，右下角的按鈕恢復全部。
-const STAGE_MIN = 380, COL_MIN = 220;
+const STAGE_MIN = 380, COL_MIN = 180, PANEL_H_MAX = 2400;      // 地球最窄、欄最窄、區塊最高
+// 並排時每個區塊最窄多少：一般區塊 250（再窄數字會被切），收成一行的精簡區塊 150。這兩個數字要和樣式表裡 .prow 的 --pmin 一致
+const pmin = (el) => (el.classList.contains('slim') ? 150 : 250);
+const ROW_GAP = 12;
 // 讀取儲存的尺寸：只留下格式正確、範圍合理、目前還存在的項目
 function loadSizes() {
   let raw = {};
@@ -6083,7 +6205,8 @@ function loadSizes() {
     // 舊格式的鍵是尺寸（narrow／mid…），屬於「全覽」；新格式是「情境:尺寸」
     const k = /^(narrow|mid|wide|tall)$/.test(key) ? 'overview:' + key : key;
     if (!/^[a-z]+:(narrow|mid|wide|tall|phone)$/.test(k) || !SCENE_IDS.includes(k.split(':')[0]) || !m || typeof m !== 'object') continue;
-    const o = { cols: {}, panels: {} };
+    const o = { cols: {}, panels: {}, rw: {} };
+    for (const [pid, v] of Object.entries(m.rw || {})) if (PANELS.includes(pid) && typeof v === 'number' && v >= 1 && v <= 4000) o.rw[pid] = Math.round(v);      // 並排時各區塊的寬度比例
     for (const [c, v] of Object.entries(m.cols || {})) if (/^col[ABCD]$/.test(c) && typeof v === 'number' && v >= COL_MIN && v <= 4000) o.cols[c] = Math.round(v);
     for (const [p, v] of Object.entries(m.panels || {})) if (PANELS.includes(p) && typeof v === 'number' && v >= 44 && v <= 4000) o.panels[p] = Math.round(v);
     if (!out[k] || /:/.test(key)) out[k] = o;
@@ -6092,7 +6215,7 @@ function loadSizes() {
 }
 let SIZES = loadSizes();
 const sizeKey = () => scene + ':' + layoutMode;
-const sizesFor = () => (SIZES[sizeKey()] = SIZES[sizeKey()] || { cols: {}, panels: {} });
+const sizesFor = () => { const o = (SIZES[sizeKey()] = SIZES[sizeKey()] || { cols: {}, panels: {}, rw: {} }); if (!o.rw) o.rw = {}; return o; };
 const saveSizes = () => { try { localStorage.setItem('sizes', JSON.stringify(SIZES)); } catch (e) { /* 無法儲存就算了 */ } };
 const rzLayer = [];
 // 這個版面用得到的欄與它們的預設寬度（只算看得到的欄；編輯中空的欄也算，才能把區塊拖進去）
@@ -6113,21 +6236,36 @@ function applySizes() {
     let scale = 1;
     grid.style.gridTemplateColumns = build(scale);
     const stored = ids.filter((id) => sz.cols[id]).reduce((a, id) => a + sz.cols[id], 0);
-    for (let n = 0; n < 4 && stored > 0; n++) {
+    for (let n = 0; n < 8 && stored > 0; n++) {
       const sw = $('stage').getBoundingClientRect().width;
       if (sw >= STAGE_MIN - 1) break;
-      scale = Math.max(0.2, (stored * scale - (STAGE_MIN - sw)) / stored);
+      // 要縮掉的量＝地球還差多少，加上整排超出畫面的部分（記住的欄寬比視窗還寬時，地球寬度已經是 0，光看它不知道超出多少）
+      const over = (STAGE_MIN - sw) + Math.max(0, grid.scrollWidth - grid.clientWidth);
+      scale = Math.max(0.05, (stored * scale - over) / stored);      // 最多縮到每欄的最窄寬度為止（build 裡有下限），地球才保得住
       grid.style.gridTemplateColumns = build(scale);
     }
     // 連預設欄寬都放不下時（視窗極窄但還沒切到直式版面）：退回樣式表的預設
     if ($('stage').getBoundingClientRect().width < 200) grid.style.gridTemplateColumns = '';
   } else if (layoutMode !== 'tall') grid.style.gridTemplateColumns = '';
   document.querySelectorAll('.panel').forEach((p) => {
-    let h = p.classList.contains('slim') ? 0 : sz.panels[p.id];          // 精簡狀態下不套用手動調過的高度
+    const inRow = p.parentElement && p.parentElement.classList.contains('prow');
+    let h = p.classList.contains('slim') || inRow ? 0 : sz.panels[p.id];   // 精簡狀態下不套用手動調過的高度；並排時高度算在整列上
     if (h && h < 64) h = 0;                                              // 被拖到只剩標題、內容全部看不到的：當作沒調過，回到原本的高度
     p.classList.toggle('sized', !!h);
     p.style.height = h ? h + 'px' : '';
+    if (!inRow) p.style.removeProperty('--rw');
   });
+  // 並排的列：高度記在這一列的第一個區塊名下；寬度比例要整列每一個都有記才用，否則平均分
+  document.querySelectorAll('.prow').forEach((w) => {
+    const kids = [...w.children].filter((el) => el.classList.contains('panel'));
+    let h = kids.every((el) => el.classList.contains('slim')) ? 0 : sz.panels[w.dataset.row];
+    if (h && h < 64) h = 0;
+    w.classList.toggle('sized', !!h);
+    w.style.height = h ? h + 'px' : '';
+    const all = kids.every((el) => sz.rw[el.id] > 0);
+    for (const el of kids) { if (all) el.style.setProperty('--rw', String(sz.rw[el.id])); else el.style.removeProperty('--rw'); }
+  });
+  fitRows();                                               // 列的高度要容得下內容；欄太窄而換行時不套用固定高度
   placeHandles();
 }
 function placeHandles() {
@@ -6142,13 +6280,26 @@ function placeHandles() {
     n++; el.className = cls + (rz && rz.el === el ? ' drag' : ''); el.hidden = false;
     return el;
   };
-  // 每個區塊下緣一個橫向把手，只佔區塊之間的空隙，不蓋到內容
-  document.querySelectorAll('.col .panel').forEach((p) => {
-    const r = p.getBoundingClientRect();
+  // 每個區塊（或並排的一整列）下緣一個橫向把手：蓋住區塊之間的空隙再上下各多一點，比較好抓
+  const corners = [];
+  document.querySelectorAll('.col > .panel, .col > .prow').forEach((u) => {
+    const r = u.getBoundingClientRect();
     if (!r.width || !r.height) return;
+    const isRow = u.classList.contains('prow'), id = isRow ? u.dataset.row : u.id;
     const el = handle('rz-row');
-    el.dataset.target = p.id; el.title = '上下拖曳調整高度（點兩下恢復預設）';
-    el.style.cssText = `left:${r.left - g.left + 10}px;top:${r.bottom - g.top}px;width:${r.width - 20}px`;
+    el.dataset.target = id; el.title = '上下拖曳調整高度（點兩下恢復預設）';
+    el.style.cssText = `left:${r.left - g.left + 10}px;top:${r.bottom - g.top - 3}px;width:${r.width - 20}px`;
+    const colId = u.parentElement.id;
+    if (def[colId]) corners.push([id, colId, r]);
+    // 並排的列：每兩個區塊之間一條直向分隔線，左右拖調整各自的寬度
+    if (isRow) {
+      const kids = [...u.children].filter((k) => k.classList.contains('panel') && k.getBoundingClientRect().width);
+      for (let i = 0; i < kids.length - 1; i++) {
+        const a = kids[i].getBoundingClientRect(), b = kids[i + 1].getBoundingClientRect(), sp = handle('rz-split');
+        sp.dataset.target = kids[i].id; sp.dataset.next = kids[i + 1].id; sp.title = '左右拖曳調整兩邊的寬度（點兩下恢復平均）';
+        sp.style.cssText = `left:${a.right - g.left - 3}px;top:${r.top - g.top}px;width:${Math.max(12, b.left - a.right + 6)}px;height:${r.height}px`;
+      }
+    }
   });
   // 每個側欄靠地球那一側一個直向把手
   for (const id of Object.keys(def)) {
@@ -6156,48 +6307,108 @@ function placeHandles() {
     if (!r.width) continue;
     const leftSide = id === 'colA' || id === 'colB', el = handle('rz-col');
     el.dataset.target = id; el.dataset.dir = leftSide ? '1' : '-1'; el.title = '左右拖曳調整寬度（點兩下恢復預設）';
-    el.style.cssText = `left:${(leftSide ? r.right : r.left - 12) - g.left}px;top:${r.top - g.top}px;height:${r.height}px`;
+    el.style.cssText = `left:${(leftSide ? r.right - 2 : r.left - 14) - g.left}px;top:${r.top - g.top}px;height:${r.height}px`;
+  }
+  // 角落：靠地球那一側的下角，斜著拖可以同時調欄寬和高度
+  for (const [id, colId, r] of corners) {
+    const leftSide = colId === 'colA' || colId === 'colB', el = handle('rz-corner');
+    el.dataset.target = id; el.dataset.col = colId; el.dataset.dir = leftSide ? '1' : '-1'; el.title = '斜著拖曳：同時調整這一欄的寬度和這個區塊的高度（點兩下恢復預設）';
+    el.style.cssText = `left:${(leftSide ? r.right - 8 : r.left - 10) - g.left}px;top:${r.bottom - g.top - 8}px`;
   }
   for (let i = n; i < rzLayer.length; i++) rzLayer[i].hidden = true;
 }
-let rz = null;
+let rz = null, rzAt = 0, rzT = 0;
+const unitOf = (id) => { const el = $(id); return el ? (el.closest('.prow') || el) : null; };
+const rzKind = (el) => (el.classList.contains('rz-row') ? 'row' : el.classList.contains('rz-split') ? 'split' : el.classList.contains('rz-corner') ? 'corner' : 'col');
 function startResize(e) {
   if (e.button !== 0 || e.ctrlKey) return;                  // 只接受滑鼠左鍵；右鍵或 ctrl-點擊會跳出選單，放開的事件收不到
-  const el = e.currentTarget, id = el.dataset.target, row = el.classList.contains('rz-row'), t = $(id);
+  const el = e.currentTarget, id = el.dataset.target, kind = rzKind(el);
+  const t = kind === 'col' ? $(id) : unitOf(id);
   if (!t) return;
   e.preventDefault();
   if (rz) endResize();
-  rz = { el, id, row, x: e.clientX, y: e.clientY, start: row ? t.offsetHeight : t.getBoundingClientRect().width, dir: +el.dataset.dir || 1, stage0: $('stage').getBoundingClientRect().width };
+  pushUndo();
+  const colId = kind === 'col' ? id : kind === 'corner' ? el.dataset.col : null;
+  rz = { el, id, kind, colId, x: e.clientX, y: e.clientY, startH: t.offsetHeight, startW: colId ? $(colId).getBoundingClientRect().width : 0,
+    dir: +el.dataset.dir || 1, stage0: $('stage').getBoundingClientRect().width, colH: (t.closest('.col') || t).clientHeight || 2000 };
+  if (kind === 'split') {                                   // 記下這一列每個區塊現在的寬度，拖的時候只動分隔線兩邊的那兩個
+    const row = $(id).parentElement;
+    rz.members = [...row.children].filter((k) => k.classList.contains('panel')).map((k) => [k.id, k.getBoundingClientRect().width, pmin(k)]);
+    rz.a = id; rz.b = el.dataset.next;
+  }
   el.classList.add('drag'); document.body.classList.add('resizing');
   for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) el.addEventListener(ev, endResize);
   el.addEventListener('pointermove', moveResize);
   try { el.setPointerCapture(e.pointerId); } catch (err) { /* 抓不到指標也照樣能拖，只是游標不能離開把手太遠 */ }
 }
+// 拖的時候最多每 16 毫秒重排一次（滑鼠事件比畫面更新還密，每一格都重排會卡）
 function moveResize(e) {
   if (!rz) return;
   if (e.buttons === 0 && e.pointerType === 'mouse') return endResize();     // 按鍵其實已經放開（放開的事件被別的東西吃掉了）
-  const sz = sizesFor();
-  if (rz.row) {
-    const colH = $(rz.id).parentElement.clientHeight || 2000;
-    sz.panels[rz.id] = Math.round(clamp(rz.start + (e.clientY - rz.y), 64, Math.max(120, colH - 20)));
-  } else {
+  rz.last = { x: e.clientX, y: e.clientY };
+  const now = performance.now();
+  if (now - rzAt >= 16) { clearTimeout(rzT); rzT = 0; doResize(); }
+  else if (!rzT) rzT = setTimeout(() => { rzT = 0; doResize(); }, 16 - (now - rzAt));
+}
+function doResize() {
+  if (!rz || !rz.last) return;
+  rzAt = performance.now();
+  const sz = sizesFor(), dx = rz.last.x - rz.x, dy = rz.last.y - rz.y;
+  if (rz.kind === 'row' || rz.kind === 'corner') sz.panels[rz.id] = Math.round(clamp(rz.startH + dy, 64, PANEL_H_MAX));      // 比欄還高也可以：那一欄會變成可以上下捲
+  if (rz.kind === 'col' || rz.kind === 'corner') {
     // 側欄最寬只能寬到讓中間的地球還剩 STAGE_MIN 像素
-    sz.cols[rz.id] = Math.round(clamp(rz.start + (e.clientX - rz.x) * rz.dir, COL_MIN, Math.max(COL_MIN, rz.start + rz.stage0 - STAGE_MIN)));
+    sz.cols[rz.colId] = Math.round(clamp(rz.startW + dx * rz.dir, COL_MIN, Math.max(COL_MIN, rz.startW + rz.stage0 - STAGE_MIN)));
+  }
+  if (rz.kind === 'split') {
+    const ma = rz.members.find((m) => m[0] === rz.a), mb = rz.members.find((m) => m[0] === rz.b), tot = ma[1] + mb[1];
+    const na = clamp(ma[1] + dx, Math.min(ma[2], tot / 2), Math.max(tot - mb[2], tot / 2));
+    // 每個區塊的寬度＝自己的最窄寬度＋照權重分到的剩餘空間，所以權重存「寬度減掉最窄寬度」，分隔線才會剛好跟著游標
+    for (const [pid, wd, mn] of rz.members) sz.rw[pid] = Math.max(1, Math.round((pid === rz.a ? na : pid === rz.b ? tot - na : wd) - mn));
   }
   applySizes();
 }
 function endResize() {
   if (!rz) return;
   const el = rz.el;
+  clearTimeout(rzT); rzT = 0; if (rz.last) doResize();
   el.classList.remove('drag'); document.body.classList.remove('resizing');
   el.removeEventListener('pointermove', moveResize);
   for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) el.removeEventListener(ev, endResize);
-  rz = null; saveSizes(); applySizes();
+  const moved = !!rz.last;
+  rz = null;
+  if (!moved) UNDO.pop();                                   // 只是點一下沒有拖：不算一步
+  saveSizes(); applySizes();
 }
 function resetResize(e) {
-  const el = e.currentTarget, sz = sizesFor();
-  if (el.classList.contains('rz-row')) delete sz.panels[el.dataset.target]; else delete sz.cols[el.dataset.target];
+  const el = e.currentTarget, sz = sizesFor(), kind = rzKind(el), id = el.dataset.target;
+  pushUndo();
+  if (kind === 'row' || kind === 'corner') delete sz.panels[id];
+  if (kind === 'col') delete sz.cols[id];
+  if (kind === 'corner') delete sz.cols[el.dataset.col];
+  if (kind === 'split') { const row = $(id) && $(id).parentElement; if (row) for (const k of row.children) delete sz.rw[k.id]; }
   saveSizes(); applySizes();
+}
+// 復原上一步（搬區塊、並排、調大小、還原預設都算）：⌘Z，或編輯版面時按「復原」
+const UNDO = [];
+function pushUndo() {
+  if (!LAY) return;
+  UNDO.push({ scene, bp: layoutMode, lay: JSON.stringify({ cols: LAY.cols, join: LAY.join || {}, slim: LAY.slim, tabs: LAY.tabs, stage: LAY.stage }),
+    store: JSON.stringify((LAYSTORE[scene] && LAYSTORE[scene][layoutMode]) || null), sizes: JSON.stringify(SIZES[sizeKey()] || null) });
+  if (UNDO.length > 40) UNDO.shift();
+}
+function undoLayout() {
+  let u = UNDO.pop();
+  while (u && (u.scene !== scene || u.bp !== layoutMode)) u = UNDO.pop();      // 只復原目前這個情境、這個尺寸的動作
+  if (!u) return toast('沒有可以復原的版面動作');
+  const sc = (LAYSTORE[scene] = LAYSTORE[scene] && typeof LAYSTORE[scene] === 'object' ? LAYSTORE[scene] : {}), st = JSON.parse(u.store);
+  if (st) sc[layoutMode] = st; else delete sc[layoutMode];
+  if (!Object.keys(sc).length) delete LAYSTORE[scene];
+  lsSet('layout.v2', JSON.stringify(LAYSTORE));
+  const sv = JSON.parse(u.sizes);
+  if (sv) SIZES[sizeKey()] = sv; else delete SIZES[sizeKey()];
+  saveSizes();
+  if (editing) { Object.assign(LAY, JSON.parse(u.lay)); applyLayout(true); drawEditBar(); } else applyLayout();
+  toast('已復原上一步');
 }
 window.addEventListener('blur', () => { if (rz) endResize(); });
 // 視窗大小或顯示比例改變時重新套用（同一個版面模式下 layout() 不會重跑）
@@ -8061,7 +8272,18 @@ function ensureEditCtl() {
   }
 }
 function readDom() {
-  for (const c of COLS) LAY.cols[c] = [...$('col' + c).children].filter((el) => el.classList?.contains('panel') && PANELS.includes(el.id)).map((el) => el.id);
+  const isP = (el) => el.classList && el.classList.contains('panel') && PANELS.includes(el.id), join = {};
+  for (const c of COLS) {
+    const ids = [];
+    for (const el of $('col' + c).children) {
+      if (isP(el)) ids.push(el.id);
+      else if (el.classList && el.classList.contains('prow')) [...el.children].filter(isP).forEach((k, i) => { ids.push(k.id); if (i) join[k.id] = 1; });
+    }
+    LAY.cols[c] = ids;
+  }
+  // 合成分頁的那一組在畫面上沒有包成列：原本記的並排先留著（還在同一欄、順序相鄰才算數，normJoin 會檢查）
+  if (document.body.classList.contains('tabs-on')) for (const id of ['p-film', 'p-mv', 'p-news']) if (LAY.join && LAY.join[id]) join[id] = 1;
+  LAY.join = normJoin({ cols: LAY.cols, join }, layoutMode);
 }
 function drawEditBar() {
   const sc = SCENES.find((s) => s.id === scene);
@@ -8075,7 +8297,7 @@ function enterEdit() {
   closeResults(); closePalette();
   editing = true; document.body.classList.add('editing');
   ensureEditCtl(); applyLayout(true); drawEditBar();
-  toast('編輯版面：拖曳握把搬移，按「完成」或 Esc 儲存，按「取消」放棄');
+  toast('編輯版面：拖曳握把搬移（拖到別的區塊左右側＝並排），按「完成」或 Esc 儲存，按「取消」放棄');
 }
 function exitEdit() {
   if (!editing) return;
@@ -8085,11 +8307,47 @@ function exitEdit() {
   saveLay(); applyLayout(true);
   toast('版面已儲存（這個情境、這個尺寸）');
 }
+// 搬區塊（編輯版面時抓握把；平常直接抓標題列拖）。放的位置有兩種：
+//   某個區塊的上方／下方（出現一條橫線）＝自成一列；某個區塊的左邊／右邊（出現一條直線）＝和它並排。
+const dropSide = document.createElement('div');
+dropSide.className = 'drop-side'; dropSide.hidden = true; document.body.appendChild(dropSide);
+// 把 p 並排到 tgt 那一列需要多寬、現在的欄夠不夠、要不要順便把欄拉寬
+function joinPlan(p, tgt) {
+  const w = tgt.parentElement.classList.contains('prow') ? tgt.parentElement : null;
+  const mates = (w ? [...w.children].filter((k) => k.classList.contains('panel') && k !== p) : [tgt]);
+  const need = mates.reduce((a, k) => a + pmin(k), 0) + pmin(p) + ROW_GAP * mates.length;
+  const col = tgt.closest('.col'), have = col.clientWidth;
+  if (have >= need) return { ok: true, need };
+  if (!/^col[ABCD]$/.test(col.id)) return { ok: false, need };                 // 地球正下方那一欄和地球同寬，不能單獨拉寬
+  const room = $('stage').getBoundingClientRect().width - STAGE_MIN;
+  return need - have <= room ? { ok: true, need, widen: col.id } : { ok: false, need };
+}
+function rowCount(el) { const w = el.parentElement; return w && w.classList.contains('prow') ? [...w.children].filter((k) => k.classList.contains('panel') && k !== (edDrag && edDrag.p)).length : 1; }
 function edMove(e) {
   if (!edDrag) return;
   if (e.buttons === 0 && e.pointerType === 'mouse') return edUp();
   const { p, ph } = edDrag;
   p.style.left = (e.clientX - edDrag.ox) + 'px'; p.style.top = (e.clientY - edDrag.oy) + 'px';
+  // 先看是不是停在某個區塊的左右兩側（各佔三成）：是的話就是「並排」
+  edDrag.join = null; edDrag.noRoom = 0; dropSide.hidden = true;
+  if (ROW_BPS.includes(layoutMode)) {
+    const hit = document.elementFromPoint(e.clientX, e.clientY), tgt = hit && hit.closest ? hit.closest('.col .panel') : null;
+    const media = (el) => document.body.classList.contains('tabs-on') && ['p-film', 'p-mv', 'p-news'].includes(el.id);
+    if (tgt && tgt !== p && !media(tgt) && !media(p) && rowCount(tgt) < ROW_MAX) {
+      // 靠近左右邊緣（三成寬、最多 90 像素）才算並排；靠近上下邊緣（各兩成高）是要放到它的上面或下面
+      const r = tgt.getBoundingClientRect(), dl = e.clientX - r.left, dr = r.right - e.clientX, zone = Math.min(r.width * 0.3, 90), fy = (e.clientY - r.top) / r.height;
+      const plan = Math.min(dl, dr) < zone && (r.height < 90 || (fy > 0.2 && fy < 0.8)) ? joinPlan(p, tgt) : null;
+      if (plan && !plan.ok) edDrag.noRoom = plan.need;        // 想並排但放不下：放開時說明原因
+      if (plan && plan.ok) {
+        const left = dl < dr;
+        edDrag.join = { tgt, side: left ? 'L' : 'R', widen: plan.widen, need: plan.need };
+        dropSide.hidden = false;
+        dropSide.style.cssText = `left:${(left ? r.left - 8 : r.right + 4)}px;top:${r.top + 4}px;height:${r.height - 8}px`;
+        if (ph.parentNode) ph.remove();
+        return;
+      }
+    }
+  }
   let col = null, best = Infinity;
   for (const c of document.querySelectorAll('.col:not(.col-off)')) {
     const r = c.getBoundingClientRect();
@@ -8099,9 +8357,12 @@ function edMove(e) {
   }
   if (!col) return;
   let before = null;
-  for (const el of col.children) {
-    if (el === p || el === ph || !el.classList.contains('panel')) continue;
+  for (const el of col.children) {                         // 欄裡的每一「列」（單獨的區塊，或並排的一整列）
+    const isRow = el.classList.contains('prow');
+    if (el === p || el === ph || !(el.classList.contains('panel') || isRow)) continue;
+    if (isRow && [...el.children].every((k) => k === p)) continue;      // 只剩被拖走的那一個的列
     const r = el.getBoundingClientRect();
+    if (!r.height) continue;
     if (e.clientY < r.top + r.height / 2) { before = el; break; }
   }
   if (before) { if (ph.parentNode !== col || ph.nextElementSibling !== before) col.insertBefore(ph, before); }
@@ -8109,47 +8370,90 @@ function edMove(e) {
 }
 function edUp() {
   if (!edDrag) return;
-  const { p, ph } = edDrag;
-  edDrag = null;
+  const { p, ph, join, noRoom } = edDrag, sz = sizesFor();
+  edDrag = null; dropSide.hidden = true;
+  if (join && join.widen) sz.cols[join.widen] = Math.max(sz.cols[join.widen] || 0, join.need);      // 欄不夠寬：拉寬到剛好放得下
+  if (!join && noRoom) toast(`這一欄不夠寬，放不下並排（大約需要 ${noRoom} 像素寬）。先把欄拉寬，或把別欄縮窄一點再試`);
   window.removeEventListener('pointermove', edMove);
   for (const ev of ['pointerup', 'pointercancel', 'blur']) window.removeEventListener(ev, edUp);
-  ph.replaceWith(p);
+  // 並排的成員變了的列：寬度比例回到平均（舊的比例是照原本那幾個算的）
+  const forget = (w) => { if (w && w.classList.contains('prow')) for (const k of w.children) delete sz.rw[k.id]; };
+  forget(p.parentElement); delete sz.rw[p.id];
+  if (join && join.tgt.isConnected) {
+    let w = join.tgt.parentElement;
+    if (!w.classList.contains('prow')) { w = document.createElement('div'); w.className = 'prow'; join.tgt.before(w); w.appendChild(join.tgt); }
+    forget(w);
+    if (join.side === 'L') join.tgt.before(p); else join.tgt.after(p);
+    if (ph.parentNode) ph.remove();
+  } else if (ph.parentNode) ph.replaceWith(p); else { /* 沒有放到任何地方：留在原位 */ }
   p.classList.remove('ed-drag');
   for (const k of ['width', 'height', 'left', 'top']) p.style[k] = '';
-  document.body.classList.remove('resizing');
-  readDom(); applyLayout(true); drawEditBar();
+  document.body.classList.remove('resizing', 'moving');
+  readDom();
+  if (editing) { applyLayout(true); drawEditBar(); }
+  else { saveLay(); saveSizes(); const before = edDrag0; applyLayout(true); if (before) flipFrom(before); setTimeout(placeHandles, 360); }
+}
+let edDrag0 = null;
+function beginDrag(p, e, ox, oy) {
+  if (edDrag) edUp();
+  pushUndo();
+  edDrag0 = editing ? null : rectsNow();
+  const r = p.getBoundingClientRect(), ph = document.createElement('div');
+  ph.className = 'drop-line'; p.before(ph);
+  p.classList.add('ed-drag');
+  Object.assign(p.style, { width: Math.min(r.width, 420) + 'px', height: Math.min(r.height, 360) + 'px', left: r.left + 'px', top: r.top + 'px' });
+  edDrag = { p, ph, ox: Math.min(ox ?? e.clientX - r.left, Math.min(r.width, 420) - 20), oy: oy ?? e.clientY - r.top };
+  document.body.classList.add('resizing', 'moving');
+  window.addEventListener('pointermove', edMove);
+  for (const ev of ['pointerup', 'pointercancel', 'blur']) window.addEventListener(ev, edUp);
+  edMove(e);
 }
 document.addEventListener('pointerdown', (e) => {
   if (!editing) return;
   const g = e.target.closest('.ed-grip');
-  if (g && e.button === 0) {
-    e.preventDefault(); e.stopPropagation();
-    if (edDrag) edUp();
-    const p = $(g.dataset.p), r = p.getBoundingClientRect(), ph = document.createElement('div');
-    ph.className = 'drop-line'; p.before(ph);
-    p.classList.add('ed-drag');
-    Object.assign(p.style, { width: r.width + 'px', height: Math.min(r.height, 360) + 'px', left: r.left + 'px', top: r.top + 'px' });
-    edDrag = { p, ph, ox: e.clientX - r.left, oy: e.clientY - r.top };
-    document.body.classList.add('resizing');
-    window.addEventListener('pointermove', edMove);
-    for (const ev of ['pointerup', 'pointercancel', 'blur']) window.addEventListener(ev, edUp);
-  }
+  if (g && e.button === 0) { e.preventDefault(); e.stopPropagation(); beginDrag($(g.dataset.p), e); }
 }, true);
+// 平常（不用進編輯版面）：按住區塊的標題列拖超過 6 個像素就開始搬。標題列上的按鈕、分頁、連結照常能按；單純點一下不會觸發。
+let titlePress = null;
+const titleMove = (e) => {
+  if (!titlePress) return;
+  if (e.buttons === 0 && e.pointerType === 'mouse') return titleEnd();
+  if (Math.hypot(e.clientX - titlePress.x, e.clientY - titlePress.y) < 6) return;
+  const t = titlePress; titleEnd();
+  if (editing || !t.p.isConnected || !t.p.closest('.col')) return;
+  beginDrag(t.p, e, t.x - t.r.left, t.y - t.r.top);
+};
+const titleEnd = () => { titlePress = null; window.removeEventListener('pointermove', titleMove); for (const ev of ['pointerup', 'pointercancel', 'blur']) window.removeEventListener(ev, titleEnd); };
+document.addEventListener('pointerdown', (e) => {
+  if (editing || e.button !== 0 || e.ctrlKey || e.pointerType === 'touch' || !ROW_BPS.includes(layoutMode) || rz || edDrag) return;
+  const h = e.target.closest ? e.target.closest('.col .panel > h2') : null;
+  if (!h || e.target.closest('button, a, input, select, textarea, label, .tabs')) return;
+  titlePress = { p: h.parentElement, x: e.clientX, y: e.clientY, r: h.parentElement.getBoundingClientRect() };
+  window.addEventListener('pointermove', titleMove);
+  for (const ev of ['pointerup', 'pointercancel', 'blur']) window.addEventListener(ev, titleEnd);
+});
+document.addEventListener('keydown', (e) => {
+  if (!(e.metaKey || e.ctrlKey) || e.shiftKey || e.altKey || (e.key !== 'z' && e.key !== 'Z')) return;
+  if (typingIn(e.target) || document.querySelector('.dlg-back:not([hidden])') || !ROW_BPS.concat('tall').includes(layoutMode)) return;
+  e.preventDefault(); undoLayout();
+});
 document.addEventListener('click', (e) => {
   if (!editing) return;
   const h = e.target.closest('.ed-hide');
-  if (h) { e.preventDefault(); $('shelf').appendChild($(h.dataset.p)); readDom(); applyLayout(true); drawEditBar(); }
+  if (h) { e.preventDefault(); pushUndo(); $('shelf').appendChild($(h.dataset.p)); readDom(); applyLayout(true); drawEditBar(); }
 });
 $('edit-tray').addEventListener('click', (e) => {
   const b = e.target.closest('button[data-p]'); if (!b) return;
   const id = b.dataset.p, def = defaultLayout(scene, layoutMode), allowed = BP_COLS[layoutMode];
   let col = COLS.find((c) => def.cols[c].includes(id) && allowed.includes(c));
   if (!col) col = allowed.reduce((a, c) => (LAY.cols[c].length < LAY.cols[a].length ? c : a), allowed[0]);
+  pushUndo();
   $('col' + col).appendChild($(id));
   readDom(); applyLayout(true); drawEditBar();
   guideTo($(id));
 });
 $('eb-done').addEventListener('click', exitEdit);
+$('eb-undo').addEventListener('click', undoLayout);
 $('eb-cancel').addEventListener('click', () => {
   if (edDrag) edUp();
   editing = false; document.body.classList.remove('editing');
@@ -8158,6 +8462,7 @@ $('eb-cancel').addEventListener('click', () => {
 });
 $('eb-reset').addEventListener('click', () => {
   if (!confirm(`把「${SCENES.find((s) => s.id === scene).name}」在${BP_NAME[layoutMode]}的版面和區塊大小恢復成預設？`)) return;
+  pushUndo();
   if (LAYSTORE[scene]) delete LAYSTORE[scene][layoutMode];
   delete SIZES[sizeKey()]; saveSizes();
   LAY = loadLay(scene, layoutMode); lsSet('layout.v2', JSON.stringify(LAYSTORE));
@@ -8326,6 +8631,7 @@ async function poll() {
 function second() {
   const now = new Date();
   safe(renderClocks, now);
+  safe(() => { if (sizesReady && !rz && !edDrag && document.querySelector('.prow') && fitRows()) placeHandles(); });
   safe(() => globe.setSun(now));
   safe(renderSpace, now);
   safe(straitTick);
