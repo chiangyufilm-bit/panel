@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-1/x9ozAs/ypN13Ptgy81PsrtI1WOmBKsDq4Gu+yUZ9o=' 'sha256-Px86dqDAbWTNqZSKa+Z19ustc1w970kuQS+UDLHy9NA='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://geocoding-api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-+QHgky8yndYXhzoYQMW0dk2zI7+CSO0gp5tguDm/Rt4=' 'sha256-zkvv5JmFlMonuw+PH8ooHSpJBkcgm8K1xH4yRHeslOo='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://geocoding-api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#06090d">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -218,9 +218,13 @@ html.native .topbar { padding-left: 86px; }
 .q-chg { display: block; font-family: var(--mono); font-size: 10.5px; margin-top: 2px; font-variant-numeric: tabular-nums; }
 .up { color: var(--up); } .down { color: var(--down); } .flat { color: var(--flat); }
 .q .spark { height: 26px; }
-@keyframes flashUp { 0% { background: color-mix(in srgb, var(--up) 34%, transparent); color: var(--up); } 55% { color: var(--up); } 100% { background: transparent; } }
-@keyframes flashDown { 0% { background: color-mix(in srgb, var(--down) 34%, transparent); color: var(--down); } 55% { color: var(--down); } 100% { background: transparent; } }
-.flash-up { animation: flashUp 1.2s ease-out; } .flash-down { animation: flashDown 1.2s ease-out; }
+/* 行情跳動的閃爍：底色用一層蓋上去的色塊，只動透明度（不會讓瀏覽器每一格都重畫文字與背景）；文字變色靠一個 0.66 秒後移除的 class */
+.flash-up, .flash-down { position: relative; }
+.flash-up::after, .flash-down::after { content: ""; position: absolute; inset: 0; border-radius: 3px; pointer-events: none; opacity: 0; animation: flashFade 1.2s ease-out; }
+.flash-up::after { background: color-mix(in srgb, var(--up) 34%, transparent); }
+.flash-down::after { background: color-mix(in srgb, var(--down) 34%, transparent); }
+.flash-hot-up { color: var(--up); } .flash-hot-down { color: var(--down); }
+@keyframes flashFade { 0% { opacity: 1; } 100% { opacity: 0; } }
 .sp-dot { position: absolute; right: -2.5px; width: 5px; height: 5px; margin-top: -2.5px; border-radius: 50%; background: currentColor; pointer-events: none; }
 .sp-dot::after { content: ""; position: absolute; inset: -3px; border-radius: 50%; border: 1px solid currentColor; animation: ping 1.6s ease-out infinite; }
 
@@ -255,7 +259,7 @@ html.native .topbar { padding-left: 86px; }
 #globe.dragging { cursor: grabbing; }
 .labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
 /* 不用 CSS 轉場做淡入淡出：標籤透明度幾乎每張都在變，轉場會不斷重啟而吃掉 CPU，改由 globe.js 自己漸變 */
-.lb { position: absolute; left: 0; top: 0; will-change: transform, opacity; white-space: nowrap; }
+.lb { position: absolute; left: 0; top: 0; white-space: nowrap; }
 .lb-city { font-size: 10.5px; color: rgba(233,238,244,.82); text-shadow: 0 0 4px #000, 0 0 8px rgba(0,0,0,.9); padding-left: 8px; line-height: 1; margin-top: -5px; }
 .lb-city::before { content: ""; position: absolute; left: -2px; top: 3px; width: 4px; height: 4px; border-radius: 50%; background: #fff; box-shadow: 0 0 6px rgba(255,255,255,.9); }
 .lb-city.home { color: var(--accent); } .lb-city.home::before { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
@@ -342,7 +346,7 @@ html.native .topbar { padding-left: 86px; }
 .hl-title { margin-top: 7px; font-size: clamp(15px, 1.25vw, 19px); font-weight: 500; line-height: 1.4; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hl-desc { margin-top: 4px; font-size: 12px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 17px; }
 .hl-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: rgba(255,255,255,.05); }
-.hl-bar i { display: block; height: 100%; width: 0; background: var(--accent); opacity: .7; }
+.hl-bar i { display: block; height: 100%; width: 100%; transform: scaleX(0); transform-origin: left; background: var(--accent); opacity: .7; }
 .headline.swap .hl-title, .headline.swap .hl-desc, .headline.swap #hl-meta { animation: swap .5s ease; }
 @keyframes swap { 0% { opacity: 0; transform: translateY(6px); } 100% { opacity: 1; transform: none; } }
 
@@ -1140,7 +1144,7 @@ html.lowpower .fx-pulse.on, html.lowpower .panel.fx-sweep h2::after { animation:
 .center { display: flex; flex-direction: column; gap: var(--gap); min-width: 0; min-height: 0; }
 .center > .stage { flex: 1 1 auto; }
 .col-under { flex: 0 1 auto; max-height: 42%; }
-body.editing .col-under { min-height: 120px; }
+body.editing .col-under, body.moving .col-under { min-height: 120px; }
 .grid.m-tall .center { display: contents; }
 
 /* 資料夾容量 */
@@ -1496,6 +1500,109 @@ body.moving, body.moving * { cursor: grabbing !important; }
 @container wxslim (max-width: 150px) { .wx-desc { display: none !important; } }
 /* 並排時區塊比較窄：這兩行原本一行放不下會超出去，改成自動換行（只在並排的列裡，單獨一列時維持原樣） */
 .prow .disk-sub, .prow .watch-sum { flex-wrap: wrap; row-gap: 2px; }
+html.standalone #btn-reset-layout { display: none; }
+
+/* ───────── 系統狀態（新）：圓環＋核心直條＋即時走勢 ───────── */
+.sys-hero { display: flex; align-items: center; gap: 14px; margin-bottom: 4px; }
+.sys-ring { position: relative; width: 84px; height: 84px; flex: none; --rc: var(--accent); }
+.sys-ring svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; overflow: visible; }
+.sys-ring circle { fill: none; }
+.sys-ring .r-tick { stroke: rgba(127,227,242,.28); stroke-width: 1.2; stroke-dasharray: .6 1.4; }
+.sys-ring .r-tickwrap { will-change: transform; animation: sysSpin 40s linear infinite; }
+.sys-ring::before { content: ''; position: absolute; inset: 9px; border-radius: 50%; box-shadow: 0 0 14px rgba(127,227,242,.22), inset 0 0 12px rgba(127,227,242,.10); }
+.sys-ring .r-track { stroke: rgba(255,255,255,.07); stroke-width: 6; }
+.sys-ring .r-val { stroke: url(#sysg); stroke-width: 6; stroke-linecap: round; }
+.sys-ring.warn .r-val { stroke: var(--warn); }
+.sys-ring.crit .r-val { stroke: var(--critical); }
+.sys-ring .r-txt { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; line-height: 1.05; }
+.sys-ring .r-txt b { font-family: var(--mono); font-weight: 400; font-size: 21px; color: var(--ink); text-shadow: 0 0 12px rgba(127,227,242,.55); }
+.sys-ring .r-txt small { font-size: 8.5px; letter-spacing: .14em; color: var(--ink-3); margin-top: 3px; }
+@keyframes sysSpin { to { transform: rotate(360deg); } }
+.sys-cores { flex: 1; min-width: 0; }
+.sc-head { display: flex; justify-content: space-between; gap: 6px; font-size: 10px; letter-spacing: .1em; color: var(--ink-3); margin-bottom: 5px; white-space: nowrap; }
+.sc-head span:last-child { letter-spacing: 0; font-size: 10px; overflow: hidden; text-overflow: ellipsis; }
+.sc-bars { display: flex; gap: 3px; height: 50px; align-items: stretch; }
+.sc-bars i { flex: 1; min-width: 0; border-radius: 2px; background: rgba(0,0,0,.4); box-shadow: inset 0 1px 2px rgba(0,0,0,.7); display: block; overflow: hidden; }
+.sc-bars i b { display: block; width: 100%; height: 100%; transform-origin: bottom; transform: scaleY(.03); border-radius: 2px; background: linear-gradient(0deg, #4fb8d6, #b6f3fb); }
+.sc-bars i.warn b { background: linear-gradient(0deg, #c98a2e, var(--warn)); }
+.sc-bars i.crit b { background: linear-gradient(0deg, #b03a3a, var(--critical)); }
+.sys-wave { color: var(--accent); height: 26px; margin: 2px 0 4px; }
+.sys-wave .spark-wrap { height: 26px; }
+.sys-row { display: grid; grid-template-columns: 38px 1fr 98px; align-items: center; gap: 10px; height: 26px; }
+.sys-row.two { height: 32px; }
+.sys-row[hidden] { display: none; }
+.sys-row > div:nth-child(2) { min-width: 0; }
+.sys-row .m-val { font-family: var(--mono); font-size: 12.5px; text-align: right; white-space: nowrap; line-height: 1.3; }
+.sys-row.two .m-val { font-size: 11px; }
+.sys-row .m-val small { color: var(--ink-3); font-size: 10.5px; }
+.bar.seg { display: flex; overflow: hidden; }
+.bar.seg i { height: 100%; border-radius: 0; box-shadow: none; transition: none; }      /* 寬度不做漸變：記憶體變得很慢，漸變只會讓瀏覽器每一格都重排 */
+.bar.seg .s-app { background: linear-gradient(180deg, #b6f3fb, var(--accent)); box-shadow: 0 0 8px rgba(127,227,242,.45); }
+.bar.seg .s-wired { background: #7d8ff0; }
+.bar.seg .s-comp { background: #e3b55e; }
+.bar.seg.warn .s-app { background: var(--warn); } .bar.seg.crit .s-app { background: var(--critical); }
+.bar.seg { height: 6px; }
+.proc { display: grid; grid-template-columns: minmax(0, 1fr) 54px 34px; gap: 8px; }
+.proc i { height: 3px; border-radius: 2px; background: rgba(0,0,0,.4); align-self: center; overflow: hidden; }
+.proc i b { display: block; height: 100%; background: var(--accent); opacity: .8; }
+.proc span:last-child { text-align: right; }
+.sys-row .spark-wrap { color: var(--accent); }
+.sys-row[data-x] .spark-wrap { color: #8fb6ff; }
+
+html.lowpower .sys-ring .r-tickwrap { animation: none; will-change: auto; }
+
+.sysfoot span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.sysfoot span:last-child { flex: none; }
+
+/* ───── 後台數據 ───── */
+html.standalone #btn-admin { display: none; }
+.dlg-admin { width: min(820px, 100%); max-height: min(860px, calc(100vh - 40px)); }
+.ad-at { margin-left: auto; font-size: 11px; color: var(--ink-3); }
+.ad-body { overflow: auto; padding: 14px 16px 6px; display: flex; flex-direction: column; gap: 18px; }
+.ad-empty { color: var(--ink-3); font-size: 13px; padding: 24px 0; text-align: center; }
+.ad-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.ad-tile { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; background: rgba(255,255,255,.02); display: flex; flex-direction: column; gap: 2px; }
+.ad-tile b { font: 600 24px/1.1 var(--mono); color: var(--ink); }
+.ad-tile span { font-size: 11px; color: var(--ink-3); letter-spacing: .06em; }
+.ad-sec h4 { margin: 0 0 8px; font-size: 12px; font-weight: 600; letter-spacing: .12em; color: var(--ink-2); display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.ad-sec h4 span { font-weight: 400; letter-spacing: 0; color: var(--ink-3); font-size: 11px; }
+.ad-list { display: flex; flex-direction: column; }
+.ad-p { display: grid; grid-template-columns: minmax(110px, 1.3fr) auto 46px 50px 54px minmax(110px, 1fr); gap: 12px; align-items: center; padding: 9px 2px; border-top: 1px solid var(--line); }
+.ad-p:first-child { border-top: 0; }
+.ad-p.off { opacity: .55; }
+.ad-p small { display: block; font-size: 10.5px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ad-nm { min-width: 0; }
+.ad-nm b { font-size: 13px; font-weight: 600; }
+.ad-n { text-align: right; }
+.ad-n b { font: 600 14px var(--mono); }
+.ad-last { min-width: 0; }
+.ad-last b { font-size: 12px; font-weight: 500; }
+.ad-strip { display: grid; grid-template-columns: repeat(14, 11px); gap: 3px; }
+.ad-strip i { height: 16px; border-radius: 3px; background: rgba(255,255,255,.05); }
+.ad-strip i.lv1 { background: rgba(127,227,242,.28); }
+.ad-strip i.lv2 { background: rgba(127,227,242,.5); }
+.ad-strip i.lv3 { background: rgba(127,227,242,.75); }
+.ad-strip i.lv4 { background: var(--accent); }
+.ad-strip i.td { box-shadow: 0 0 0 1px rgba(255,255,255,.35); }
+.ad-hint { font-size: 11.5px; color: var(--ink-3); margin-top: 6px; }
+.ad-off summary { cursor: pointer; font-size: 11.5px; color: var(--ink-3); margin-top: 8px; }
+.ad-kv > div { display: grid; grid-template-columns: 170px 1fr; gap: 12px; padding: 7px 2px; border-top: 1px solid var(--line); font-size: 12.5px; }
+.ad-kv > div:first-child { border-top: 0; }
+.ad-kv > div > span { color: var(--ink-3); }
+.ad-kv em.w { font-style: normal; color: var(--warn); }
+.ad-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.ad-chip { border: 1px solid var(--line); border-radius: 6px; padding: 3px 7px; font-size: 11.5px; display: inline-flex; gap: 6px; align-items: baseline; }
+.ad-chip small { color: var(--ink-3); font-size: 10.5px; }
+.ad-chip.old { border-color: rgba(243,198,77,.4); }
+.ad-chip.old small { color: var(--warn); }
+@media (max-width: 639px) {
+  .ad-tiles { grid-template-columns: repeat(2, 1fr); }
+  .ad-p { grid-template-columns: 1fr auto auto auto; grid-template-areas: "nm n7 n30 op" "st st ls ls"; gap: 6px 12px; }
+  .ad-nm { grid-area: nm; } .ad-strip { grid-area: st; } .ad-last { grid-area: ls; text-align: right; }
+  .ad-p > .ad-n:nth-child(3) { grid-area: n7; } .ad-p > .ad-n:nth-child(4) { grid-area: n30; } .ad-p > .ad-n:nth-child(5) { grid-area: op; }
+  .ad-strip { grid-template-columns: repeat(14, 9px); gap: 2px; }
+  .ad-kv > div { grid-template-columns: 1fr; gap: 2px; }
+}
 
 </style>
 </head>
@@ -1595,6 +1702,12 @@ body.moving, body.moving * { cursor: grabbing !important; }
         </button>
         <button class="ibtn" id="btn-edit" title="編輯版面：搬移、收起區塊（按 E）" aria-label="編輯版面">
           <svg viewBox="0 0 16 16"><rect x="2" y="2.5" width="5" height="11" rx="1"/><rect x="9" y="2.5" width="5" height="4.5" rx="1"/><rect x="9" y="9" width="5" height="4.5" rx="1"/></svg>
+        </button>
+        <button class="ibtn" id="btn-reset-layout" title="重置排版：所有情境、所有尺寸的版面和區塊大小都回到預設（收起來或不見的區塊會全部放回）" aria-label="重置排版">
+          <svg viewBox="0 0 16 16"><path d="M3 8a5 5 0 1 0 1.6-3.7"/><path d="M3 2.5v3h3"/></svg>
+        </button>
+        <button class="ibtn" id="btn-admin" title="後台數據：分享出去的人有沒有在用、中轉站和手機連線的狀態" aria-label="後台數據">
+          <svg viewBox="0 0 16 16"><path d="M2.5 13.5h11"/><path d="M4.5 11V8M8 11V4M11.5 11V6.5"/></svg>
         </button>
         <button class="ibtn" id="btn-home" title="回到我的位置" aria-label="回到我的位置">
           <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.2"/><path d="M8 1v3M8 12v3M1 8h3M12 8h3"/></svg>
@@ -1888,6 +2001,14 @@ body.moving, body.moving * { cursor: grabbing !important; }
     </div>
     <footer class="dlg-f"><button class="btn danger" id="ph-revoke">取消所有手機</button><span class="dlg-note"></span>
       <button class="btn primary" id="ph-pairbtn">配對新手機</button></footer>
+  </section>
+</div>
+
+<div class="dlg-back" id="admin" hidden>
+  <section class="dlg dlg-admin" role="dialog" aria-modal="true" aria-labelledby="admin-title">
+    <header class="dlg-h"><b id="admin-title">後台數據</b><span class="ad-at" id="ad-at"></span><button class="dlg-x" data-close aria-label="關閉">×</button></header>
+    <div class="ad-body" id="ad-body"><div class="ad-empty">讀取中…</div></div>
+    <footer class="dlg-f"><span class="dlg-note" id="ad-note">打開次數從這一版開始記；之前只知道哪幾天有來。</span><button class="btn" id="ad-refresh">重新整理</button></footer>
   </section>
 </div>
 
@@ -2298,6 +2419,23 @@ body.moving, body.moving * { cursor: grabbing !important; }
   }
   // 面板每秒問一次狀態；這裡只在需要的時候才真的去問中轉站（開盤中 15 秒、其他時間 60 秒、頁面在背景不問），省流量
   let nextAt = 0, relaySince = 0, meta = {}, pending = {}, skew = 0;
+  // 靈感：每個人按的愛心存在自己的手機。中轉站送來的圖照這支手機的喜好重新排：常按愛心的來源每一輪多出幾張（最多 4 倍），沒按過的來源照樣會出現
+  const inspMix = (list, likes) => {
+    if (!Array.isArray(list)) return list;
+    const n = {}; for (const x of likes || []) if (x && x.source) n[x.source] = (n[x.source] || 0) + 1;
+    if (!Object.keys(n).length) return list;
+    const groups = new Map(); for (const it of list) { const k = (it && it.source) || ''; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(it); }
+    const per = [...groups.entries()].sort((a, b) => (n[b[0]] || 0) - (n[a[0]] || 0)).map(([k, g]) => ({ g, w: 1 + Math.min(3, (n[k] || 0) / 2), pos: 0, credit: 0 }));
+    const out = [];
+    while (per.some((x) => x.pos < x.g.length)) {
+      for (const x of per) {
+        if (x.pos >= x.g.length) continue;
+        x.credit += x.w;
+        while (x.credit >= 1 && x.pos < x.g.length) { x.credit -= 1; out.push(x.g[x.pos++]); }
+      }
+    }
+    return out;
+  };
   async function route(u, init) {
     const p = u.pathname, post = (init.method || 'GET').toUpperCase() === 'POST';
     const body = post ? JSON.parse(init.body || 'null') : null, d = load();
@@ -2315,6 +2453,7 @@ body.moving, body.moving * { cursor: grabbing !important; }
           const j = big ? await relay('state', { since: relaySince }, sy) : await relay('state', { ...sy, since: relaySince });
           if (j.state && j.state.holidays && j.state.holidays.days) { hol = j.state.holidays; ls.set('wp.hol', JSON.stringify(hol)); }
           if (j.state) { relaySince = j.now; meta = j.meta || meta; skew = j.now * 1000 - Date.now(); pending = { ...pending, ...j.state }; }
+          if (j.state && j.state.insp) pending.insp = inspMix(j.state.insp, d.inspLikes);
           // 狀態燈的門檻是照 Mac 版「幾秒更新一次」訂的；手機版是每 15～60 秒問一次，中轉站有正常回應、沒有報錯就算正常
           if (j.state) for (const k of ['tw', 'us', 'tx']) if (meta[k] && !meta[k][1]) meta[k] = [Math.max(meta[k][0], j.now - 20), null];
           if (j.state) { for (const k of ['tw', 'us']) if (j.state[k] && j.state[k].w) quotes[k] = j.state[k].w; if (j.state.us && j.state.us.usdtwd) quotes.fx = j.state.us.usdtwd.last || quotes.fx; }
@@ -2402,6 +2541,22 @@ body.moving, body.moving * { cursor: grabbing !important; }
       save(d); return J({ ok: true });
     }
     if (post && p === '/api/trades') return J(tradesApi(body || {}, d));
+    if (post && p === '/api/insp/like') {                  // 靈感按愛心：存在這支手機，只影響這支手機看到的圖片順序
+      const op = body && body.op, okUrl = (x) => typeof x === 'string' && /^https:\/\/[^\s"<>\\]{1,600}$/.test(x);
+      const txt = (v, n) => String(v || '').replace(/[\x00-\x1f\x7f<>]/g, ' ').trim().slice(0, n);
+      let cur = (d.inspLikes || []).filter((x) => x && okUrl(x.img));
+      if (op === 'clear') cur = [];
+      else if (op === 'add' || op === 'del') {
+        const img = String(body.img || '');
+        if (!okUrl(img)) throw fail('資料格式不對');
+        cur = cur.filter((x) => x.img !== img);
+        if (op === 'add') cur.push({ img, title: txt(body.title, 160), source: txt(body.source, 60), link: okUrl(body.link) ? body.link : '', at: Math.floor(Date.now() / 1000) });
+        cur = cur.slice(-500);
+      } else throw fail('不認得的動作');
+      d.inspLikes = cur;
+      if (!save(d)) throw fail('這個瀏覽器不讓網頁存資料（可能是無痕模式）。', 507);
+      return J({ ok: true, inspLikes: cur });
+    }
     throw fail('手機版沒有這個功能', 404);
   }
   window.fetch = async (input, init = {}) => {
@@ -3729,21 +3884,43 @@ class Globe {
     this.resize();
     this.setSun(new Date());
     this.last = performance.now();
-    // 平常約每秒 30 張就夠（地球轉得很慢）；拖曳、縮放、飛行途中才全速，省電也省顯示卡
+    // 畫面節奏：每個螢幕更新都進 requestAnimationFrame，但只在「該畫的那一次」才畫，所以間隔均勻（不再忽快忽慢）。
+    // 目標每秒約 60 張（螢幕 60Hz 就每次都畫；100Hz 約 50 張；120Hz 約 60 張）。省電模式再放慢 4 倍。
+    // 太吃力時自動降一級（最多降到約每秒 20 張），輕鬆一陣子再升回來；拖曳、縮放、飛行途中全速。
     this.lastDraw = 0; this.activeUntil = 0;
+    this.ri = 16.7; this.mult = 1; this.skipN = 0; this._lastRaf = 0; this._win = { t0: 0, n: 0, ms: 0, over: 0, calm: 0 };
+    let looping = false;
     const loop = (t) => {
+      looping = false;
+      if (document.hidden || this.offscreen || this.paused) return;      // 被蓋住、切走、靈感大圖：完全停；回來時由 _kick 重新開始
+      if (this._lastRaf) { const d = t - this._lastRaf; if (d > 3 && d < 40) this.ri = this.ri * 0.9 + d * 0.1; }
+      this._lastRaf = t;
+      looping = true; requestAnimationFrame(loop);
       const busy = this.fly || t < this.activeUntil;
-      const gap = this.lowPower ? 64 : document.hasFocus() ? 29 : 45;     // 省電模式約每秒 15 張          // 視窗在前景約每秒 30 張；放在旁邊當背景看時約 20 張
-      if (!document.hidden && !this.offscreen && !this.paused && (busy || t - this.lastDraw >= gap || PERF.includes('raf'))) { this.lastDraw = t; this._tick(t); }
-      // 閒置時改用計時器排下一張：不讓瀏覽器以螢幕更新率（例如 100Hz）空轉
-      if (busy || PERF.includes('raf')) requestAnimationFrame(loop);
-      else setTimeout(() => requestAnimationFrame(loop), 22);
+      const base = PERF.includes('raf') ? 1 : Math.max(1, Math.round(16.67 / this.ri));
+      const N = busy ? 1 : base * this.mult * (this.lowPower ? 4 : 1);
+      if (++this.skipN < N) return;
+      this.skipN = 0;
+      const gap = t - this.lastDraw; this.lastDraw = t;
+      const t0 = performance.now(); this._tick(t); const ms = performance.now() - t0;
+      if (!busy && !this.lowPower) this._adapt(t, gap, ms, N);
     };
-    this._kick = () => { if (performance.now() >= this.activeUntil - 1400) requestAnimationFrame(loop); };
+    this._kick = () => { if (!looping) { looping = true; this._lastRaf = 0; this.skipN = 99; requestAnimationFrame(loop); } };
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) this._kick(); });
+    this._adapt = (t, gap, ms, N) => {
+      const w = this._win; if (!w.t0) w.t0 = t;
+      w.n++; w.ms += ms; if (gap > this.ri * N * 1.6 && gap < 500) w.over++;
+      if (t - w.t0 < 5000) return;
+      const avg = w.ms / w.n, over = w.over / w.n;
+      if ((avg > 6 || over > 0.10) && this.mult < 3) { this.mult++; w.calm = 0; }
+      else if (avg < 3 && over < 0.02) { if (++w.calm >= 4 && this.mult > 1) { this.mult--; w.calm = 0; } }
+      else w.calm = 0;
+      this._win = { t0: t, n: 0, ms: 0, over: 0, calm: w.calm };
+    };
     // 顯示卡重置（睡眠喚醒、切換顯示卡）後畫面會變黑：直接重新載入最穩
     canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); });
     canvas.addEventListener('webglcontextrestored', () => location.reload());
-    requestAnimationFrame(loop);
+    this._kick();
   }
 
   _stars() {
@@ -3920,6 +4097,7 @@ class Globe {
     const it = { kind, el, v: ll2v(lat, lon, opts.r || 1.003), pri: opts.pri || 0, cull: !!opts.cull, culled: false,
                  w: 0, h: 12, op: -1, center: !!opts.center, data: opts.data };
     if (it.cull) it.w = el.offsetWidth + 4;
+    el.style.display = 'none';        // 先收起來；要顯示時 _labels 才打開（看不見的標籤不占版面也不占圖層）
     this.labels.push(it);
     return it;
   }
@@ -4141,6 +4319,7 @@ class Globe {
 
   _tick(now) {
     const dt = Math.min(0.1, (now - this.last) / 1000); this.last = now;
+    if (PERF.includes('log')) { const P = window.__perf || (window.__perf = { n: 0, over: 0, ms: 0, gaps: 0, t0: now }); P.n++; if (dt > 0.0267) P.over++; P._t = performance.now(); }
     if (this.fly) {
       const f = this.fly, k = clamp((now - f.t0) / f.dur, 0, 1), e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
       this.viewLon = f.lon0 + f.dLon * e; this.viewLat = f.lat0 + (f.lat1 - f.lat0) * e;
@@ -4173,6 +4352,8 @@ class Globe {
     if (!PERF.includes('norender')) this.renderer.render(this.scene, this.camera);
     if (!PERF.includes('nolabels')) this._labels();
     this.frame++;
+    if (this.onFrame) this.onFrame(now);
+    if (window.__perf && window.__perf._t) { window.__perf.ms += performance.now() - window.__perf._t; window.__perf.avgMs = window.__perf.ms / window.__perf.n; window.__perf.fps = window.__perf.n / ((now - window.__perf.t0) / 1000); window.__perf.overPct = 100 * window.__perf.over / window.__perf.n; }
   }
 
   _labels() {
@@ -4182,7 +4363,7 @@ class Globe {
     const boxes = recull ? [] : null;
     for (const it of this.labels) {
       if (it.minR && this.Rpx < it.minR && !it.el.classList.contains('home')) {   // 這個放大程度還不顯示
-        if (it.op !== '0.00') { it.op = '0.00'; it.el.style.opacity = '0'; it.el.style.visibility = 'hidden'; }
+        if (it.op !== '0.00') { it.op = '0.00'; it.el.style.opacity = '0'; it.el.style.display = 'none'; }
         it.fade = 0; it.culled = true; continue;
       }
       p.copy(it.v).applyMatrix4(m);
@@ -4203,12 +4384,11 @@ class Globe {
         it.fade = it.fade === undefined ? (it.culled ? 0 : 1) : it.fade + ((it.culled ? 0 : 1) - it.fade) * 0.22;
         if (it.fade < 0.02) it.fade = 0; else if (it.fade > 0.98) it.fade = 1;
         op *= it.fade;
-        it.el.style.transform = it.center
-          ? `translate3d(${(it.x - it.w / 2).toFixed(1)}px,${it.y.toFixed(1)}px,0)`
-          : `translate3d(${it.x.toFixed(1)}px,${it.y.toFixed(1)}px,0)`;
+        const tx = it.center ? it.x - it.w / 2 : it.x;       // 位置沒動（差不到 0.3 像素）就不重寫，少一次圖層更新
+        if (it.lx === undefined || Math.abs(tx - it.lx) > 0.3 || Math.abs(it.y - it.ly) > 0.3) { it.lx = tx; it.ly = it.y; it.el.style.transform = `translate3d(${tx.toFixed(1)}px,${it.y.toFixed(1)}px,0)`; }
       }
       const o = op.toFixed(2);
-      if (o !== it.op) { it.op = o; it.el.style.opacity = o; it.el.style.visibility = op > 0 ? 'visible' : 'hidden'; }
+      if (o !== it.op) { it.op = o; it.el.style.opacity = o; it.el.style.display = op > 0 ? '' : 'none'; }
     }
   }
 }
@@ -5489,19 +5669,28 @@ function chip(key, q, label) {
   return `<div class="chip" data-key="${key}"><span>${esc(label || q.name)}</span><b data-k="${key}" data-v="${last}" data-d="${d}" data-s="${suf}">${fmt(last, d)}${suf}</b>
     <em class="${dirCls(pct)}">${arrow(pct)} ${fmt(Math.abs(pct ?? 0), 2)}%${tag ? `<i>${tag}</i>` : ''}</em></div>`;
 }
+let rollT0 = 0, rollN = 0;
 function flash(root) {
+  if ((QS.get('perf') || '').includes('noflash')) return;
   root.querySelectorAll('[data-k]').forEach((el) => {
     const k = el.dataset.k, v = +el.dataset.v, prev = lastVals[k];
     if (prev != null && v !== prev && !isNaN(v)) {
-      el.classList.remove('flash-up', 'flash-down'); void el.offsetWidth;
-      el.classList.add(v > prev ? 'flash-up' : 'flash-down');
-      roll(el, prev, v, +el.dataset.d || 0, el.dataset.s || '');
+      const up = v > prev, cls = up ? 'up' : 'down';
+      el.classList.remove('flash-up', 'flash-down', 'flash-hot-up', 'flash-hot-down'); void el.offsetWidth;
+      el.classList.add('flash-' + cls, 'flash-hot-' + cls);
+      clearTimeout(el._fl1); clearTimeout(el._fl2);
+      el._fl1 = setTimeout(() => el.classList.remove('flash-hot-up', 'flash-hot-down'), 660);
+      el._fl2 = setTimeout(() => el.classList.remove('flash-up', 'flash-down'), 1250);
+      // 同一瞬間很多個數字一起變（開盤）：前 12 個照樣滾動，其餘直接換成新值，不讓畫面一次動上百處
+      const t = performance.now(); if (t - rollT0 > 500) { rollT0 = t; rollN = 0; }
+      if (rollN++ < 12) roll(el, prev, v, +el.dataset.d || 0, el.dataset.s || ''); else el.textContent = fmt(v, +el.dataset.d || 0) + (el.dataset.s || '');
     }
     if (!isNaN(v)) lastVals[k] = v;
   });
 }
 // 數字從舊值滾到新值
 function roll(el, from, to, d, sfx) {
+  if ((QS.get('perf') || '').includes('noroll')) { el.textContent = fmt(to, d) + sfx; return; }
   const t0 = performance.now(), dur = 420;
   const step = (t) => {
     if (!el.isConnected) return;
@@ -5710,25 +5899,114 @@ function bytes(v) {
 }
 const rate = (v) => { const [n, u] = bytes(v); return `${n} ${u}/s`; };
 
+// 系統狀態：畫面只在第一次建好，之後每秒只改數字、寬度和弧線（這樣才有平順的動畫，也不吃資源）
+const SYS = { el: null };
+const sysLevel = (v) => (v >= 85 ? 'crit' : v >= 60 ? 'warn' : '');
+function sysBuild() {
+  const box = $('system');
+  box.innerHTML = `
+    <div class="sys-hero">
+      <div class="sys-ring" data-k="ring">
+        <svg class="r-tickwrap" viewBox="0 0 84 84"><circle class="r-tick" cx="42" cy="42" r="39" pathLength="100"/></svg>
+        <svg class="r-main" viewBox="0 0 84 84"><defs><linearGradient id="sysg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b6f3fb"/><stop offset="1" stop-color="#4fb8d6"/></linearGradient></defs>
+          <circle class="r-track" cx="42" cy="42" r="32" pathLength="100"/>
+          <circle class="r-val" data-k="arc" cx="42" cy="42" r="32" pathLength="100" stroke-dasharray="0 100" transform="rotate(-90 42 42)"/></svg>
+        <div class="r-txt"><b data-k="cpu">0</b><small>CPU %</small></div>
+      </div>
+      <div class="sys-cores">
+        <div class="sc-head"><span>各核心</span><span data-k="split"></span></div>
+        <div class="sc-bars" data-k="cores"></div>
+      </div>
+    </div>
+    <div class="sys-wave" data-k="wave"></div>
+    <div class="sys-row"><span class="m-name">GPU</span><div data-k="gpuS"></div><span class="m-val" data-k="gpuV"></span></div>
+    <div class="sys-row"><span class="m-name">記憶體</span><div class="bar seg" data-k="memBar" title=""><i class="s-app"></i><i class="s-wired"></i><i class="s-comp"></i></div><span class="m-val" data-k="memV"></span></div>
+    <div class="sys-row"><span class="m-name">耗電</span><div data-k="pwS"></div><span class="m-val" data-k="pwV"></span></div>
+    <div class="sys-row two"><span class="m-name">網路</span><div data-k="netS"></div><span class="m-val" data-k="netV"></span></div>
+    <div class="sys-row two"><span class="m-name">硬碟</span><div data-k="ioS"></div><span class="m-val" data-k="ioV"></span></div>
+    <div class="procs" data-k="procs"></div>
+    <div class="sysfoot"><span data-k="up"></span><span data-k="bat"></span></div>`;
+  SYS.el = {}; box.querySelectorAll('[data-k]').forEach((e) => { SYS.el[e.dataset.k] = e; });
+  SYS.cores = 0; SYS.vCpu = 0; SYS.vCores = [];
+}
+// 圓環與核心直條的平順動畫：不用 CSS 漸變（漸變會讓瀏覽器每個螢幕更新都重新合成整頁），
+// 改成每次地球畫完一張的同一幀裡順手往目標值推一小步，不額外多出畫面；地球沒在畫（省電、靈感大圖、被蓋住）時才自己跑一小段。
+SYS.vCpu = 0; SYS.vCores = []; SYS.tCpu = 0; SYS.tCores = []; SYS.last = 0; SYS.pending = false; SYS.raf = 0;
+function sysStep(now) {
+  const E = SYS.el; if (!E || !E.arc || !E.arc.isConnected) { SYS.pending = false; return; }
+  const dt = Math.min(0.25, (now - SYS.last) / 1000); if (SYS.last && dt < 0.004) return; SYS.last = now;
+  const k = ecoOn ? 1 : 1 - Math.exp(-dt / 0.16);
+  let moving = false;
+  const d0 = SYS.tCpu - SYS.vCpu;
+  if (Math.abs(d0) > 0.2) { SYS.vCpu += d0 * k; moving = true; } else SYS.vCpu = SYS.tCpu;
+  E.arc.setAttribute('stroke-dasharray', `${SYS.vCpu.toFixed(1)} 100`);
+  const bars = E.cores.children;
+  for (let n = 0; n < SYS.tCores.length; n++) {
+    const t = SYS.tCores[n], v = SYS.vCores[n] ?? 3, d = t - v;
+    let nv = v;
+    if (Math.abs(d) > 0.4) { nv = v + d * k; moving = true; } else nv = t;
+    if (nv !== SYS.vCores[n]) { SYS.vCores[n] = nv; if (bars[n]) bars[n].firstChild.style.transform = `scaleY(${(nv / 100).toFixed(3)})`; }
+  }
+  SYS.pending = moving;
+}
+const sysGlobeLive = () => !globe.paused && !globe.offscreen && !document.hidden && !ecoOn && performance.now() - (globe.lastDraw || 0) < 150;
+function sysKick() {
+  SYS.pending = true;
+  if (sysGlobeLive() || SYS.raf) return;                  // 地球有在畫：它會順手推；已經有備用的在跑：不重複
+  const loop = () => { SYS.raf = 0; sysStep(performance.now()); if (SYS.pending && !sysGlobeLive()) SYS.raf = setTimeout(loop, 33); };       // 備用：約每秒 30 張就夠
+  SYS.raf = setTimeout(loop, 33);
+}
+globe.onFrame = (now) => { if (SYS.pending) sysStep(now); };
+function drawSystem(s) {
+  if ((QS.get('perf') || '').includes('nosys')) return;
+  if (!SYS.el || !SYS.el.ring.isConnected) sysBuild();
+  const E = SYS.el, cpu = s.cpu ? s.cpu.total : 0, m = s.mem, H = s.hist || {};
+  const put = (k, v) => { if (E[k].textContent !== v) E[k].textContent = v; };
+  const html = (k, v) => { if (E[k].dataset.h !== v) { E[k].dataset.h = v; E[k].innerHTML = v; } };
+  // CPU 圓環
+  SYS.tCpu = Math.max(0.4, Math.min(100, cpu));
+  E.ring.className = 'sys-ring ' + sysLevel(cpu);
+  put('cpu', cpu.toFixed(0));
+  put('split', s.cpu ? `使用者 ${s.cpu.user.toFixed(0)}%・系統 ${s.cpu.sys.toFixed(0)}%` : `${s.ncpu} 核`);
+  // 每顆核心一根直條
+  const cores = s.cores && s.cores.length ? s.cores : null;
+  if (cores) {
+    if (SYS.cores !== cores.length) { E.cores.innerHTML = cores.map(() => '<i><b></b></i>').join(''); SYS.cores = cores.length; SYS.vCores = []; }
+    const bars = E.cores.children;
+    SYS.tCores = cores.map((v) => Math.max(3, v));
+    for (let n = 0; n < cores.length; n++) { const b = bars[n]; const lv = sysLevel(cores[n]); if (b.className !== lv) b.className = lv; b.title = `核心 ${n + 1}：${cores[n].toFixed(0)}%`; }
+  }
+  sysKick();
+  html('wave', spark(H.cpu, { id: 'cpu', min: 0, max: 100, h: 26, fmt: (v) => v.toFixed(0), unit: '%', live: true }));
+  // GPU
+  if (s.gpu != null) { html('gpuS', spark(H.gpu, { id: 'gpu', min: 0, max: 100, h: 22, fmt: (v) => v.toFixed(0), unit: '%' })); html('gpuV', `${s.gpu}<small>%</small>`); }
+  else { html('gpuS', ''); html('gpuV', '<small>—</small>'); }
+  // 記憶體：三段（App／系統固定／壓縮）
+  if (m) {
+    const t = m.total || 1, [ap, wi, co] = [m.app, m.wired, m.compressed].map((v) => (v / t * 100).toFixed(1));
+    const sg = E.memBar.children; sg[0].style.width = ap + '%'; sg[1].style.width = wi + '%'; sg[2].style.width = co + '%';
+    E.memBar.className = 'bar seg ' + (m.pressure >= 4 ? 'crit' : m.pressure >= 2 ? 'warn' : '');
+    E.memBar.title = `App ${(m.app / GB).toFixed(1)} GB・系統 ${(m.wired / GB).toFixed(1)} GB・壓縮 ${(m.compressed / GB).toFixed(1)} GB${m.swap > 5e7 ? `・交換 ${(m.swap / GB).toFixed(1)} GB` : ''}`;
+    html('memV', `${(m.used / GB).toFixed(1)}<small> / ${Math.round(m.total / 1073741824)} GB</small>`);
+  }
+  // 耗電
+  if (s.power != null) { E.pwS.parentNode.hidden = false; html('pwS', spark(H.pw || [], { id: 'pw', min: 0, h: 22, fmt: (v) => v.toFixed(0), unit: ' W' })); html('pwV', `${s.power.toFixed(0)}<small> W</small>`); }
+  else E.pwS.parentNode.hidden = true;
+  // 網路（下載畫線，上傳在數字）／硬碟讀寫
+  html('netS', spark(H.rx, { id: 'net', min: 0, h: 26, fmt: (v) => rate(v) })); html('netV', `↓ ${rate(s.net.rx)}<br><small>↑ ${rate(s.net.tx)}</small>`);
+  if (s.dio) { E.ioS.parentNode.hidden = false; html('ioS', spark(H.dw || [], { id: 'dio', min: 0, h: 26, fmt: (v) => rate(v) })); html('ioV', `讀 ${rate(s.dio.r)}<br><small>寫 ${rate(s.dio.w)}</small>`); }
+  else E.ioS.parentNode.hidden = true;
+  // 最忙的程式（附小條）
+  html('procs', (s.procs || []).slice(0, 3).map((p) => `<div class="proc"><span>${esc(p.name)}</span><i><b style="width:${Math.min(100, Math.max(2, p.cpu / (s.ncpu || 1) * 3)).toFixed(0)}%"></b></i><span>${p.cpu.toFixed(0)}%</span></div>`).join(''));
+  const up = s.uptime;
+  put('up', `已開機 ${up > 86400 ? `${Math.floor(up / 86400)} 天 ${Math.floor(up % 86400 / 3600)} 小時` : `${Math.floor(up / 3600)} 小時 ${Math.floor(up % 3600 / 60)} 分`}${s.nproc ? `・${s.nproc} 個程序` : ''}`);
+  put('bat', s.battery ? `電池 ${s.battery.percent}%${s.battery.ac ? ' 充電中' : ''}` : `負載 ${s.load.map((v) => v.toFixed(1)).join(' ')}`);
+}
 function renderSystem() {
   const s = S.system?.data;
   if (!s) return;
   $('sys-chip').textContent = `${s.chip || ''}　macOS ${s.os || ''}`;
-  const cpu = s.cpu ? s.cpu.total : 0, m = s.mem;
-  const memPct = m ? m.used / m.total * 100 : 0;
-  const press = m && m.pressure >= 4 ? 'crit' : m && m.pressure >= 2 ? 'warn' : '';
-  const up = s.uptime, upTxt = up > 86400 ? `${Math.floor(up / 86400)} 天 ${Math.floor(up % 86400 / 3600)} 小時` : `${Math.floor(up / 3600)} 小時 ${Math.floor(up % 3600 / 60)} 分`;
-  const procs = (s.procs || []).slice(0, 2).map((p) => `<div class="proc"><span>${esc(p.name)}</span><span>${p.cpu.toFixed(0)}%</span></div>`).join('');
-  const bat = s.battery ? `電池 ${s.battery.percent}%${s.battery.ac ? ' 充電中' : ''}` : `負載 ${s.load[0].toFixed(2)}`;
-  setHTML($('system'), `
-    <div class="meter"><span class="m-name">CPU</span>${spark(s.hist.cpu, { id: 'cpu', min: 0, max: 100, h: 22, fmt: (v) => v.toFixed(0), unit: '%' })}
-      <span class="m-val">${cpu.toFixed(0)}<small>%　${s.ncpu} 核</small></span></div>
-    <div class="meter"><span class="m-name">記憶體</span><div class="bar"><i class="${press}" style="width:${memPct.toFixed(1)}%"></i></div>
-      <span class="m-val">${m ? (m.used / GB).toFixed(1) : '—'}<small> / ${m ? Math.round(m.total / 1073741824) : '—'} GB</small></span></div>
-    <div class="net"><span class="m-name">網路</span>${spark(s.hist.rx, { id: 'net', min: 0, h: 22, fmt: (v) => rate(v) })}
-      <span class="m-val">↓ ${rate(s.net.rx)}<br><small>↑ ${rate(s.net.tx)}</small></span></div>
-    <div class="procs">${procs}</div>
-    <div class="sysfoot"><span>已開機 ${upTxt}</span><span>${bat}</span></div>`);
+  safe(drawSystem, s);
 
   // 儲存與製作
   const r = s.resolve;
@@ -5897,7 +6175,7 @@ $('news').addEventListener('dblclick', (e) => {
 });
 globe.onNewsClick = (id) => { const i = NEWS.findIndex((n) => newsId(n) === id); if (i >= 0) showHeadline(i); };
 // 進度條每 250 毫秒走一格。不用 CSS 轉場：它位在毛玻璃區塊裡，連續轉場會逼顯示卡每張都重算模糊。
-function restartProgress() { $('hl-progress').style.width = '0%'; }
+function restartProgress() { $('hl-progress').style.transform = 'scaleX(0)'; }
 const pauseNews = (on) => { hlPaused = on; hlStart = performance.now(); restartProgress(); };
 for (const id of ['headline', 'p-news']) {
   $(id).addEventListener('mouseenter', () => pauseNews(true));
@@ -5907,7 +6185,7 @@ setInterval(() => {
   if (document.hidden || !NEWS.length || hlPaused) return;
   const k = (performance.now() - hlStart) / HL_MS;
   if (k >= 1) showHeadline(hlIdx + 1, true, true);
-  else $('hl-progress').style.width = (k * 100).toFixed(1) + '%';
+  else $('hl-progress').style.transform = `scaleX(${k.toFixed(3)})`;
 }, 250);
 
 // ───────────────────────── 地球上的即時資訊 ─────────────────────────
@@ -8305,7 +8583,7 @@ function exitEdit() {
   readDom();
   editing = false; document.body.classList.remove('editing');
   saveLay(); applyLayout(true);
-  toast('版面已儲存（這個情境、這個尺寸）');
+  { const h = hiddenPanels(LAY); toast(h.length ? `版面已儲存。收起來的區塊：${h.map((id) => PANEL_NAME[id]).join('、')}（右下角「重置排版」可全部放回）` : '版面已儲存（這個情境、這個尺寸）'); }
 }
 // 搬區塊（編輯版面時抓握把；平常直接抓標題列拖）。放的位置有兩種：
 //   某個區塊的上方／下方（出現一條橫線）＝自成一列；某個區塊的左邊／右邊（出現一條直線）＝和它並排。
@@ -8404,6 +8682,7 @@ function beginDrag(p, e, ox, oy) {
   Object.assign(p.style, { width: Math.min(r.width, 420) + 'px', height: Math.min(r.height, 360) + 'px', left: r.left + 'px', top: r.top + 'px' });
   edDrag = { p, ph, ox: Math.min(ox ?? e.clientX - r.left, Math.min(r.width, 420) - 20), oy: oy ?? e.clientY - r.top };
   document.body.classList.add('resizing', 'moving');
+  if (!editing && BP_COLS[layoutMode].includes('S') && !LAY.cols.S.length) $('colS').classList.remove('col-off');      // 地球下方那一欄空的時候平常是收起來的：拖曳中先露出來，才放得回去
   window.addEventListener('pointermove', edMove);
   for (const ev of ['pointerup', 'pointercancel', 'blur']) window.addEventListener(ev, edUp);
   edMove(e);
@@ -8468,12 +8747,113 @@ $('eb-reset').addEventListener('click', () => {
   LAY = loadLay(scene, layoutMode); lsSet('layout.v2', JSON.stringify(LAYSTORE));
   applyLayout(true); drawEditBar();
 });
-$('eb-reset-all').addEventListener('click', () => {
-  if (!confirm('把所有情境、所有尺寸的版面和區塊大小都恢復成預設？')) return;
+function resetAllLayout() {
+  if (editing) { if (edDrag) edUp(); editing = false; document.body.classList.remove('editing'); }
   LAYSTORE = {}; SIZES = {}; saveSizes(); lsSet('layout.v2', '{}');
   LAY = loadLay(scene, layoutMode);
   applyLayout(true); drawEditBar();
+  toast('已重置：所有區塊都放回預設位置和大小');
+}
+$('eb-reset-all').addEventListener('click', () => {
+  if (!confirm('把所有情境、所有尺寸的版面和區塊大小都恢復成預設？')) return;
+  resetAllLayout();
 });
+$('btn-reset-layout').addEventListener('click', () => {
+  if (!confirm('重置排版？\n所有情境、所有尺寸的版面和區塊大小都會回到預設，收起來或不見的區塊會全部放回。')) return;
+  resetAllLayout();
+});
+
+// ───────────────────────── 後台數據（只有電腦版和連 Mac 的手機有；朋友的手機網頁版沒有） ─────────────────────────
+const AD_KEYS = { film: '影視', insp: '靈感', mv: 'MV', pla: '臺海動態', cal: '財經行事曆', conflicts: '戰事區域', quakes: '地震', tx: '夜盤', twCharts: '台股走勢', usCharts: '美股走勢', fund: '基本面', flights: '航班' };
+const isStandalone = () => document.documentElement.classList.contains('standalone');
+let adBusy = false;
+function adDays(today, n) {             // 以中轉站的「今天」（台北時間）往回 n 天
+  const t = Date.UTC(+today.slice(0, 4), +today.slice(4, 6) - 1, +today.slice(6)), out = [];
+  for (let i = n - 1; i >= 0; i--) { const d = new Date(t - i * 86400000); out.push(`${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}`); }
+  return out;
+}
+const adMD = (k) => `${+k.slice(4, 6)}/${+k.slice(6)}`;
+const adDate = (ts) => { const t = new Date(ts * 1000); return `${t.getMonth() + 1}/${t.getDate()}`; };
+async function openAdmin() {
+  if (isStandalone()) return;
+  openDialog('admin');
+  adLoad(false);
+}
+async function adLoad(force) {
+  if (adBusy) return; adBusy = true;
+  $('ad-refresh').disabled = true;
+  if (force || !$('ad-body').querySelector('.ad-sec')) $('ad-at').textContent = '讀取中…';
+  try {
+    const r = await fetch('/api/admin/stats' + (force ? '?force=1' : ''), { cache: 'no-store' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    adRender(await r.json());
+  } catch (e) {
+    $('ad-at').textContent = '';
+    $('ad-body').innerHTML = `<div class="ad-empty">讀不到後台數據（${esc(e.message || e)}）。</div>`;
+  } finally { adBusy = false; $('ad-refresh').disabled = false; }
+}
+function adRender(j) {
+  const R = j.relay, mac = j.mac || {}, H = [];
+  $('ad-at').textContent = j.relayAt ? `中轉站資料：${ago(j.relayAt)}` : '';
+  if (R && R.people) {
+    const days14 = adDays(R.today, 14), d7 = new Set(adDays(R.today, 7)), d30 = new Set(adDays(R.today, 30));
+    const ppl = R.people.map((p) => {
+      const ks = Object.keys(p.days || {});
+      const opens = ks.reduce((a, k) => a + (+p.days[k] || 0), 0);
+      return { ...p, n7: ks.filter((k) => d7.has(k)).length, n30: ks.filter((k) => d30.has(k)).length, opens, today: p.days && p.days[R.today] !== undefined, todayN: (p.days && +p.days[R.today]) || 0 };
+    });
+    const on = ppl.filter((p) => !p.off).sort((a, b) => (b.last || 0) - (a.last || 0)), off = ppl.filter((p) => p.off);
+    const never = on.filter((p) => !p.last).length;
+    H.push(`<div class="ad-tiles">
+      <div class="ad-tile"><b>${on.length}</b><span>分享中的人</span></div>
+      <div class="ad-tile"><b>${on.filter((p) => p.today).length}</b><span>今天有打開</span></div>
+      <div class="ad-tile"><b>${on.filter((p) => p.n7).length}</b><span>最近 7 天有打開</span></div>
+      <div class="ad-tile"><b>${on.reduce((a, p) => a + p.todayN, 0)}</b><span>今天打開次數</span></div>
+    </div>`);
+    const row = (p) => {
+      const nm = p.name || p.email.split('@')[0];
+      const strip = days14.map((k) => {
+        const has = p.days && p.days[k] !== undefined, n = has ? +p.days[k] || 0 : 0;
+        const lv = !has ? 0 : n >= 5 ? 4 : n >= 3 ? 3 : n >= 1 ? 2 : 1;
+        return `<i class="lv${lv}${k === R.today ? ' td' : ''}" title="${adMD(k)}：${!has ? '沒有打開' : n ? `打開 ${n} 次` : '有來（次數沒記到）'}"></i>`;
+      }).join('');
+      return `<div class="ad-p${p.off ? ' off' : ''}">
+        <div class="ad-nm"><b>${esc(nm)}</b><small>${esc(p.email)}</small></div>
+        <div class="ad-strip" aria-label="最近 14 天">${strip}</div>
+        <div class="ad-n"><b>${p.n7}</b><small>/7 天</small></div>
+        <div class="ad-n"><b>${p.n30}</b><small>/30 天</small></div>
+        <div class="ad-n"><b>${p.opens}</b><small>次打開</small></div>
+        <div class="ad-last"><b>${p.last ? esc(ago(p.last)) : '還沒打開'}</b><small>${p.devices} 個裝置・${p.at ? adDate(p.at) : ''} 邀請</small></div>
+      </div>`;
+    };
+    H.push(`<div class="ad-sec"><h4>每個人的使用情形<span>格子＝最近 14 天，越亮打開越多次；最右邊是今天</span></h4>
+      <div class="ad-list">${on.map(row).join('') || '<div class="ad-empty">還沒有分享給任何人</div>'}</div>
+      ${never ? `<div class="ad-hint">${never} 個人收到邀請後還沒打開過。</div>` : ''}
+      ${off.length ? `<details class="ad-off"><summary>已停用 ${off.length} 個</summary><div class="ad-list">${off.map(row).join('')}</div></details>` : ''}</div>`);
+  }
+  // 中轉站與 Mac 的狀態
+  const st = [], warn = (t) => `<em class="w">${t}</em>`;
+  if (!R) st.push(['中轉站', warn(esc(j.relayError || '讀不到'))]);
+  else {
+    st.push(['中轉站', j.relayError ? warn('這次沒讀到：' + esc(j.relayError) + '（下面是上一次的資料）') : '正常']);
+    st.push(['今天還能寄邀請信', `${R.mailLeft} 封`]);
+    const kb = Math.round(R.bytes / 1024), pct = R.bytes / (500 * 1024) * 100;
+    st.push(['中轉站儲存空間', `${pct > 80 ? warn(kb + ' KB') : kb + ' KB'} / 500 KB（${pct.toFixed(0)}%）`]);
+    const bt = (R.bad && R.bad[R.today]) || 0;
+    st.push(['啟用碼輸錯或已停用', bt >= 10 ? warn(`今天 ${bt} 次，偏多`) : `今天 ${bt} 次`]);
+    if (R.tw) st.push(['台股報價（朋友那邊）', R.tw.error ? warn(esc(R.tw.error)) : R.tw.ts ? `${ago(R.tw.ts)}更新` : '還沒抓過']);
+    const ch = Object.keys(AD_KEYS).map((k) => { const t = R.push && R.push[k]; const old = !t || (Date.now() / 1000 - t > 86400 * 2); return `<span class="ad-chip${old ? ' old' : ''}">${AD_KEYS[k]}<small>${t ? esc(ago(t)) : '沒有'}</small></span>`; }).join('');
+    st.push(['Mac 送給朋友的內容', `<div class="ad-chips">${ch}</div>`]);
+  }
+  const ps = mac.push || {};
+  st.push(['Mac 最後一次送出', ps.error ? warn(`沒送成功：${esc(ps.error)}`) : ps.ts ? `${ago(ps.ts)}` : '還沒送過']);
+  const ph = (mac.phones || []).map((d) => `<span class="ad-chip">${esc(d.name)}<small>${d.last ? esc(ago(d.last)) : '還沒用過'}${d.push ? '・通知開' : ''}</small></span>`).join('');
+  st.push(['你自己的手機（連 Mac）', `${mac.phoneOn ? '手機連線開著' : '手機連線關著'}${ph ? `<div class="ad-chips">${ph}</div>` : ''}`]);
+  H.push(`<div class="ad-sec"><h4>中轉站與 Mac</h4><div class="ad-kv">${st.map(([k, v]) => `<div><span>${k}</span><div>${v}</div></div>`).join('')}</div></div>`);
+  $('ad-body').innerHTML = H.join('');
+}
+$('btn-admin').addEventListener('click', openAdmin);
+$('ad-refresh').addEventListener('click', () => adLoad(true));
 $('btn-edit').addEventListener('click', () => (editing ? exitEdit() : enterEdit()));
 
 // 手機：清單式編輯（上移、下移、顯示）
@@ -8519,6 +8899,8 @@ const COMMANDS = [
   { id: 'insp', name: '靈感模式', alias: ['大圖', '靈感', '地球', 'inspiration'], hint: '中央換成靈感大圖／回到地球（按 G）', run: () => setStageMode(stageMode === 'insp' ? 'globe' : 'insp') },
   { id: 'wall', name: '靈感牆', alias: ['圖片', '牆', 'gallery'], hint: '把所有靈感圖片攤開', run: () => $('insp-wall').click() },
   { id: 'edit', name: '編輯版面', alias: ['版面', '排版', '搬移', '區塊', 'layout', 'edit'], hint: '搬移、收起區塊（按 E）', run: () => enterEdit() },
+  { id: 'admin', name: '後台數據', alias: ['後台', '數據', '統計', '使用者', '分享', '誰在用', 'admin'], hint: '分享出去的人有沒有在用、中轉站狀態', when: () => !isStandalone(), run: () => openAdmin() },
+  { id: 'relayout', name: '重置排版', alias: ['重置', '還原', '預設版面', '區塊不見', '找不到區塊', 'reset'], hint: '所有版面和區塊大小回到預設', run: () => { if (confirm('重置排版？所有情境、所有尺寸的版面和區塊大小都會回到預設。')) resetAllLayout(); } },
   { id: 'gains', name: '已實現損益', alias: ['獲利', '賣出', '賣掉', '損益', '實現', '獲利紀錄', 'realized', 'gains'], hint: '看賣掉的股票賺了多少', run: () => openGains() },
   { id: 'hold', name: '編輯持股', alias: ['持股', '均價', '股數', '新增股票', '加股票', '成本', 'holdings', 'portfolio'], hint: '新增或刪除股票、修改股數與均價', run: () => openHold() },
   { id: 'alerts', name: '提醒設定', alias: ['提醒', '通知', '到價', '警報', 'alert'], hint: '大漲大跌、到價、共機、地震', run: () => openAlerts() },
@@ -8582,7 +8964,12 @@ function applyConfig(c) {
 }
 
 // 一個區塊出錯不該拖垮其他區塊，也不該被誤判成「服務中斷」
-function safe(fn, ...args) { try { fn(...args); } catch (e) { console.error(fn.name, e); } }
+const PERF_LOG = (QS.get('perf') || '').includes('log');
+function safe(fn, ...args) {
+  const t0 = PERF_LOG ? performance.now() : 0;
+  try { fn(...args); } catch (e) { console.error(fn.name, e); }
+  if (PERF_LOG) { const P = window.__rf || (window.__rf = {}); P[fn.name] = (P[fn.name] || 0) + performance.now() - t0; }
+}
 
 let polling = false, since = 0, cfgWarned = false;
 let panelVer = '';
@@ -8625,8 +9012,10 @@ async function poll() {
     countedUp = true;
     setTimeout(() => { for (const el of document.querySelectorAll('.col .panel [data-v]')) { const v = +el.dataset.v; if (isFinite(v) && v) roll(el, 0, v, +el.dataset.d || 0, el.dataset.s || ''); } fxSweep = (el) => fx.sweep(el.closest('.panel')); }, 30);
   }
+  const _r0 = performance.now();
   if (serverOK) { safe(renderMarkets); safe(renderWeather); safe(renderSystem); safe(renderNews); safe(renderStrait); safe(renderConflicts); safe(renderWatch); safe(renderAssets); safe(renderCal); safe(renderInsp); safe(renderMV); safe(renderFilm); safe(syncLayers); syncFlights(); }
   safe(renderStatus);
+  if ((QS.get('perf') || '').includes('log')) { const P = window.__rp || (window.__rp = { n: 0, ms: 0, max: 0 }); const d = performance.now() - _r0; P.n++; P.ms += d; P.max = Math.max(P.max, d); P.avg = P.ms / P.n; }
 }
 function second() {
   const now = new Date();
@@ -8718,6 +9107,16 @@ window.addEventListener('blur', () => { if (voiceDown) { voiceDown = false; wind
                      (P.includes('nopseudo') ? '*::before,*::after{animation:none!important}' : '') +
                      (P.includes('noprog') ? '#hl-progress{transition:none!important}' : '') +
                      (P.includes('notrans') ? '*,*::before,*::after{transition:none!important}' : '') +
+                     (P.includes('sysring') ? '#system .sys-hero{display:none!important}' : '') +
+                     (P.includes('sysspk') ? '#system .spark-wrap{display:none!important}' : '') +
+                     (P.includes('systrans') ? '#system *{transition:none!important;animation:none!important}' : '') +
+                     (P.includes('sysspin') ? '#system .r-tickwrap{animation:none!important}' : '') +
+                     (P.includes('sysnotr') ? '#system *{transition:none!important}' : '') +
+                     (P.includes('trring') ? '#system .r-val{transition:none!important}' : '') +
+                     (P.includes('trcore') ? '#system .sc-bars b{transition:none!important}' : '') +
+                     (P.includes('trwidth') ? '#system .bar.seg i,#system .proc i b{transition:none!important}' : '') +
+                     (P.includes('noflashcss') ? '.flash-up,.flash-down{animation:none!important}' : '') +
+                     (P.includes('nofilter') ? '.spark{filter:none!important}' : '') +
                      (P.includes('onlyanimoff') ? '*,*::before,*::after{animation:none!important}' : '');
     document.head.appendChild(st);
   }
