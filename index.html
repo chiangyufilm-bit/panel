@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-+QHgky8yndYXhzoYQMW0dk2zI7+CSO0gp5tguDm/Rt4=' 'sha256-zkvv5JmFlMonuw+PH8ooHSpJBkcgm8K1xH4yRHeslOo='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://geocoding-api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-rhQTlKyo42XEYqRFnQojztdxo+L2JGbhwH4iH/sPipo=' 'sha256-zkvv5JmFlMonuw+PH8ooHSpJBkcgm8K1xH4yRHeslOo='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://geocoding-api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#06090d">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2541,6 +2541,19 @@ html.standalone #btn-admin { display: none; }
       save(d); return J({ ok: true });
     }
     if (post && p === '/api/trades') return J(tradesApi(body || {}, d));
+    if (post && p === '/api/mv/hide') {                    // 熱門 MV 的「×」：不再推這個頻道。清單存在這支手機
+      let cur = (d.mvHide || []).filter((x) => typeof x === 'string');
+      if (body && body.clear) cur = [];
+      else {
+        const v = String((body && (body.ch || body.id)) || '').trim().slice(0, 60);
+        if (!v || /[\x00-\x1f\x7f<>]/.test(v)) throw fail('資料格式不對');
+        if (!cur.includes(v)) cur.push(v);
+        cur = cur.slice(-300);
+      }
+      d.mvHide = cur;
+      if (!save(d)) throw fail('這個瀏覽器不讓網頁存資料（可能是無痕模式）。', 507);
+      return J({ ok: true, mvHide: cur });
+    }
     if (post && p === '/api/insp/like') {                  // 靈感按愛心：存在這支手機，只影響這支手機看到的圖片順序
       const op = body && body.op, okUrl = (x) => typeof x === 'string' && /^https:\/\/[^\s"<>\\]{1,600}$/.test(x);
       const txt = (v, n) => String(v || '').replace(/[\x00-\x1f\x7f<>]/g, ' ').trim().slice(0, n);
