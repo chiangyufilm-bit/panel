@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-rhQTlKyo42XEYqRFnQojztdxo+L2JGbhwH4iH/sPipo=' 'sha256-zkvv5JmFlMonuw+PH8ooHSpJBkcgm8K1xH4yRHeslOo='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://geocoding-api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-TK+2axHF1rbLaIJGq6PxIsHGfQ9N43CF+v78GnsN5ZY=' 'sha256-899IcDqdzrCsfj7zVF5u1RxmTrr4L7L15UltzXkeXjU='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://geocoding-api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#06090d">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1500,6 +1500,8 @@ body.moving, body.moving * { cursor: grabbing !important; }
 @container wxslim (max-width: 150px) { .wx-desc { display: none !important; } }
 /* 並排時區塊比較窄：這兩行原本一行放不下會超出去，改成自動換行（只在並排的列裡，單獨一列時維持原樣） */
 .prow .disk-sub, .prow .watch-sum { flex-wrap: wrap; row-gap: 2px; }
+/* 很窄的手機（iPhone SE 寬度）：損益數字很長時，自選股的總結列換行，不要撐出橫向捲動 */
+.grid.m-phone .watch-sum { flex-wrap: wrap; row-gap: 2px; column-gap: 10px; }
 html.standalone #btn-reset-layout { display: none; }
 
 /* ───────── 系統狀態（新）：圓環＋核心直條＋即時走勢 ───────── */
@@ -1603,6 +1605,90 @@ html.standalone #btn-admin { display: none; }
   .ad-strip { grid-template-columns: repeat(14, 9px); gap: 2px; }
   .ad-kv > div { grid-template-columns: 1fr; gap: 2px; }
 }
+
+/* ── 新聞去重複：同一件事有幾家在報 ── */
+.n-more { margin-left: 6px; padding: 0 5px; border-radius: 3px; background: rgba(120,200,255,.12); color: var(--accent); font-size: .92em; white-space: nowrap; cursor: help; }
+
+/* ── 持股大漲大跌：可能相關的新聞 ── */
+.w-why { display: block; margin: -4px 0 0; padding: 0 0 5px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 10.5px; line-height: 14px; color: var(--ink-3); cursor: pointer; }   /* 放在表格外面：Safari 裡長標題才不會把面板撐寬 */
+.w-why + .w { border-top: 1px solid rgba(255,255,255,.035); }
+.st-sub small { margin-left: 6px; font-weight: 400; color: var(--ink-3); font-size: 10px; }
+.st-why { display: flex; flex-direction: column; gap: 6px; margin: 4px 0 10px; }
+.st-why a { display: block; color: var(--ink); text-decoration: none; font-size: 12.5px; line-height: 1.45; padding: 6px 8px; border-radius: 6px; background: rgba(255,255,255,.035); }
+.st-why a:hover { background: rgba(255,255,255,.07); }
+.st-why small { display: block; color: var(--ink-3); font-size: 10.5px; margin-top: 2px; }
+
+/* ── 突然變熱門：國際新聞上方的「正在升溫」 ── */
+.surge { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 2px 0 8px; flex: none; }
+.surge-h { font-size: 10.5px; letter-spacing: .08em; color: #f2b36b; }
+.surge-chip { display: inline-flex; align-items: baseline; gap: 4px; height: 22px; padding: 0 8px; border-radius: 11px; border: 1px solid rgba(242,179,107,.35); background: rgba(242,179,107,.08); color: #f6cf9d; font-size: 12px; cursor: pointer; }
+.surge-chip small { font-size: 10px; color: #f2b36b; font-family: var(--mono); }
+.surge-chip.on { background: rgba(242,179,107,.25); border-color: #f2b36b; color: #fff; }
+.surge-learn { font-size: 10.5px; color: var(--ink-3); cursor: help; }
+.news .n.surge-off { display: none; }
+.surge-dot { display: inline-block; width: 6px; height: 6px; margin-left: 6px; border-radius: 50%; background: #f2b36b; box-shadow: 0 0 6px #f2b36b; vertical-align: middle; }
+.surge-dot[hidden] { display: none; }
+
+/* ── 國家不穩定指數 ── */
+.lg-cii { background: linear-gradient(90deg, rgba(255,189,71,.7), rgba(219,26,41,.8)); border-radius: 2px; }
+.lg-more { margin-left: -4px; padding: 0 6px; height: 18px; border: 1px solid rgba(255,255,255,.12); border-radius: 9px; background: transparent; color: var(--ink-2); font-size: 10px; cursor: pointer; }
+.lg-more:hover { color: var(--ink); border-color: rgba(255,255,255,.3); }
+.dlg-cii { width: min(560px, calc(100vw - 32px)); }
+.cii-body { max-height: min(70vh, 640px); overflow: auto; padding: 4px 16px 12px; }
+.cii-warm { margin: 6px 0 10px; padding: 8px 10px; border-radius: 6px; background: rgba(127,227,242,.08); color: var(--ink-2); font-size: 12px; line-height: 1.5; }
+.cii-up { margin: 4px 0 8px; font-size: 12.5px; color: var(--ink-2); }
+.cii-up b { color: var(--ink); }
+.cii-list { display: flex; flex-direction: column; }
+.cii-row { display: grid; grid-template-columns: 22px minmax(0, 7em) 1fr 34px 56px; align-items: center; gap: 8px; height: 30px; padding: 0 6px; border: 0; border-radius: 5px; background: transparent; color: var(--ink); text-align: left; cursor: pointer; font-size: 13px; }
+.cii-row:hover, .cii-row.on { background: rgba(255,255,255,.06); }
+.cii-n { color: var(--ink-3); font-family: var(--mono); font-size: 11px; }
+.cii-name { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.cii-bar { position: relative; height: 6px; border-radius: 3px; background: rgba(255,255,255,.06); overflow: hidden; }
+.cii-bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; }
+.cii-bar i.lo { background: rgba(255,200,110,.55); } .cii-bar i.mid { background: #f0a24a; } .cii-bar i.hi { background: #d8433c; }
+.cii-s { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.cii-d { text-align: right; font-family: var(--mono); font-size: 11px; color: var(--ink-3); }
+.cii-d.up { color: #f0a24a; } .cii-d.down { color: var(--ink-2); }
+.cii-detail { margin-top: 10px; padding: 10px 12px; border-radius: 8px; background: rgba(255,255,255,.035); }
+.cii-dh { margin-bottom: 8px; font-size: 14px; } .cii-dh small { display: block; color: var(--ink-3); font-size: 11px; margin-top: 2px; }
+.cii-part { display: grid; grid-template-columns: 7.5em 1fr 30px; align-items: center; gap: 8px; height: 24px; font-size: 12px; color: var(--ink-2); cursor: help; }
+.cii-part b { text-align: right; font-family: var(--mono); color: var(--ink); font-weight: 500; }
+.cii-formula { margin-top: 6px; font-size: 10.5px; color: var(--ink-3); }
+.cii-news { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+.cii-news a { color: var(--ink); text-decoration: none; font-size: 12px; line-height: 1.4; }
+.cii-news small { margin-left: 6px; color: var(--ink-3); font-size: 10.5px; }
+.cii-map { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-2); white-space: nowrap; }
+@media (max-width: 639px) { .cii-row { grid-template-columns: 20px minmax(0, 5.5em) 1fr 30px 48px; gap: 6px; } }
+
+/* ── 今日早報 ── */
+.brief { flex: none; margin: 0 0 8px; }
+/* 今日早報：用主色框起來的卡片，左邊一條亮邊；還沒看過的那份外框微微發亮 */
+.br-line { position: relative; display: flex; flex-direction: column; gap: 4px; width: 100%; padding: 8px 10px 9px 13px; border: 1px solid rgba(127,227,242,.34); border-radius: 9px;
+  background: linear-gradient(135deg, rgba(127,227,242,.12), rgba(127,227,242,.035) 60%); color: var(--ink); cursor: pointer; text-align: left; overflow: hidden; transition: background .15s, border-color .15s, box-shadow .3s; }
+.br-line::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--accent); opacity: .85; }
+.br-line:hover { border-color: rgba(127,227,242,.55); background: linear-gradient(135deg, rgba(127,227,242,.18), rgba(127,227,242,.06) 60%); }
+.br-line.fresh { box-shadow: 0 0 0 1px rgba(127,227,242,.18), 0 0 18px rgba(127,227,242,.16); }
+.br-h { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.br-h svg { flex: none; width: 14px; height: 14px; fill: none; stroke: var(--accent); stroke-width: 1.4; stroke-linecap: round; }
+.br-h b { flex: none; color: var(--accent); font-weight: 600; font-size: 12.5px; letter-spacing: .06em; }
+.br-h i { flex: none; font-style: normal; font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); }
+.br-h em { margin-left: auto; flex: none; font-style: normal; font-size: 11px; color: var(--accent); opacity: .8; }
+.br-line.fresh .br-h b::after { content: ""; display: inline-block; width: 6px; height: 6px; margin-left: 6px; border-radius: 50%; background: var(--accent); vertical-align: 2px; box-shadow: 0 0 6px var(--accent); }
+.br-t { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 13px; line-height: 1.5; color: var(--ink); }
+.grid.m-phone .br-t { font-size: 14px; }
+.brief.br-compact .br-line { flex-direction: row; align-items: center; gap: 8px; padding: 5px 10px 5px 13px; }
+.brief.br-compact .br-h em { display: none; }
+.brief.br-compact .br-t { -webkit-line-clamp: 1; flex: 1; min-width: 0; font-size: 12px; }
+.br-body { max-height: min(68vh, 620px); overflow: auto; padding: 4px 18px 14px; }
+.br-sec { margin-top: 10px; }
+.br-sec b { display: block; font-size: 11px; color: var(--ink-3); font-weight: 500; margin-bottom: 4px; letter-spacing: .04em; }
+.br-sec p { margin: 4px 0; font-size: 14px; line-height: 1.6; color: var(--ink); }
+.br-f { margin-top: 12px; }
+.br-src { border: 0; background: none; padding: 0; color: var(--ink-3); font-size: 11px; cursor: pointer; text-align: left; }
+.br-list { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
+.br-list a { color: var(--ink-2); font-size: 12px; text-decoration: none; line-height: 1.45; }
+.br-list small { margin-left: 6px; color: var(--ink-3); }
+.br-note { margin-top: 10px; font-size: 11px; color: var(--ink-3); }
 
 </style>
 </head>
@@ -1731,6 +1817,7 @@ html.standalone #btn-admin { display: none; }
         <button data-layer="ships" class="on" title="顯示／隱藏貨輪"><i class="lg lg-ship"></i>貨輪<small>航線示意</small></button>
         <button data-layer="pla" class="on" title="顯示／隱藏共機共艦"><i class="lg lg-red"></i>共機共艦<small>依國防部數字示意</small></button>
         <button data-layer="war" class="on" title="顯示／隱藏戰事區域" id="lg-war"><i class="lg lg-war"></i>戰事區域<small>依維基百科列表</small></button>
+        <button data-layer="cii" data-default="off" title="顯示／隱藏國家不穩定指數（再按旁邊的「排行」看細節）" id="lg-cii"><i class="lg lg-cii"></i>不穩定指數<small>公開資料自算</small></button><button class="lg-more" id="lg-cii-rank" title="國家不穩定指數排行">排行</button>
         <button data-layer="aurora" class="on" title="顯示／隱藏極光" id="lg-aurora"><i class="lg lg-aurora"></i>極光<small>NOAA 即時預報</small></button>
         <button data-layer="cables" class="on" title="顯示／隱藏海底電纜"><i class="lg lg-cable"></i>海底電纜</button>
         <span><i class="lg lg-city"></i>城市</span>
@@ -1808,12 +1895,14 @@ html.standalone #btn-admin { display: none; }
       </article>
 
       <article class="panel" id="p-strait">
-        <h2>臺海動態<span class="h-meta" id="strait-meta"></span></h2>
+        <h2>臺海動態<i class="surge-dot" id="strait-hot" hidden title="臺海相關新聞正在升溫"></i><span class="h-meta" id="strait-meta"></span></h2>
         <div id="strait" class="strait"><div class="empty">讀取國防部資料中…</div></div>
       </article>
 
       <article class="panel panel-news tabbed" id="p-news">
         <h2>國際新聞<span class="h-meta" id="news-meta"></span></h2>
+        <div id="brief" class="brief" hidden></div>
+        <div id="surge" class="surge" hidden></div>
         <div id="news" class="news"><div class="empty">讀取新聞中…</div></div>
       </article>
     </section>
@@ -1964,6 +2053,7 @@ html.standalone #btn-admin { display: none; }
         <div class="al-rule"><span>共機達到</span><input id="al-pla" inputmode="numeric"><span>架次</span><em>國防部每天公布的數字。填 0 不提醒。</em></div>
         <div class="al-rule"><span>臺灣附近地震規模達</span><input id="al-quake" inputmode="decimal"><span>級</span><em>1000 公里內；全球規模 7 以上一律提醒。填 0 只留全球大地震。</em></div>
         <label class="al-check"><input type="checkbox" id="al-src"><span>資料來源連續好幾個小時更新失敗時提醒我</span></label>
+        <label class="al-check not-standalone"><input type="checkbox" id="al-surge"><span>國際新聞突然升溫時提醒我（同一個話題 6 小時內只提醒一次）</span></label>
         <div class="al-sub">到價提醒</div>
         <div class="al-tgts" id="al-tgts"></div>
         <button class="hold-add" id="al-add">＋ 新增到價提醒</button>
@@ -2004,6 +2094,22 @@ html.standalone #btn-admin { display: none; }
   </section>
 </div>
 
+<div class="dlg-back" id="brief-dlg" hidden>
+  <section class="dlg dlg-brief" role="dialog" aria-modal="true" aria-labelledby="br-title">
+    <header class="dlg-h"><b id="br-title">今日早報</b><span class="ad-at" id="br-at"></span><button class="dlg-x" data-close aria-label="關閉">×</button></header>
+    <div class="br-body" id="br-body"></div>
+    <footer class="dlg-f"><span class="dlg-note not-standalone">每天早上 7:30 後自動整理一次。市場數字由程式直接算；世界重點用這台 Mac 內建的 AI 整理，資料不會傳出去。</span><span class="dlg-note only-standalone">世界重點由分享者的電腦每天早上 7:30 後整理；「市場與你的持股」在這支手機上自己算，持股不會傳出去。</span><button class="btn not-standalone" id="br-re">重新整理</button></footer>
+  </section>
+</div>
+
+<div class="dlg-back" id="cii" hidden>
+  <section class="dlg dlg-cii" role="dialog" aria-modal="true" aria-labelledby="cii-title">
+    <header class="dlg-h"><b id="cii-title">國家不穩定指數</b><span class="ad-at" id="cii-at"></span><button class="dlg-x" data-close aria-label="關閉">×</button></header>
+    <div class="cii-body" id="cii-body"><div class="ad-empty">讀取中…</div></div>
+    <footer class="dlg-f"><span class="dlg-note">用公開資料自己算的參考值，不是官方評等。分數高代表最近發生的事多，不代表那個國家危險。資料：GDELT、世界銀行 WGI（CC BY 4.0）、歐盟 INFORM（CC BY）。</span><label class="cii-map"><input type="checkbox" id="cii-layer">在地球上顯示</label></footer>
+  </section>
+</div>
+
 <div class="dlg-back" id="admin" hidden>
   <section class="dlg dlg-admin" role="dialog" aria-modal="true" aria-labelledby="admin-title">
     <header class="dlg-h"><b id="admin-title">後台數據</b><span class="ad-at" id="ad-at"></span><button class="dlg-x" data-close aria-label="關閉">×</button></header>
@@ -2038,7 +2144,7 @@ html.standalone #btn-admin { display: none; }
     clocks: [{ name: '台北', tz: 'Asia/Taipei', market: 'TWSE' }, { name: '東京', tz: 'Asia/Tokyo', market: 'TSE' }, { name: '倫敦', tz: 'Europe/London', market: 'LSE' },
       { name: '紐約', tz: 'America/New_York', market: 'NYSE' }, { name: '洛杉磯', tz: 'America/Los_Angeles' }, { name: 'UTC', tz: 'UTC' }],
     redUp: true, footage: { label: '4K ProRes HQ', mbps: 707 },
-    watchlist: { tw: [], us: [] }, watchlistMeta: null, mvHide: [], trades: [], inspLikes: [], scanAlias: {}, hidePanels: [], panelOrder: [], macroPick: null, macroSyms: [], topics: null,
+    watchlist: { tw: [], us: [] }, watchlistMeta: null, mvHide: [], trades: [], inspLikes: [], whyOn: false, scanAlias: {}, hidePanels: [], panelOrder: [], macroPick: null, macroSyms: [], topics: null,
   };
   let mem = null;                                        // 無痕模式等存不進去的情況：至少這次開著的期間還在
   const load = () => {
@@ -2417,6 +2523,68 @@ html.standalone #btn-admin { display: none; }
       tp = { ...tp, ts: now / 1000, data: out, error: null, fresh: true };
     } catch (e) { tp.error = '主題新聞暫時連不上'; }
   }
+  // ── 持股配新聞（朋友版）：自己在設定裡打開才會動 ──
+  // 只送「今天漲跌大的持股代號」（和 Mac 版同一個門檻），再混進幾檔隨機的熱門股，讓人看不出你真正持有哪幾檔。股數、成本一律不送。
+  // 中轉站把所有人的代號合成一張不記名清單，分享者的 Mac 照清單找新聞；送回來時，中轉站只給這支手機自己持有的那幾檔。
+  const WHY_MOVE = 3;
+  const DECOY = { tw: [['2330', '台積電'], ['2317', '鴻海'], ['2454', '聯發科'], ['2308', '台達電'], ['2382', '廣達'], ['2412', '中華電'], ['2881', '富邦金'], ['2882', '國泰金'], ['2891', '中信金'], ['2303', '聯電'], ['3711', '日月光投控'], ['2002', '中鋼'], ['1301', '台塑'], ['2603', '長榮'], ['0050', '元大台灣50'], ['0056', '元大高股息'], ['00878', '國泰永續高股息'], ['2886', '兆豐金'], ['2884', '玉山金'], ['3008', '大立光']],
+    us: [['AAPL', 'Apple'], ['MSFT', 'Microsoft'], ['NVDA', 'NVIDIA'], ['AMZN', 'Amazon'], ['GOOGL', 'Alphabet'], ['META', 'Meta Platforms'], ['TSLA', 'Tesla'], ['AVGO', 'Broadcom'], ['AMD', 'Advanced Micro Devices'], ['NFLX', 'Netflix'], ['COST', 'Costco'], ['JPM', 'JPMorgan Chase'], ['V', 'Visa'], ['KO', 'Coca-Cola'], ['INTC', 'Intel'], ['QCOM', 'Qualcomm'], ['TSM', 'Taiwan Semiconductor'], ['SPY', 'SPDR S&P 500'], ['QQQ', 'Invesco QQQ'], ['PLTR', 'Palantir']] };
+  let whyAt = 0, whySent = '';
+  const cleanName = (n) => String(n || '').replace(/[\x00-\x1f<>"&:;,|]/g, '').slice(0, 30);
+  function whyMovers(d) {
+    const rows = [];
+    for (const [kind, key] of [['tw', 'code'], ['us', 'sym']]) for (const it of (d.watchlist[kind] || [])) {
+      const c = String(it[key] || '').toUpperCase(), q = (quotes[kind] || {})[c];
+      if (c && q && typeof q.pct === 'number' && Number.isFinite(q.pct)) rows.push([kind, c, it.name || q.name || c, q.pct]);
+    }
+    let pick = rows.filter((r) => Math.abs(r[3]) >= WHY_MOVE);
+    if (rows.length) pick = pick.concat([rows.reduce((a, b) => (b[3] > a[3] ? b : a)), rows.reduce((a, b) => (b[3] < a[3] ? b : a))]);
+    const seen = new Set(), out = [];
+    for (const r of pick.sort((a, b) => Math.abs(b[3]) - Math.abs(a[3]))) { const k = r[0] + r[1]; if (!seen.has(k) && Math.abs(r[3]) >= 1) { seen.add(k); out.push(r); } }
+    return out.slice(0, 6);
+  }
+  // 要送出的清單：有變化、或 10 分鐘到了才送（沒有漲跌大的持股時也會送幾檔隨機熱門股，送不送都一樣看不出來）
+  function whyQuery(d) {
+    if (!d.whyOn) return '';
+    const mine = whyMovers(d), now = Date.now(), key = mine.map((r) => r[0] + r[1]).join(',');
+    if (key === whySent && now - whyAt < 600000) return '';
+    whySent = key; whyAt = now;
+    const own = new Set([...(d.watchlist.tw || []).map((x) => 'tw' + String(x.code || '').toUpperCase()), ...(d.watchlist.us || []).map((x) => 'us' + String(x.sym || '').toUpperCase())]);
+    const pool = [...DECOY.tw.map((x) => ['tw', ...x]), ...DECOY.us.map((x) => ['us', ...x])].filter((x) => !own.has(x[0] + x[1]));
+    const fake = []; for (let i = 0; i < 4 && pool.length; i++) fake.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
+    const all = mine.map((r) => [r[0], r[1], r[2]]).concat(fake);
+    for (let i = all.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [all[i], all[j]] = [all[j], all[i]]; }     // 打亂順序：看不出哪幾檔是真的
+    return all.map((r) => `${r[0]}:${r[1]}:${cleanName(r[2])}`).join(';');
+  }
+  // 早報：「今日世界重點」由分享者的 Mac 整理好送來；「市場與你的持股」在這支手機上自己算（持股不離開手機）
+  const IDX = { us: null, tw: null, tx: null };
+  const sgn = (v) => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(2) + '%';
+  function briefMarket(d) {
+    const lines = [], us = IDX.us || {}, tw = IDX.tw || {}, tx = (IDX.tx || {}).txNight || {};
+    const up = [['spx', 'S&P 500'], ['ixic', '那斯達克'], ['dji', '道瓊'], ['sox', '費半']].filter(([k]) => us[k] && typeof us[k].pct === 'number').map(([k, n]) => `${n} ${sgn(us[k].pct)}`);
+    if (up.length) lines.push('美股：' + up.join('、'));
+    const tp = [];
+    if (tw.taiex && typeof tw.taiex.pct === 'number') tp.push('加權指數 ' + sgn(tw.taiex.pct));
+    if (typeof tx.pct === 'number') tp.push('台指期夜盤 ' + sgn(tx.pct));
+    if (tp.length) lines.push('台股：' + tp.join('、'));
+    for (const [kind, key, label] of [['tw', 'code', '你的台股'], ['us', 'sym', '你的美股']]) {
+      let nowV = 0, prevV = 0; const moves = [];
+      for (const it of d.watchlist[kind] || []) {
+        const q = (quotes[kind] || {})[String(it[key] || '').toUpperCase()];
+        if (!q || typeof q.pct !== 'number') continue;
+        moves.push([q.pct, it.name || q.name || it[key]]);
+        const sh = Number(it.shares) || 0;
+        if (sh > 0 && q.last && q.prev) { nowV += q.last * sh; prevV += q.prev * sh; }
+      }
+      if (!moves.length) continue;
+      const hi = moves.reduce((a, b) => (b[0] > a[0] ? b : a)), lo = moves.reduce((a, b) => (b[0] < a[0] ? b : a));
+      let t = label + (prevV > 0 ? '整體 ' + sgn((nowV - prevV) / prevV * 100) : `（${moves.length} 檔）`) + `；表現最好 ${hi[1]} ${sgn(hi[0])}`;
+      if (moves.length > 1) t += `，最差 ${lo[1]} ${sgn(lo[0])}`;
+      lines.push(t);
+    }
+    return lines;
+  }
+  let briefW = null, whyTs = 0;
   // 面板每秒問一次狀態；這裡只在需要的時候才真的去問中轉站（開盤中 15 秒、其他時間 60 秒、頁面在背景不問），省流量
   let nextAt = 0, relaySince = 0, meta = {}, pending = {}, skew = 0;
   // 靈感：每個人按的愛心存在自己的手機。中轉站送來的圖照這支手機的喜好重新排：常按愛心的來源每一輪多出幾張（最多 4 倍），沒按過的來源照樣會出現
@@ -2449,11 +2617,21 @@ html.standalone #btn-admin { display: none; }
         try {
           // 持股很多時代號放在本文裡送（放在網址會太長）；平常檔數少的照原本的方式
           const sy = { tw: syms('tw', 'code'), us: syms('us', 'sym'), mx: (d.macroSyms || []).join(',') };
-          const big = GAS && sy.tw.length + sy.us.length + sy.mx.length > 1200;
+          if (d.whyOn) { sy.why = '1'; const wq = whyQuery(d); if (wq) sy.wq = wq; }
+          const big = GAS && sy.tw.length + sy.us.length + sy.mx.length + (sy.wq || '').length > 1200;
           const j = big ? await relay('state', { since: relaySince }, sy) : await relay('state', { ...sy, since: relaySince });
           if (j.state && j.state.holidays && j.state.holidays.days) { hol = j.state.holidays; ls.set('wp.hol', JSON.stringify(hol)); }
           if (j.state) { relaySince = j.now; meta = j.meta || meta; skew = j.now * 1000 - Date.now(); pending = { ...pending, ...j.state }; }
           if (j.state && j.state.insp) pending.insp = inspMix(j.state.insp, d.inspLikes);
+          if (j.state) for (const k of ['us', 'tw', 'tx']) if (j.state[k]) IDX[k] = j.state[k];
+          if (j.state && j.state.briefWorld) briefW = { ...j.state.briefWorld, ts: (j.meta && j.meta.briefWorld && j.meta.briefWorld[0]) || j.state.briefWorld.ts };
+          if (j.state && 'briefWorld' in j.state) delete pending.briefWorld;
+          if (j.state && j.state.whyPub && d.whyOn) {                // 再檢查一次：只留自己持有的
+            const o = { tw: {}, us: {} };
+            for (const [kind, key] of [['tw', 'code'], ['us', 'sym']]) for (const it of d.watchlist[kind] || []) { const c = String(it[key] || '').toUpperCase(), r = (j.state.whyPub[kind] || {})[c]; if (Array.isArray(r)) o[kind][c] = r.slice(0, 3); }
+            pending.why = o;
+          }
+          if (j.state) delete pending.whyPub;
           // 狀態燈的門檻是照 Mac 版「幾秒更新一次」訂的；手機版是每 15～60 秒問一次，中轉站有正常回應、沒有報錯就算正常
           if (j.state) for (const k of ['tw', 'us', 'tx']) if (meta[k] && !meta[k][1]) meta[k] = [Math.max(meta[k][0], j.now - 20), null];
           if (j.state) { for (const k of ['tw', 'us']) if (j.state[k] && j.state[k].w) quotes[k] = j.state[k].w; if (j.state.us && j.state.us.usdtwd) quotes.fx = j.state.us.usdtwd.last || quotes.fx; }
@@ -2467,6 +2645,10 @@ html.standalone #btn-admin { display: none; }
       if (iss.ts) meta = { ...meta, iss: [iss.ts, null] };
       try { recordAssets(d); } catch (e) { /* 記不了就下次 */ }
       if (wx.fresh || full) { if (wx.data) pending.weather = wx.data; wx.fresh = false; }
+      if (briefW && (full || pending.tw || pending.us || !briefW.sent)) { pending.brief = { ...briefW, market: briefMarket(d) }; briefW.sent = true; }   // 市場那段跟著報價更新
+      if (briefW) meta = { ...meta, brief: [briefW.ts, null] };
+      if (!d.whyOn && (full || whyAt)) { pending.why = { tw: {}, us: {} }; whyAt = 0; whySent = ''; }                    // 關掉開關：清掉畫面上的
+      if (pending.why) { whyTs = Math.max(whyTs + 0.001, Date.now() / 1000); } if (whyTs) meta = { ...meta, why: [whyTs, null] };
       meta = { ...meta, weather: [wx.ts, wx.error] };
       const state = pending; pending = {};
       const config = {}; for (const k of ['location', 'clocks', 'redUp', 'footage', 'watchlist', 'watchlistMeta', 'mvHide', 'trades', 'inspLikes', 'macroPick', 'topics']) config[k] = d[k];
@@ -2515,6 +2697,7 @@ html.standalone #btn-admin { display: none; }
     if (p === '/api/ships') return J({ data: [] });
     if (p === '/api/route') return J(await route_(u.searchParams.get('cs')));
     if (p === '/api/phone/status') return J({ enabled: false });
+    if (post && p === '/api/brief/refresh') return J({ ok: false, error: '朋友版的早報由分享者的電腦每天早上整理，這裡不能重新整理' });
     if (post && p === '/api/watchlist') {
       const wl = cleanWatchlist(body), rev = (d.watchlistMeta && d.watchlistMeta.rev) || 0;
       if (body.base != null && body.base !== rev) throw fail('持股剛剛在另一個分頁改過。請按「取消」關掉這個視窗再重新打開。', 409);
@@ -2611,6 +2794,9 @@ html.standalone #btn-admin { display: none; }
       <div style="${h3}">要顯示哪些區塊</div>
       <div style="${note}">打勾的才會顯示。按右邊的 ▲ ▼ 可以調整由上到下的順序（地球固定在最上面）。</div>
       <div id="wps-panels"></div>
+      <div style="${h3}">持股配新聞</div>
+      <label style="${row};border-bottom:0"><input type="checkbox" id="wps-why" ${d.whyOn ? 'checked' : ''} style="width:22px;height:22px;accent-color:#7fe3f2;flex:none"><span>持股大漲大跌時，在下面附上可能相關的新聞</span></label>
+      <div style="${note}">打開後，這支手機會把「今天漲跌超過 3% 的持股代號」（加上最多漲、最多跌的那檔）送出去找新聞，同時混進幾檔隨機的熱門股，看不出你真正持有哪幾檔。股數、成本、損益一律不送，也不會記下是誰送的；清單 6 小時沒人再送就自動消失。<br>要注意：如果你持有很冷門、只有你會買的股票，認識你的人還是可能猜得到。新聞大約 10～20 分鐘後出現。</div>
       <div style="${h3}">城市、匯率、新聞主題</div>
       <div style="${note}">這三樣在面板上直接改：到「世界時間」「黃金與匯率」「產業新聞」那一區，按右上角的「編輯」。</div>
       <div style="${h3}">備份與換手機</div>
@@ -2640,6 +2826,7 @@ html.standalone #btn-admin { display: none; }
     q('#wps-panels').addEventListener('change', () => {
       const dd = load(); dd.hidePanels = [...setEl.querySelectorAll('#wps-panels input')].filter((i) => !i.checked).map((i) => i.dataset.id); save(dd); applyHide(); window.dispatchEvent(new Event('resize'));
     });
+    q('#wps-why').addEventListener('change', (e) => { const dd = load(); dd.whyOn = !!e.target.checked; save(dd); whyAt = dd.whyOn ? 0 : -1; whySent = ''; nextAt = 0; msg(dd.whyOn ? '已打開持股配新聞，新聞大約 10～20 分鐘後出現。' : '已關掉持股配新聞。'); });
     q('#wps-exp').addEventListener('click', async () => {
       const dd = load(), pack = JSON.stringify({ app: 'worldpanel', v: 1, at: new Date().toISOString(), data: dd, assets: ls.get(AKEY) || '{}' });
       const ta = q('#wps-text'); ta.hidden = false; ta.value = pack; q('#wps-do').hidden = true;
@@ -3745,6 +3932,8 @@ const D2R = Math.PI / 180;
 const PERF = new URLSearchParams(location.search).get('perf') || '';      // 效能對照實驗用
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 
+const _AX_X = new THREE.Vector3(1, 0, 0), _AX_Y = new THREE.Vector3(0, 1, 0), _e = new THREE.Euler();
+const _qa = new THREE.Quaternion(), _qb = new THREE.Quaternion(), _qc = new THREE.Quaternion(), _vc = new THREE.Vector3();
 function ll2v(lat, lon, r = 1) {
   const la = lat * D2R, lo = lon * D2R;
   return new THREE.Vector3(r * Math.cos(la) * Math.cos(lo), r * Math.sin(la), -r * Math.cos(la) * Math.sin(lo));
@@ -3782,10 +3971,10 @@ void main(){
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position * (1.0 + h * uDisp), 1.0);
 }`;
 const EARTH_FS = `
-uniform sampler2D uDay; uniform sampler2D uNight; uniform sampler2D uWater; uniform sampler2D uWar; uniform sampler2D uAurora; uniform sampler2D uTopo;
+uniform sampler2D uDay; uniform sampler2D uNight; uniform sampler2D uWater; uniform sampler2D uWar; uniform sampler2D uCii; uniform sampler2D uAurora; uniform sampler2D uTopo;
 uniform float uHasTopo;
 uniform vec3 uSun; uniform vec3 uCam;
-uniform float uHasDay; uniform float uHasNight; uniform float uHasWater; uniform float uWarOn; uniform float uAuroraOn; uniform float uZoom; uniform float uTime;
+uniform float uHasDay; uniform float uHasNight; uniform float uHasWater; uniform float uWarOn; uniform float uCiiOn; uniform float uAuroraOn; uniform float uZoom; uniform float uTime;
 varying vec2 vUv; varying vec3 vN; varying vec3 vNv;
 void main(){
   vec3 N = normalize(vN);
@@ -3822,6 +4011,9 @@ void main(){
   // 戰事區域
   float war = texture2D(uWar, vUv).r * uWarOn;
   col = mix(col, vec3(1.0, 0.30, 0.10) * (0.42 + 0.58 * diff), war * 0.50 * (0.88 + 0.12 * sin(uTime * 1.6)));
+  // 國家不穩定指數：分數越高越亮（琥珀 → 深紅）；圖層關著時完全不影響畫面
+  float cii = texture2D(uCii, vUv).r * uCiiOn;
+  col = mix(col, mix(vec3(1.0, 0.74, 0.28), vec3(0.86, 0.10, 0.16), smoothstep(0.35, 0.9, cii)) * (0.45 + 0.55 * diff), smoothstep(0.04, 0.9, cii) * 0.62);
   // 極光：高緯度夜空的綠色光帶
   float au = texture2D(uAurora, vUv).r * uAuroraOn;
   float wave = 0.72 + 0.28 * sin(vUv.x * 87.9645943 + uTime * 0.7) * sin(vUv.y * 140.0 - uTime * 0.45);    // 87.96 = 14 圈，跨 ±180° 無接縫
@@ -3861,10 +4053,10 @@ class Globe {
     this.scene.add(this.g);
 
     this.uniforms = {
-      uDay: { value: null }, uNight: { value: null }, uWater: { value: null }, uWar: { value: null }, uAurora: { value: null },
+      uDay: { value: null }, uNight: { value: null }, uWater: { value: null }, uWar: { value: null }, uCii: { value: null }, uAurora: { value: null },
       uTopo: { value: null }, uHasTopo: { value: 0 }, uDisp: { value: 0 },
       uSun: { value: new THREE.Vector3(1, 0, 0) }, uCam: { value: new THREE.Vector3(0, 0, 5) },
-      uHasDay: { value: 0 }, uHasNight: { value: 0 }, uHasWater: { value: 0 }, uWarOn: { value: 0 }, uAuroraOn: { value: 0 },
+      uHasDay: { value: 0 }, uHasNight: { value: 0 }, uHasWater: { value: 0 }, uWarOn: { value: 0 }, uCiiOn: { value: 0 }, uAuroraOn: { value: 0 },
       uZoom: { value: 1 }, uTime: { value: 0 },
     };
     this.earth = new THREE.Mesh(new THREE.SphereGeometry(1, 512, 256),
@@ -4016,6 +4208,7 @@ class Globe {
     }
     this.map = { ring, countries: topo.objects.countries.geometries };
     if (this.warLevels) this._drawWar();
+    if (this.ciiScores && this.ciiVisible) this._drawCii();
 
     // 海岸線與國界
     const build = (filter) => {
@@ -4096,6 +4289,49 @@ class Globe {
     tex.magFilter = THREE.LinearFilter; tex.minFilter = THREE.LinearFilter; tex.wrapS = THREE.RepeatWrapping; tex.needsUpdate = true;
     this.uniforms.uAurora.value = tex;
     this.uniforms.uAuroraOn.value = this.auroraVisible === false ? 0 : 1;
+  }
+  // ───────── 國家不穩定指數：scores = { ISO 數字碼: 0～100 } ─────────
+  // 圖層關著時不畫（整張世界地圖重畫很花時間）；打開時、或打開狀態下資料更新才畫
+  setCii(scores) { this.ciiScores = scores; this._ciiDirty = true; if (this.map && this.ciiVisible) this._drawCii(); }
+  setCiiVisible(on) {
+    this.ciiVisible = on;
+    if (on && this._ciiDirty && this.map && this.ciiScores) this._drawCii();
+    this.uniforms.uCiiOn.value = on && this.uniforms.uCii.value ? 1 : 0;
+  }
+  _drawCii() {
+    this._ciiDirty = false;
+    const W = 2048, H = 1024, cv = this._ciiCv || (this._ciiCv = document.createElement('canvas'));
+    cv.width = W; cv.height = H;
+    const ctx = cv.getContext('2d');
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+    for (const geom of this.map.countries) {
+      const sc = this.ciiScores[geom.id];
+      if (!(sc > 0)) continue;
+      const v = Math.round(255 * Math.max(0, Math.min(1, (sc - 28) / 40)));   // 28 分以下不上色，68 分以上最深
+      if (!v) continue;
+      const polys = geom.type === 'Polygon' ? [geom.arcs] : geom.type === 'MultiPolygon' ? geom.arcs : [];
+      ctx.fillStyle = `rgb(${v},${v},${v})`;
+      ctx.beginPath();
+      for (const poly of polys) for (const ids of poly) {
+        const pts = this.map.ring(ids);
+        let wraps = false;
+        for (let i = 1; i < pts.length; i++) if (Math.abs(pts[i][0] - pts[i - 1][0]) > 180) { wraps = true; break; }
+        for (const shift of wraps ? [0, -W] : [0]) {
+          pts.forEach(([lon, lat], i) => {
+            const x = ((wraps && lon < 0 ? lon + 360 : lon) + 180) / 360 * W + shift, y = (90 - lat) / 180 * H;
+            i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+          });
+          ctx.closePath();
+        }
+      }
+      ctx.fill('evenodd');
+    }
+    if (this.uniforms.uCii.value) this.uniforms.uCii.value.dispose();
+    const tex = new THREE.CanvasTexture(cv);
+    tex.colorSpace = THREE.NoColorSpace; tex.format = THREE.RedFormat;
+    tex.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
+    this.uniforms.uCii.value = tex;
+    this.uniforms.uCiiOn.value = this.ciiVisible ? 1 : 0;
   }
   setAuroraVisible(on) { this.auroraVisible = on; this.uniforms.uAuroraOn.value = on && this.uniforms.uAurora.value ? 1 : 0; }
 
@@ -4198,6 +4434,7 @@ class Globe {
     this.fly = { t0: performance.now(), dur: opts.zoom && Math.abs(Math.log(z1 / this.zoom)) > 0.5 ? 2200 : 1400,
                  lat0: this.viewLat, lon0: this.viewLon, lat1: opts.exact ? clamp(lat, -75, 75) : clamp(lat * 0.8, -55, 60), dLon,
                  z0: this.zoom, z1 };
+    if (this.qFree) this.settleReq = true;                // 拖成歪的狀態下飛往某地：一起轉回北方朝上
     this.holdUntil = Math.max(this.holdUntil, performance.now() + hold);
   }
   setPin(lat, lon) {
@@ -4227,6 +4464,14 @@ class Globe {
     this.labels.sort((a, b) => b.pri - a.pri);
   }
   setAuto(on) { this.auto = on; if (on) this.holdUntil = 0; }
+  // 經緯度視角 → 地球的轉向（北方朝上）
+  _eulerQ(lat, lon) { return new THREE.Quaternion().setFromEuler(_e.set(lat * D2R, -lon * D2R - Math.PI / 2, 0, 'XYZ')); }
+  // 自由轉動時，用畫面正中央那一點的經緯度更新 viewLat／viewLon，其他功能（標籤、飛行起點）照常使用
+  _syncView() {
+    const v = _vc.set(0, 0, 1).applyQuaternion(_qc.copy(this.qFree).invert());
+    this.viewLat = Math.asin(clamp(v.y, -1, 1)) / D2R; this.viewLon = Math.atan2(-v.z, v.x) / D2R;
+    this.lonPrev = this.viewLon;
+  }
   isFacing(lat, lon) {
     const c = ll2v(this.viewLat, this.viewLon), p = ll2v(lat, lon);
     return c.dot(p) > 0.45;
@@ -4275,10 +4520,14 @@ class Globe {
       if (!drag) return;
       wake();
       if (!drag.moved && Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) < 5) return;
-      if (!drag.moved) { drag.moved = true; this.fly = null; }
-      const k = 57.3 / Math.max(120, this.ppu || 300);        // 拖 1 像素，地表就跟著走 1 像素
-      this.viewLon -= (e.clientX - drag.x) * k;
-      this.viewLat = clamp(this.viewLat + (e.clientY - drag.y) * k, -80, 80);
+      if (!drag.moved) { drag.moved = true; this.fly = null; this.settle = null; }
+      const k = D2R * 57.3 / Math.max(120, this.ppu || 300);  // 拖 1 像素，地表就跟著走 1 像素
+      // 順著手指轉：以螢幕的橫軸、直軸為準，不以地球的南北軸為準，滑過南北極也不會卡住或打轉
+      const q = this.qFree || (this.qFree = this._eulerQ(this.viewLat, this.viewLon));
+      _qa.setFromAxisAngle(_AX_Y, (e.clientX - drag.x) * k); _qb.setFromAxisAngle(_AX_X, (e.clientY - drag.y) * k);
+      q.premultiply(_qa.multiply(_qb)).normalize();
+      this.lonAcc -= (e.clientX - drag.x) * k / D2R;          // 星空跟著橫向拖動走
+      this._syncView();
       drag.x = e.clientX; drag.y = e.clientY;
       this.holdUntil = Math.max(this.holdUntil, performance.now() + 6000);
     });
@@ -4343,11 +4592,21 @@ class Globe {
       if (this.zoom < 1.4) this.viewLat += (18 - this.viewLat) * Math.min(1, dt * 0.25);
     }
     this.viewLon = ((this.viewLon + 540) % 360) - 180;
-    this.g.rotation.set(this.viewLat * D2R, -this.viewLon * D2R - Math.PI / 2, 0, 'XYZ');
+    const qE = this._eulerQ(this.viewLat, this.viewLon);
+    if (this.qFree && !this.dragging) {
+      // 拖完放手後先維持原樣；等飛往某地或恢復自動旋轉時，再用固定時間平順轉回北方朝上
+      if (!this.settle && (this.fly || this.settleReq || (this.auto && now > this.holdUntil))) this.settleReq = false, this.settle = { q0: this.qFree.clone(), t0: now, dur: this.fly ? Math.min(this.fly.dur, 1200) : 1200 };
+      if (this.settle) {
+        const k = clamp((now - this.settle.t0) / this.settle.dur, 0, 1);
+        this.qFree.slerpQuaternions(this.settle.q0, qE, k * k * (3 - 2 * k));
+        if (k >= 1) this.qFree = this.settle = null;
+      }
+    }
+    this.g.quaternion.copy(this.qFree || qE);
     // 滑鼠視差：游標在舞台上移動時，地球跟著微微偏轉。放大時等比例縮小，免得地圖在游標下滑動
     const pz = 1 / Math.max(1, this.zoom);
     this.parX += ((this.parTX || 0) - this.parX) * Math.min(1, dt * 5); this.parY += ((this.parTY || 0) - this.parY) * Math.min(1, dt * 5);
-    this.g.rotation.x += this.parY * D2R * pz; this.g.rotation.y += this.parX * D2R * pz;
+    if (this.parX || this.parY) { _e.set(this.parY * D2R * pz, this.parX * D2R * pz, 0, 'XYZ'); this.g.quaternion.premultiply(_qa.setFromEuler(_e)); }
     // 星空跟著「累計轉了多少度」走，而不是 −180~180 的經度，否則每跨一次換日線整片星空會跳一下
     this.lonAcc += (((this.viewLon - this.lonPrev + 540) % 360) + 360) % 360 - 180; this.lonPrev = this.viewLon;
     this.stars.rotation.set(this.parY * D2R * 0.5, -this.lonAcc * D2R * 0.12 + this.parX * D2R * 0.5, 0);
@@ -5366,6 +5625,7 @@ function setMediaTab(id) {
   lsSet('mediaTab', id);
 }
 // 套用目前情境在目前尺寸的版面。keep：編輯中，直接用記憶體裡的 LAY（不從存檔重讀）
+function phoneStage() { return defaultLayout(scene, 'phone').stage || 'globe'; }
 function applyLayout(keep) {
   const bp = layoutMode;
   if (!keep || !LAY) LAY = loadLay(scene, bp);
@@ -5395,7 +5655,9 @@ function applyLayout(keep) {
   if (!layoutReady) { buildRows(tabs); return; }  // 第一次（其他功能還沒載入）只先把區塊放好
   for (const id of ['p-clocks', 'p-weather', 'p-cal']) $(id).classList.toggle('slim', !!LAY.slim[id]);
   buildRows(tabs);
-  setStageMode(LAY.stage || lsGet('stageMode', 'globe'), false);
+  // 手機：換情境時一律回到該情境本來的樣子（創作＝靈感大圖，其他＝地球），不沿用之前按過的「大圖」，免得地球叫不回來
+  if (bp === 'phone') { if (!keep) setStageMode(phoneStage(), false); }
+  else setStageMode(LAY.stage || lsGet('stageMode', 'globe'), false);
   drawSceneBar();
   if (sizesReady) applySizes();
 }
@@ -6118,6 +6380,8 @@ function ago(ts) {
 let NEWS = [], newsTs = 0, hlIdx = 0, hlStart = performance.now(), hlPaused = false;
 const HL_MS = 11000;
 function newsId(n) { return n.link; }
+// 同一件事有好幾家在報：來源後面加「＋2 家」，滑鼠移上去看是哪幾家
+const newsMore = (n) => (n.n > 1 && Array.isArray(n.also) ? ` <span class="n-more" title="${esc('也在報：' + n.also.map((x) => x.source).join('、'))}">＋${n.n - 1} 家</span>` : '');
 function hhmm(ts) { const d = new Date(ts * 1000); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; }
 
 function renderNews() {
@@ -6130,7 +6394,7 @@ function renderNews() {
   hlIdx = keep >= 0 ? keep : 0;
   $('news-meta').textContent = `${NEWS.length} 則　${hhmm(st.ts)} 更新`;
   $('news').innerHTML = NEWS.map((n, i) => `<div class="n" data-i="${i}"><time>${n.ts ? hhmm(n.ts) : ''}</time>
-    <p>${esc(n.title)}<small>${n.geo ? `<span class="geo">◆ ${esc(n.geo.name)}</span>　` : ''}${esc(n.source)}</small></p></div>`).join('');
+    <p>${esc(n.title)}<small>${n.geo ? `<span class="geo">◆ ${esc(n.geo.name)}</span>　` : ''}${esc(n.source)}${newsMore(n)}</small></p></div>`).join('');
   // 地球上的新聞標記：每個地點只放一則（最新的）
   const seen = new Set(), marks = [];
   for (const n of NEWS) {
@@ -6141,6 +6405,7 @@ function renderNews() {
   }
   globe.setNews(marks, NEWS[hlIdx] && newsId(NEWS[hlIdx]));
   showHeadline(hlIdx, false);
+  if (surgePick) applySurgeFilter();
 }
 let newsFollow = (() => { try { return localStorage.getItem('newsFollow') === '1'; } catch (e) { return false; } })();
 function showHeadline(i, animate = true, auto = false) {
@@ -6151,7 +6416,7 @@ function showHeadline(i, animate = true, auto = false) {
   { const hl = safeUrl(n.link); if (hl) el.href = hl; else el.removeAttribute('href'); }
   $('hl-title').textContent = n.title;
   $('hl-desc').textContent = n.desc || '';
-  $('hl-meta').textContent = `${n.source}　${n.ts ? ago(n.ts) : ''}${n.geo ? '　◆ ' + n.geo.name : ''}`;
+  $('hl-meta').textContent = `${n.source}${n.n > 1 ? `（另有 ${n.n - 1} 家報導）` : ''}　${n.ts ? ago(n.ts) : ''}${n.geo ? '　◆ ' + n.geo.name : ''}`;
   $('hl-count').textContent = `${pad(hlIdx + 1)} / ${pad(NEWS.length)}　點擊閱讀全文 ↗`;
   if (animate) { el.classList.remove('swap'); void el.offsetWidth; el.classList.add('swap'); }
   document.querySelectorAll('#news .n').forEach((r) => r.classList.toggle('active', +r.dataset.i === hlIdx));
@@ -6175,6 +6440,79 @@ $('hl-follow').addEventListener('click', (e) => {
   $('hl-follow').classList.toggle('on', newsFollow);
   try { localStorage.setItem('newsFollow', newsFollow ? '1' : '0'); } catch (err) { /* 無法儲存就算了 */ }
   if (newsFollow && NEWS[hlIdx]?.geo) globe.flyTo(NEWS[hlIdx].geo.lat, NEWS[hlIdx].geo.lon, 9000);
+});
+// ───────────────────────── 今日早報：國際新聞最上面一行，點開看全文 ─────────────────────────
+// 每天早上 7:30 後 Mac 整理一次。市場數字由程式自己算；「今日世界重點」用 Mac 內建的本機 AI 整理（只根據列出來的新聞）。
+let briefTs = -1, briefSrc = false;
+function renderBrief(force) {
+  const st = S.brief, box = $('brief');
+  if (!st?.data || st.data.off || !(st.data.world || []).length) { box.hidden = true; return; }
+  if (st.ts === briefTs && !force) return;
+  briefTs = st.ts;
+  const d = st.data;
+  const dt = new Date(d.ts * 1000), today = new Date(Date.now() + skew).toDateString() === dt.toDateString();
+  // 醒目的卡片：標題列＋第一則重點（最多兩行）。還沒打開看過的那份會微微發亮
+  const fresh = String(lsGet('briefSeen', '')) !== String(d.ts);
+  box.innerHTML = `<button class="br-line${fresh ? ' fresh' : ''}" id="br-open" title="點一下看今日早報全文"><span class="br-h"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3"/><path d="M8 1.5v1.6M8 12.9v1.6M1.5 8h1.6M12.9 8h1.6M3.4 3.4l1.1 1.1M11.5 11.5l1.1 1.1M3.4 12.6l1.1-1.1M11.5 4.5l1.1-1.1"/></svg><b>${today ? '今日早報' : '早報'}</b><i>${today ? '' : `${dt.getMonth() + 1}/${dt.getDate()} `}${hhmm(d.ts)}</i><em>看全文 ›</em></span><span class="br-t">${esc(d.world[0])}</span></button>`;
+  box.hidden = false;
+  if (!$('brief-dlg').hidden) drawBriefDlg();
+}
+// 國際新聞區塊很矮時（例如大螢幕「全球」情境），早報卡片縮成一行，免得把新聞擠掉
+if (window.ResizeObserver) new ResizeObserver(() => { const h = $('p-news').clientHeight; $('brief').classList.toggle('br-compact', h > 0 && h < 300); }).observe($('p-news'));
+function drawBriefDlg() {
+  const d = S.brief?.data; if (!d) return;
+  const when = d.ts ? `${new Date(d.ts * 1000).getMonth() + 1}/${new Date(d.ts * 1000).getDate()} ${hhmm(d.ts)} 整理` : '';
+  const tag = d.ai ? 'AI 整理，只根據下面列出的新聞；細節以原文為準' : (d.tool ? '這次 AI 沒有整理成功，先列出重要標題' : (isStandalone() ? '這次沒有用 AI 整理，先列出重要標題' : '這台 Mac 不能用內建 AI，先列出重要標題'));
+  const sg = S.surge?.data;
+  const learn = sg && !sg.ready && !sg.off ? `<div class="br-note">「正在升溫」偵測學習中，約 ${Math.ceil((sg.learnLeft || 0) / 3600)} 小時後開始</div>` : '';
+  $('br-at').textContent = when;
+  $('br-body').innerHTML = `${(d.market || []).length ? `<div class="br-sec"><b>市場與你的持股</b>${d.market.map((x) => `<p>${esc(x).replace(/([+−]\d+(?:\.\d+)?%)/g, (m) => `<span class="${m[0] === '+' ? 'up' : 'down'}">${m}</span>`)}</p>`).join('')}</div>` : ''}
+    <div class="br-sec"><b>今日世界重點</b>${d.world.map((x) => `<p>${esc(x)}</p>`).join('')}</div>
+    <div class="br-f"><button class="br-src" id="br-src">${esc(tag)}　${briefSrc ? '收起來源 ▴' : '看來源 ▾'}</button>
+    ${briefSrc ? '<div class="br-list">' + (d.src || []).map((n) => `<a href="${esc(safeUrl(n.link))}" target="_blank" rel="noopener">${esc(n.title)}<small>${esc(n.source || '')}</small></a>`).join('') + '</div>' : ''}</div>${learn}`;
+}
+function openBrief() {
+  const d = S.brief?.data;
+  if (!d || d.off || !Array.isArray(d.world) || !d.world.length) { toast(d?.off ? '今日早報在設定裡關掉了' : '早報還沒整理好，稍等一下'); return; }
+  drawBriefDlg(); lsSet('briefSeen', String(d.ts)); $('br-open')?.classList.remove('fresh'); openDialog('brief-dlg');
+}
+$('brief').addEventListener('click', (e) => { if (e.target.closest('#br-open')) openBrief(); });
+$('br-body').addEventListener('click', (e) => { if (e.target.closest('#br-src')) { briefSrc = !briefSrc; drawBriefDlg(); } });
+$('br-re').addEventListener('click', async () => {
+  try { const j = await postJSON('/api/brief/refresh', {}); toast(j.ok ? '早報重新整理中，大約 10～30 秒' : (j.error || '剛整理過')); }
+  catch (err) { toast('沒有成功：' + err.message); }
+});
+
+// ───────────────────────── 突然變熱門：國際新聞上方的「正在升溫」 ─────────────────────────
+// Mac 每 10 分鐘比一次：某個詞最近 2 小時的新聞，比過去 7 天平均多很多、而且不只一家在報。點一下只看相關的新聞，再點一次取消。
+let surgeTs = -1, surgePick = null;
+const STRAIT_TERMS = ['台海', '共機', '共艦', '軍演', '封鎖', '解放軍'];
+function renderSurge() {
+  const st = S.surge, box = $('surge');
+  if (!st?.data) { box.hidden = true; return; }
+  if (st.ts === surgeTs) return;
+  surgeTs = st.ts;
+  const d = st.data, terms = d.terms || [];
+  if (surgePick && !terms.some((t) => t.term === surgePick)) { surgePick = null; applySurgeFilter(); }
+  $('strait-hot').hidden = !terms.some((t) => (t.words || [t.term]).some((w) => STRAIT_TERMS.includes(w)));
+  if (!d.ready || d.off) { box.hidden = true; box.innerHTML = ''; return; }      // 學習中（前 24 小時）不佔位置；狀態寫在早報視窗裡
+  if (!terms.length) { box.hidden = true; box.innerHTML = ''; return; }
+  box.innerHTML = '<span class="surge-h">正在升溫</span>' + terms.slice(0, 3).map((t) => `<button class="surge-chip${surgePick === t.term ? ' on' : ''}" data-term="${esc(t.term)}" title="最近 2 小時有 ${t.n} 則相關新聞${isStandalone() ? '' : '（含你訂的主題新聞）'}，平常${t.base < 1 ? '不到 1 則' : '約 ' + Math.round(t.base) + ' 則'}・${t.sources} 家媒體在報。點一下只看國際新聞裡相關的">${esc(t.term)}<small>×${Math.max(1, Math.round(t.n / Math.max(t.base, 1)))}</small></button>`).join('');
+  box.hidden = false;
+}
+function applySurgeFilter() {
+  const t = surgePick && (S.surge?.data?.terms || []).find((x) => x.term === surgePick);
+  const ids = new Set(t ? t.ids : []);
+  document.querySelectorAll('#news .n').forEach((row) => {
+    const n = NEWS[+row.dataset.i];
+    row.classList.toggle('surge-off', !!t && !(n && (ids.has(n.cid) || (n.title || '').includes(t.term))));
+  });
+  document.querySelectorAll('#surge .surge-chip').forEach((b) => b.classList.toggle('on', b.dataset.term === surgePick));
+}
+$('surge').addEventListener('click', (e) => {
+  const b = e.target.closest('.surge-chip'); if (!b) return;
+  surgePick = surgePick === b.dataset.term ? null : b.dataset.term;
+  applySurgeFilter();
 });
 $('news').addEventListener('click', (e) => {
   const row = e.target.closest('.n'); if (!row) return;
@@ -6254,8 +6592,9 @@ async function syncFlights() {
 const layerPrefs = (() => { try { return JSON.parse(localStorage.getItem('layers') || '{}'); } catch (e) { return {}; } })();
 document.querySelectorAll('#legend button[data-layer]').forEach((b) => {
   const k = b.dataset.layer;
-  const apply = (on) => (k === 'war' ? globe.setWarVisible(on) : k === 'aurora' ? globe.setAuroraVisible(on) : globe.traffic.setShow(k, on));
+  const apply = (on) => (k === 'war' ? globe.setWarVisible(on) : k === 'aurora' ? globe.setAuroraVisible(on) : k === 'cii' ? setCiiLayer(on) : globe.traffic.setShow(k, on));
   if (layerPrefs[k] === false) { b.classList.remove('on'); apply(false); }
+  else if (b.dataset.default === 'off') { const on = layerPrefs[k] === true; b.classList.toggle('on', on); apply(on); }      // 預設關的圖層（不穩定指數）：使用者打開過才開
   b.addEventListener('click', () => {
     const on = !b.classList.contains('on');
     b.classList.toggle('on', on); apply(on);
@@ -6267,6 +6606,10 @@ document.querySelectorAll('#legend button[data-layer]').forEach((b) => {
 // ───────────────────────── 自選股 ─────────────────────────
 let watchTab = null, watchPL = (() => { try { const v = localStorage.getItem('watchPL'); return v == null ? !REMOTE : v !== '0'; } catch (e) { return !REMOTE; } })();
 const money = (v, d = 0) => (v < 0 ? '−' : '') + fmt(Math.abs(v), d);
+// 持股大漲大跌時「可能相關」的新聞（Mac 找好的；朋友版要自己在設定裡打開）
+const whyFor = (kind, id) => { const r = S.why?.data?.[kind]?.[id]; return Array.isArray(r) && r.length ? r : null; };
+let whyTs = 0;
+function renderWhy() { const t = S.why?.ts || 0; if (t === whyTs) return; whyTs = t; htmlCache.delete($('watch')); renderWatch(); }
 function renderWatch() {
   const wl = CFG.watchlist || {}, twL = wl.tw || [], usL = wl.us || [];
   if (watchTab === null) {                      // 第一次：哪邊在交易就先看哪邊
@@ -6311,9 +6654,10 @@ function renderWatch() {
         pl = `<span class="w-pl ${dirCls(g)}">${g >= 0 ? '+' : ''}${money(g, isTW ? 0 : 2)}<small>${gp >= 0 ? '+' : '−'}${fmt(Math.abs(gp), 2)}%</small></span>`;
       } else { noCost++; pl = '<span class="w-pl flat" data-tip="這檔沒有填均價，無法計算損益">—</span>'; }
     }
+    const why = whyFor(watchTab, id);
     return { g: gain, html: `<div class="w" data-id="${esc(id)}"><span class="w-name">${esc(name)}<small>${esc(id)}</small></span>
       <span class="w-px">${ext ? `<i class="w-ext" style="font-style:normal">${ext.type === 'PRE_MKT' ? '盤前' : '盤後'}</i>` : ''}<span data-k="w${esc(id)}" data-v="${px}" data-d="${d}" data-s="">${fmt(px, d)}</span></span>
-      <span class="w-day ${dirCls(dayPct)}">${arrow(dayPct)} ${fmt(Math.abs(dayPct ?? 0), 2)}%</span>${watchPL ? pl : ''}</div>` };
+      <span class="w-day ${dirCls(dayPct)}">${arrow(dayPct)} ${fmt(Math.abs(dayPct ?? 0), 2)}%</span>${watchPL ? pl : ''}</div>${why ? `<div class="w-why" data-id="${esc(id)}" title="${esc(why[0].title)}｜${esc(why[0].source || '')}">可能相關：${esc(why[0].title)}</div>` : ''}` };
   });
   const box = $('watch');
   box.classList.toggle('pl', watchPL);
@@ -6911,6 +7255,67 @@ function renderConflicts() {
   const d = new Date(st.data.ts * 1000);
   $('lg-war').dataset.tip = `依維基百科「進行中的武裝衝突列表」自動標示，以國家為單位。深色＝大型戰爭的主要戰場，淺色＝其他戰爭。資料時間 ${d.getMonth() + 1}/${d.getDate()}`;
 }
+
+// ───────────────────────── 國家不穩定指數 ─────────────────────────
+// Mac 用公開資料（GDELT 新聞事件、世界銀行、歐盟 INFORM）自己算的參考分數。地球圖層預設關；「排行」視窗看前 15 名與每一國的組成。
+var ciiTs = 0, ciiOn = false, ciiSel = null;      // 用 var：圖層開關在程式前面就會呼叫 setCiiLayer
+function setCiiLayer(on) {
+  ciiOn = !!on; globe.setCiiVisible(ciiOn);
+  const cb = $('cii-layer'); if (cb) cb.checked = ciiOn;
+  const lb = $('lg-cii'); if (lb) lb.classList.toggle('on', ciiOn);
+}
+function renderCii() {
+  const st = S.cii;
+  if (!st?.data || st.ts === ciiTs) return;
+  ciiTs = st.ts;
+  globe.setCii(st.data.map || {});
+  if (!$('cii').hidden) drawCiiList();
+}
+const ciiCol = (v) => (v >= 60 ? 'hi' : v >= 40 ? 'mid' : 'lo');
+function drawCiiList() {
+  const d = S.cii?.data;
+  if (!d) { $('cii-body').innerHTML = '<div class="ad-empty">讀取中…</div>'; return; }
+  if (d.off) { $('cii-body').innerHTML = '<div class="ad-empty">這項功能在設定檔裡關掉了。</div>'; return; }
+  $('cii-at').textContent = d.ts ? `${hhmm(d.ts)} 更新` : '';
+  const top = (d.top || []).filter((r) => !r.thin).slice(0, 15);
+  const warm = !d.ready ? `<div class="cii-warm">資料累積中：最近一天已補 ${Math.round((d.fill || 0) * 100)}%，大約 15～30 分鐘補完。</div>`
+    : (d.week != null && d.week < 0.95 ? `<div class="cii-warm">分數已經可以看。「跟過去 7 天比」的部分還在背景補資料（${Math.round(d.week * 100)}%，約 3～4 小時補完），這段時間「新聞突然變多」和 ▲▼ 變化比較不準。</div>` : '');
+  const up = [...(d.top || [])].filter((r) => r.d24 != null).sort((a, b) => b.d24 - a.d24)[0];
+  const head = up && up.d24 >= 3 ? `<div class="cii-up">今天上升最多：<b>${esc(up.name)}</b> <span class="cii-d up">▲ ${fmt(up.d24, 1)}</span></div>` : '';
+  const rows = top.map((r, i) => `<button class="cii-row${ciiSel === r.iso ? ' on' : ''}" data-iso="${esc(r.iso)}">
+      <span class="cii-n">${i + 1}</span><span class="cii-name">${esc(r.name)}</span>
+      <span class="cii-bar"><i class="${ciiCol(r.score)}" style="width:${Math.max(2, Math.min(100, r.score))}%"></i></span>
+      <span class="cii-s">${fmt(r.score, 0)}</span>
+      <span class="cii-d ${r.d24 > 0.5 ? 'up' : r.d24 < -0.5 ? 'down' : ''}">${r.d24 == null ? '' : (r.d24 > 0.5 ? '▲ ' : r.d24 < -0.5 ? '▼ ' : '') + fmt(Math.abs(r.d24), 1)}</span></button>`).join('');
+  const sel = (d.top || []).find((r) => r.iso === ciiSel);
+  let detail = '';
+  if (sel) {
+    const p = sel.parts || {}, part = (k, n, tip) => `<div class="cii-part" title="${esc(tip)}"><span>${n}</span><span class="cii-bar"><i class="${ciiCol(p[k] || 0)}" style="width:${Math.max(2, p[k] || 0)}%"></i></span><b>${p[k] ?? '—'}</b></div>`;
+    const news = NEWS.filter((n) => n.geo && n.geo.name === sel.name).slice(0, 3);
+    detail = `<div class="cii-detail"><div class="cii-dh">${esc(sel.name)}　<b>${fmt(sel.score, 0)}</b> 分<small>最近 24 小時 ${fmt(sel.n24 || 0, 0)} 則相關新聞事件</small></div>
+      ${part('base', '平常的底分', '世界銀行政治穩定度與歐盟 INFORM 風險指數；正在打仗的國家至少 50～70')}
+      ${part('unrest', '抗議與動盪', '最近 24 小時抗議、示威、脅迫類的新聞事件')}
+      ${part('conflict', '衝突與暴力', '最近 24 小時攻擊、交戰、大規模暴力類的新聞事件')}
+      ${part('info', '新聞突然變多', '最近 24 小時的新聞量比過去 7 天平均多多少')}
+      <div class="cii-formula">總分 ＝ 底分 × 40% ＋ 最近發生的事 × 60%（動盪 30%、衝突 45%、新聞量 25%）</div>
+      ${news.length ? '<div class="cii-news">' + news.map((n) => `<a href="${esc(safeUrl(n.link))}" target="_blank" rel="noopener">${esc(n.title)}<small>${esc(n.source)}</small></a>`).join('') + '</div>' : ''}</div>`;
+  }
+  $('cii-body').innerHTML = warm + head + (rows ? `<div class="cii-list">${rows}</div>` : '<div class="ad-empty">還沒有足夠的資料。</div>') + detail;
+}
+function openCii() { drawCiiList(); openDialog('cii'); }
+$('lg-cii-rank').addEventListener('click', (e) => { e.stopPropagation(); openCii(); });
+$('cii-layer').addEventListener('change', (e) => {
+  setCiiLayer(e.target.checked);
+  layerPrefs.cii = ciiOn; try { localStorage.setItem('layers', JSON.stringify(layerPrefs)); } catch (err) { /* 無法儲存就算了 */ }
+});
+$('cii-body').addEventListener('click', (e) => {
+  const b = e.target.closest('.cii-row'); if (!b) return;
+  ciiSel = ciiSel === b.dataset.iso ? null : b.dataset.iso;
+  drawCiiList();
+  const r = (S.cii?.data?.top || []).find((x) => x.iso === ciiSel);
+  const pl = r && (PLACES.find((p) => p[0] === r.name) || (typeof COUNTRIES !== 'undefined' ? COUNTRIES.find((c) => c[0] === r.name) : null));
+  if (pl) globe.flyTo(pl[1], pl[2], 9000);
+});
 
 // ───────────────────────── 臺海動態 ─────────────────────────
 const TAIWAN = { lat: 23.6, lon: 120.5 };
@@ -7763,6 +8168,8 @@ function openStock(kind, id) {
       row('未實現損益', g == null ? '—' : `${g >= 0 ? '+' : ''}${money(g, isTW ? 0 : 2)}（${(g >= 0 ? '+' : '−') + fmt(Math.abs((q.last - c) / c * 100), 2)}%）`, g == null ? '' : dirCls(g)) +
       row('佔總資產', share == null ? '—' : fmt(share, 1) + '%') + '</div>';
   } else h += '<div class="st-note">沒有填股數，只看漲跌。按「編輯持股」可以加上股數和均價。</div>';
+  const why = whyFor(kind, id);
+  if (why) h += '<div class="st-sub">可能相關的新聞<small>（標題提到這檔股票，不一定是漲跌的原因）</small></div><div class="st-why">' + why.map((n) => `<a href="${esc(safeUrl(n.link))}" target="_blank" rel="noopener">${esc(n.title)}<small>${esc(n.source || '')}${n.ts ? '　' + esc(ago(n.ts)) : ''}</small></a>`).join('') + '</div>';
   const tg = (CFG.alertCfg?.targets || []).filter((t) => t.m === kind && t.c === id);
   if (tg.length) h += `<div class="st-note">到價提醒：${tg.map((t) => [t.above ? '高於 ' + fmt(t.above, d) : '', t.below ? '低於 ' + fmt(t.below, d) : ''].filter(Boolean).join('、')).join('；')}</div>`;
   $('st-title').textContent = `${it.name || q.name || id}　${id}`;
@@ -7771,7 +8178,7 @@ function openStock(kind, id) {
   openDialog('stock');
 }
 $('watch').addEventListener('click', (e) => {
-  const w = e.target.closest('.w[data-id]'); if (!w || e.target.closest('button')) return;
+  const w = e.target.closest('.w[data-id], .w-why[data-id]'); if (!w || e.target.closest('button')) return;      // 點「可能相關」那行也打開個股細節
   openStock(watchTab, w.dataset.id);
 });
 $('st-edit').addEventListener('click', () => { const k = stockSel?.kind; closeDialog($('stock')); openHold(k); });
@@ -7788,7 +8195,7 @@ $('st-alert').addEventListener('click', () => {
 // 提醒：伺服器判斷，畫面上顯示橫幅（Mac 另外有系統通知）；設定在「提醒」視窗
 let alertSeen = 0, alertFirst = true, alertUnread = 0;
 const ALERT_HIST = [];
-const ALERT_ICON = { move: '📈', target: '🎯', pla: '✈︎', quake: '〰', source: '⚠︎' };
+const ALERT_ICON = { move: '📈', target: '🎯', pla: '✈︎', quake: '〰', source: '⚠︎', surge: '◎' };
 function onAlerts(a) {
   if (!a) return;
   const fresh = (a.items || []).filter((x) => x.id > alertSeen);
@@ -7824,7 +8231,7 @@ function tgtRow(t = {}) {
 }
 function openAlerts() {
   const c = CFG.alertCfg || {};
-  $('al-on').checked = c.enabled !== false; $('al-src').checked = c.sources !== false;
+  $('al-on').checked = c.enabled !== false; $('al-src').checked = c.sources !== false; $('al-surge').checked = c.surge === true;
   $('al-move').value = c.move ?? 5; $('al-pla').value = c.pla ?? 25; $('al-quake').value = c.quake ?? 6;
   $('al-rules').classList.toggle('off', !$('al-on').checked);
   $('al-tgts').innerHTML = (c.targets || []).map(tgtRow).join('') || '<div class="dim al-empty">還沒有。可以設定「台積電高於 2500 提醒我」這類條件。</div>';
@@ -7852,7 +8259,7 @@ $('al-save').addEventListener('click', async () => {
     const [m, c] = r.querySelector('select').value.split(':');
     return { m, c, above: r.querySelector('.t-above').value.replace(/[,，\s]/g, ''), below: r.querySelector('.t-below').value.replace(/[,，\s]/g, '') };
   }).filter((t) => t.above || t.below);
-  const body = { enabled: $('al-on').checked, sources: $('al-src').checked, move: $('al-move').value || 0, pla: $('al-pla').value || 0, quake: $('al-quake').value || 0, targets };
+  const body = { enabled: $('al-on').checked, sources: $('al-src').checked, surge: $('al-surge').checked, move: $('al-move').value || 0, pla: $('al-pla').value || 0, quake: $('al-quake').value || 0, targets };
   const btn = $('al-save'); btn.disabled = true;
   try {
     const j = await postJSON('/api/alerts/settings', body);
@@ -8517,7 +8924,7 @@ function flipFrom(before) {
 function switchScene(id, opts = {}) {
   if (!SCENE_IDS.includes(id)) return;
   if (!opts.auto) AUTO.manualDay = taipeiDay(), AUTO.entered = false, saveAuto();
-  if (id === scene) return;
+  if (id === scene) { if (layoutMode === 'phone' && stageMode !== phoneStage()) setStageMode(phoneStage(), false); return; }   // 手機：再按一次目前的情境＝回到它本來的樣子
   if (editing) exitEdit();
   const before = rectsNow();
   scene = id; lsSet('scene', id);
@@ -8905,13 +9312,15 @@ $('edl-reset').addEventListener('click', () => {
 
 // ───────────────────────── 指令列（⌘K） ─────────────────────────
 // 搜尋欄升級：⌘K 或 / 在畫面中央打開，可以搜尋地點、航班、股票、新聞，也可以直接下指令。
-const LAYER_NAME = { flights: '航班', ships: '貨輪', pla: '共機共艦', war: '戰事區域', aurora: '極光', cables: '海底電纜' };
+const LAYER_NAME = { flights: '航班', ships: '貨輪', pla: '共機共艦', war: '戰事區域', cii: '不穩定指數', aurora: '極光', cables: '海底電纜' };
 let RECENT = (() => { try { const a = JSON.parse(lsGet('recentCmds', '[]')); return Array.isArray(a) ? a.filter((x) => typeof x === 'string').slice(0, 8) : []; } catch (e) { return []; } })();
 const COMMANDS = [
   ...SCENES.map((sc) => ({ id: 'scene:' + sc.id, name: '情境：' + sc.name, alias: [sc.name, sc.hint, '情境', 'scene'], hint: `${sc.hint}（按 ${sc.key}）`, run: () => switchScene(sc.id) })),
   { id: 'insp', name: '靈感模式', alias: ['大圖', '靈感', '地球', 'inspiration'], hint: '中央換成靈感大圖／回到地球（按 G）', run: () => setStageMode(stageMode === 'insp' ? 'globe' : 'insp') },
   { id: 'wall', name: '靈感牆', alias: ['圖片', '牆', 'gallery'], hint: '把所有靈感圖片攤開', run: () => $('insp-wall').click() },
   { id: 'edit', name: '編輯版面', alias: ['版面', '排版', '搬移', '區塊', 'layout', 'edit'], hint: '搬移、收起區塊（按 E）', run: () => enterEdit() },
+  { id: 'brief', name: '今日早報', alias: ['早報', '摘要', '重點', 'brief'], hint: '國際新聞最上面的每日重點', run: () => openBrief() },
+  { id: 'cii', name: '國家不穩定指數', alias: ['不穩定', '動盪', '風險', '國家風險', '衝突', 'cii'], hint: '哪些國家最近特別不平靜（公開資料自算）', run: () => openCii() },
   { id: 'admin', name: '後台數據', alias: ['後台', '數據', '統計', '使用者', '分享', '誰在用', 'admin'], hint: '分享出去的人有沒有在用、中轉站狀態', when: () => !isStandalone(), run: () => openAdmin() },
   { id: 'relayout', name: '重置排版', alias: ['重置', '還原', '預設版面', '區塊不見', '找不到區塊', 'reset'], hint: '所有版面和區塊大小回到預設', run: () => { if (confirm('重置排版？所有情境、所有尺寸的版面和區塊大小都會回到預設。')) resetAllLayout(); } },
   { id: 'gains', name: '已實現損益', alias: ['獲利', '賣出', '賣掉', '損益', '實現', '獲利紀錄', 'realized', 'gains'], hint: '看賣掉的股票賺了多少', run: () => openGains() },
@@ -9026,7 +9435,7 @@ async function poll() {
     setTimeout(() => { for (const el of document.querySelectorAll('.col .panel [data-v]')) { const v = +el.dataset.v; if (isFinite(v) && v) roll(el, 0, v, +el.dataset.d || 0, el.dataset.s || ''); } fxSweep = (el) => fx.sweep(el.closest('.panel')); }, 30);
   }
   const _r0 = performance.now();
-  if (serverOK) { safe(renderMarkets); safe(renderWeather); safe(renderSystem); safe(renderNews); safe(renderStrait); safe(renderConflicts); safe(renderWatch); safe(renderAssets); safe(renderCal); safe(renderInsp); safe(renderMV); safe(renderFilm); safe(syncLayers); syncFlights(); }
+  if (serverOK) { safe(renderMarkets); safe(renderWeather); safe(renderSystem); safe(renderNews); safe(renderStrait); safe(renderConflicts); safe(renderWatch); safe(renderWhy); safe(renderBrief); safe(renderSurge); safe(renderCii); safe(renderAssets); safe(renderCal); safe(renderInsp); safe(renderMV); safe(renderFilm); safe(syncLayers); syncFlights(); }
   safe(renderStatus);
   if ((QS.get('perf') || '').includes('log')) { const P = window.__rp || (window.__rp = { n: 0, ms: 0, max: 0 }); const d = performance.now() - _r0; P.n++; P.ms += d; P.max = Math.max(P.max, d); P.avg = P.ms / P.n; }
 }
