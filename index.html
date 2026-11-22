@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-ConClQMueipSxv1YRIUDy1k9rlo9CeX4Esy4LlZGF5w=' 'sha256-bryiclGwJ+h6ySvkiyCyZBWHzO5lrv0KPWIF2FOSHU8='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://geocoding-api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-ConClQMueipSxv1YRIUDy1k9rlo9CeX4Esy4LlZGF5w=' 'sha256-vpiIRA7VLQpcfgW08H4OWKrCHPJwGeIbpOtUW24q8H4='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://geocoding-api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#06090d">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -620,7 +620,7 @@ body.remote .topbar { padding-left: max(14px, env(safe-area-inset-left)); paddin
 .grid.m-phone .bigdate { font-size: 10px; }
 .grid.m-phone .legend, .grid.m-phone .stage-hint, .grid.m-phone .hud-tr { display: none; }
 .grid.m-phone .hud-br { bottom: 12px; right: 10px; }
-.grid.m-phone .headline { position: static; max-width: none; margin: 0; backdrop-filter: none; -webkit-backdrop-filter: none; background: linear-gradient(180deg, rgba(30,38,48,.7), rgba(12,16,22,.85)); }
+.grid.m-phone .headline { position: relative; left: auto; right: auto; bottom: auto; max-width: none; margin: 0; backdrop-filter: none; -webkit-backdrop-filter: none; background: linear-gradient(180deg, rgba(30,38,48,.7), rgba(12,16,22,.85)); }
 .grid.m-phone .headline .hl-desc { display: none; }
 .grid.m-phone .sat { left: 8px; right: 8px; width: auto; }
 .grid.m-phone .flight { min-width: 0; width: calc(100% - 20px); }
@@ -1698,6 +1698,28 @@ html.standalone #btn-admin { display: none; }
 .br-list small { margin-left: 6px; color: var(--ink-3); }
 .br-note { margin-top: 10px; font-size: 11px; color: var(--ink-3); }
 
+/* ── 圖示說明 ── 電腦版：圖例裡的城市、新聞、地震…點了地球轉過去；手機：左下角「圖示說明」點開才出現 */
+.legend span[data-go] { cursor: pointer; border-radius: 5px; }
+.legend span[data-go]:hover { background: rgba(255,255,255,.06); color: var(--ink); }
+.key-btn { display: none; }
+.grid.m-phone .key-btn { display: block; position: absolute; left: 12px; bottom: 12px; z-index: 6; height: 30px; padding: 0 12px; border-radius: 15px; border: 1px solid rgba(255,255,255,.16);
+  background: rgba(10,14,19,.72); color: var(--ink-2); font-size: 12px; letter-spacing: .04em; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.grid.m-phone .key-btn.on { border-color: rgba(127,227,242,.55); color: var(--accent); }
+.keyp { display: none; }
+.grid.m-phone .keyp:not([hidden]) { display: grid; position: absolute; left: 12px; right: 60px; bottom: 50px; z-index: 7; max-height: calc(100% - 70px); overflow-y: auto; gap: 2px; padding: 10px 10px 8px;
+  border-radius: 12px; border: 1px solid rgba(255,255,255,.12); background: rgba(8,12,17,.94); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: 0 14px 30px -10px rgba(0,0,0,.8); }
+.keyp-h { font-size: 12px; color: var(--ink); margin: 0 2px 6px; }
+.keyp-h span { display: block; font-size: 10.5px; color: var(--ink-3); margin-top: 2px; }
+.keyp > button, .keyp > div:not(.keyp-h):not(.keyp-f) { display: grid; grid-template-columns: 16px auto 1fr auto; align-items: center; column-gap: 8px; min-height: 34px; padding: 4px 6px; border-radius: 8px; border: 0; background: transparent; color: var(--ink); text-align: left; font: inherit; }
+.keyp > button:active { background: rgba(127,227,242,.12); }
+.keyp .lg { justify-self: center; }
+.keyp b { font-size: 13px; font-weight: 500; white-space: nowrap; }
+.keyp small { font-size: 11px; color: var(--ink-3); line-height: 1.35; min-width: 0; }
+.keyp em { font-style: normal; font-size: 11.5px; color: var(--accent); white-space: nowrap; }
+.keyp .off { opacity: .45; }
+.keyp-f { margin: 6px 2px 0; font-size: 10.5px; color: var(--ink-3); }
+.stage.insp-on .key-btn, .stage.insp-on .keyp, body.flag-standby .key-btn { display: none !important; }
+
 </style>
 </head>
 <body>
@@ -1828,12 +1850,14 @@ html.standalone #btn-admin { display: none; }
         <button data-layer="cii" data-default="off" title="顯示／隱藏國家不穩定指數（再按旁邊的「排行」看細節）" id="lg-cii"><i class="lg lg-cii"></i>不穩定指數<small>公開資料自算</small></button><button class="lg-more" id="lg-cii-rank" title="國家不穩定指數排行">排行</button>
         <button data-layer="aurora" class="on" title="顯示／隱藏極光" id="lg-aurora"><i class="lg lg-aurora"></i>極光<small>NOAA 即時預報</small></button>
         <button data-layer="cables" class="on" title="顯示／隱藏海底電纜"><i class="lg lg-cable"></i>海底電纜</button>
-        <span><i class="lg lg-city"></i>城市</span>
-        <span><i class="lg lg-news"></i>新聞</span>
-        <span><i class="lg lg-quake"></i>地震</span>
-        <span><i class="lg lg-iss"></i>太空站</span>
-        <span><i class="lg lg-sun"></i>太陽直射點</span>
+        <span data-go="city" title="點一下：地球轉到你的位置"><i class="lg lg-city"></i>城市</span>
+        <span data-go="news" title="點一下：地球轉到目前這則新聞的地點"><i class="lg lg-news"></i>新聞</span>
+        <span data-go="quake" title="點一下：地球轉到最近一次較大的地震"><i class="lg lg-quake"></i>地震</span>
+        <span data-go="iss" title="點一下：地球轉到國際太空站現在的位置"><i class="lg lg-iss"></i>太空站</span>
+        <span data-go="sun" title="點一下：地球轉到太陽正上方的地點"><i class="lg lg-sun"></i>太陽直射點</span>
       </div>
+      <button class="key-btn phone-only" id="btn-key" type="button" aria-expanded="false" aria-controls="keyp" title="圖示說明：地球上的符號代表什麼">圖示說明</button>
+      <div class="keyp" id="keyp" hidden></div>
 
       
       <div class="stage-hint" id="hint">點地球看當地衛星影像　·　點飛機看航班與航線（按住 Option 點擊則一律開衛星影像）</div>
@@ -6548,10 +6572,52 @@ globe.onNewsClick = (id) => { const i = NEWS.findIndex((n) => newsId(n) === id);
 // 進度條每 250 毫秒走一格。不用 CSS 轉場：它位在毛玻璃區塊裡，連續轉場會逼顯示卡每張都重算模糊。
 function restartProgress() { $('hl-progress').style.transform = 'scaleX(0)'; }
 const pauseNews = (on) => { hlPaused = on; hlStart = performance.now(); restartProgress(); };
-for (const id of ['headline', 'p-news']) {
-  $(id).addEventListener('mouseenter', () => pauseNews(true));
-  $(id).addEventListener('mouseleave', () => pauseNews(false));
+for (const id of ['headline', 'p-news']) {        // 只有滑鼠停在上面才暫停（手機點一下會假裝成滑鼠移進來、卻不會移出去，倒數就一直停住）
+  $(id).addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') pauseNews(true); });
+  $(id).addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') pauseNews(false); });
 }
+
+// ───────────────────────── 圖示說明：點一下，地球轉到那個東西 ─────────────────────────
+// 電腦版：地球左下角的圖例本來就在；城市、新聞、地震、太空站、太陽直射點點了會轉過去。
+// 手機：左下角一顆「圖示說明」，點開才出現（平常收起來，不佔畫面）；點裡面的項目，地球轉過去後自動收起。
+function goTarget(k) {
+  const now = new Date(Date.now() + skew);
+  if (k === 'city') { globe.goHome(); return '你的位置'; }
+  if (k === 'news') { const n = NEWS[hlIdx]?.geo ? NEWS[hlIdx] : NEWS.find((x) => x.geo); if (!n) return null; globe.flyTo(n.geo.lat, n.geo.lon, 12000, { exact: true }); return '新聞地點'; }
+  if (k === 'quake') { const q = (S.quakes?.data || [])[0]; if (!q) return null; globe.flyTo(q.lat, q.lon, 12000, { exact: true }); return '最近的地震'; }
+  if (k === 'iss') { const p = S.iss?.data; if (!p) return null; globe.flyTo(p.lat, p.lon, 12000, { exact: true }); return '國際太空站'; }
+  if (k === 'sun') { const p = subsolar(now); globe.flyTo(p.lat, p.lon, 12000, { exact: true }); return '太陽直射點'; }
+  if (k === 'pla') { globe.flyTo(23.8, 120.6, 12000, { exact: true }); return '臺灣周邊'; }
+  if (k === 'aurora') { globe.flyTo(66, globe.viewLon, 12000, { exact: true }); return '北極圈'; }
+  return null;
+}
+$('legend').addEventListener('click', (e) => {
+  const sp = e.target.closest('span[data-go]'); if (!sp) return;
+  if (!goTarget(sp.dataset.go)) toast('現在沒有這類資料可以看');
+});
+const KEY_MORE = { flights: '飛機：每個小點是一架正在飛的班機', ships: '貨輪：主要航線上的貨輪（示意）', pla: '紅色：共機共艦（依國防部公布的數字示意）', war: '深紅區域：正在打仗的地方', cii: '橘到紅：國家不穩定指數（在「圖層」打開才有）', aurora: '綠色光帶：極光可能出現的地方', cables: '細線：海底電纜' };
+const KEY_GO = { city: '你設定的城市', news: '新聞發生的地點（紫色菱形）', quake: '地震（圈越大規模越大）', iss: '國際太空站現在的位置', sun: '太陽正上方的地點（那裡是正中午）' };
+function drawKey() {
+  const items = [];
+  $('legend').querySelectorAll('span[data-go]').forEach((sp) => items.push(`<button type="button" data-go="${sp.dataset.go}">${sp.querySelector('.lg').outerHTML}<b>${esc(sp.textContent.trim())}</b><small>${esc(KEY_GO[sp.dataset.go] || '')}</small><em>看 ›</em></button>`));
+  $('legend').querySelectorAll('button[data-layer]').forEach((b) => {
+    const k = b.dataset.layer, go = k === 'pla' || k === 'aurora';
+    items.push(`<${go ? 'button type="button" data-go="' + k + '"' : 'div'} class="${b.classList.contains('on') ? '' : 'off'}">${b.querySelector('.lg').outerHTML}<b>${esc(b.childNodes[1]?.textContent?.trim() || '')}</b><small>${esc(KEY_MORE[k] || '')}</small>${go ? '<em>看 ›</em>' : ''}</${go ? 'button' : 'div'}>`);
+  });
+  $('keyp').innerHTML = `<div class="keyp-h">地球上的符號<span>有「看 ›」的點一下，地球會轉過去</span></div>${items.join('')}<div class="keyp-f">要開關圖層，按右邊的「圖層」按鈕</div>`;
+}
+function setKey(open) {
+  $('stage').classList.toggle('key-open', open); $('keyp').hidden = !open; $('btn-key').setAttribute('aria-expanded', open);
+  $('btn-key').classList.toggle('on', open);
+  if (open) drawKey();
+}
+$('btn-key').addEventListener('click', (e) => { e.stopPropagation(); setKey($('keyp').hidden); });
+$('keyp').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-go]'); if (!b) return;
+  const name = goTarget(b.dataset.go);
+  if (name) { setKey(false); toast('地球轉到' + name); } else toast('現在沒有這類資料可以看');
+});
+document.addEventListener('pointerdown', (e) => { if (!$('keyp').hidden && !e.target.closest('#keyp, #btn-key')) setKey(false); });
 setInterval(() => {
   if (document.hidden || !NEWS.length || hlPaused) return;
   const k = (performance.now() - hlStart) / HL_MS;
