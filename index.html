@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-TK+2axHF1rbLaIJGq6PxIsHGfQ9N43CF+v78GnsN5ZY=' 'sha256-bryiclGwJ+h6ySvkiyCyZBWHzO5lrv0KPWIF2FOSHU8='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://geocoding-api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-ConClQMueipSxv1YRIUDy1k9rlo9CeX4Esy4LlZGF5w=' 'sha256-bryiclGwJ+h6ySvkiyCyZBWHzO5lrv0KPWIF2FOSHU8='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://geocoding-api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#06090d">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2552,11 +2552,16 @@ html.standalone #btn-admin { display: none; }
       const c = String(it[key] || '').toUpperCase(), q = (quotes[kind] || {})[c];
       if (c && q && typeof q.pct === 'number' && Number.isFinite(q.pct)) rows.push([kind, c, it.name || q.name || c, q.pct]);
     }
-    let pick = rows.filter((r) => Math.abs(r[3]) >= WHY_MOVE);
-    if (rows.length) pick = pick.concat([rows.reduce((a, b) => (b[3] > a[3] ? b : a)), rows.reduce((a, b) => (b[3] < a[3] ? b : a))]);
-    const seen = new Set(), out = [];
-    for (const r of pick.sort((a, b) => Math.abs(b[3]) - Math.abs(a[3]))) { const k = r[0] + r[1]; if (!seen.has(k) && Math.abs(r[3]) >= 1) { seen.add(k); out.push(r); } }
-    return out.slice(0, 6);
+    const out = [];
+    for (const kind of ['tw', 'us']) {                     // 台股、美股分開算，各最多 6 檔
+      const rk = rows.filter((r) => r[0] === kind);
+      let pick = rk.filter((r) => Math.abs(r[3]) >= WHY_MOVE);
+      if (rk.length) pick = pick.concat([rk.reduce((a, b) => (b[3] > a[3] ? b : a)), rk.reduce((a, b) => (b[3] < a[3] ? b : a))]);
+      const seen = new Set(), part = [];
+      for (const r of pick.sort((a, b) => Math.abs(b[3]) - Math.abs(a[3]))) if (!seen.has(r[1]) && Math.abs(r[3]) >= 1) { seen.add(r[1]); part.push(r); }
+      out.push(...part.slice(0, 6));
+    }
+    return out;
   }
   // 要送出的清單：有變化、或 10 分鐘到了才送（沒有漲跌大的持股時也會送幾檔隨機熱門股，送不送都一樣看不出來）
   function whyQuery(d) {
@@ -2566,7 +2571,7 @@ html.standalone #btn-admin { display: none; }
     whySent = key; whyAt = now;
     const own = new Set([...(d.watchlist.tw || []).map((x) => 'tw' + String(x.code || '').toUpperCase()), ...(d.watchlist.us || []).map((x) => 'us' + String(x.sym || '').toUpperCase())]);
     const pool = [...DECOY.tw.map((x) => ['tw', ...x]), ...DECOY.us.map((x) => ['us', ...x])].filter((x) => !own.has(x[0] + x[1]));
-    const fake = []; for (let i = 0; i < 4 && pool.length; i++) fake.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
+    const fake = []; for (let i = 0; i < Math.min(4, 16 - mine.length) && pool.length; i++) fake.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
     const all = mine.map((r) => [r[0], r[1], r[2]]).concat(fake);
     for (let i = all.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [all[i], all[j]] = [all[j], all[i]]; }     // 打亂順序：看不出哪幾檔是真的
     return all.map((r) => `${r[0]}:${r[1]}:${cleanName(r[2])}`).join(';');
