@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-TK+2axHF1rbLaIJGq6PxIsHGfQ9N43CF+v78GnsN5ZY=' 'sha256-899IcDqdzrCsfj7zVF5u1RxmTrr4L7L15UltzXkeXjU='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://geocoding-api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-lwU32uIWLXNb0OEwBqHe1zrhcJRmKXjp6YDw1cRLJPs=' 'sha256-TK+2axHF1rbLaIJGq6PxIsHGfQ9N43CF+v78GnsN5ZY=' 'sha256-bryiclGwJ+h6ySvkiyCyZBWHzO5lrv0KPWIF2FOSHU8='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://geocoding-api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#06090d">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1610,8 +1610,15 @@ html.standalone #btn-admin { display: none; }
 .n-more { margin-left: 6px; padding: 0 5px; border-radius: 3px; background: rgba(120,200,255,.12); color: var(--accent); font-size: .92em; white-space: nowrap; cursor: help; }
 
 /* ── 持股大漲大跌：可能相關的新聞 ── */
-.w-why { display: block; margin: -4px 0 0; padding: 0 0 5px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 10.5px; line-height: 14px; color: var(--ink-3); cursor: pointer; }   /* 放在表格外面：Safari 裡長標題才不會把面板撐寬 */
-.w-why + .w { border-top: 1px solid rgba(255,255,255,.035); }
+/* 持股配新聞：股名旁邊的小按鈕，點了才看新聞（不再在下面多一行） */
+.w-name { display: flex; align-items: center; gap: 6px; }
+.w-nm { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.w-news { flex: none; height: 16px; padding: 0 5px; border: 1px solid rgba(127,227,242,.45); border-radius: 8px; background: rgba(127,227,242,.08); color: var(--accent); font: 600 9px/14px var(--sans); letter-spacing: .04em; cursor: pointer; }
+.w-news:hover { background: rgba(127,227,242,.2); }
+.grid.m-phone .w-news { height: 20px; padding: 0 7px; font-size: 10.5px; line-height: 18px; border-radius: 10px; }
+.dlg-wnews { width: min(520px, calc(100vw - 32px)); }
+.wn-body { max-height: min(64vh, 560px); overflow: auto; padding: 6px 16px 10px; }
+.st-orig { display: block; margin-top: 3px; font-style: normal; font-size: 11px; color: var(--ink-3); line-height: 1.4; }
 .st-sub small { margin-left: 6px; font-weight: 400; color: var(--ink-3); font-size: 10px; }
 .st-why { display: flex; flex-direction: column; gap: 6px; margin: 4px 0 10px; }
 .st-why a { display: block; color: var(--ink); text-decoration: none; font-size: 12.5px; line-height: 1.45; padding: 6px 8px; border-radius: 6px; background: rgba(255,255,255,.035); }
@@ -1945,6 +1952,13 @@ html.standalone #btn-admin { display: none; }
   </section>
 </div>
 <!-- 個股細節 -->
+<div class="dlg-back" id="wnews" hidden>
+  <section class="dlg dlg-wnews" role="dialog" aria-modal="true" aria-labelledby="wn-title">
+    <header class="dlg-h"><b id="wn-title"></b><button class="dlg-x" data-close aria-label="關閉">×</button></header>
+    <div class="wn-body" id="wn-body"></div>
+    <footer class="dlg-f"><span class="dlg-note">標題提到這檔股票、而且在講它的事，不一定是漲跌的原因。中文新聞優先；英文新聞由 Mac 內建 AI 翻成中文，細節以原文為準。</span><button class="btn" id="wn-stock">看個股細節</button></footer>
+  </section>
+</div>
 <div class="dlg-back" id="stock" hidden>
   <section class="dlg dlg-stock" role="dialog" aria-modal="true" aria-labelledby="st-title">
     <header class="dlg-h"><b id="st-title"></b><button class="dlg-x" data-close aria-label="關閉">×</button></header>
@@ -6606,7 +6620,7 @@ document.querySelectorAll('#legend button[data-layer]').forEach((b) => {
 // ───────────────────────── 自選股 ─────────────────────────
 let watchTab = null, watchPL = (() => { try { const v = localStorage.getItem('watchPL'); return v == null ? !REMOTE : v !== '0'; } catch (e) { return !REMOTE; } })();
 const money = (v, d = 0) => (v < 0 ? '−' : '') + fmt(Math.abs(v), d);
-// 持股大漲大跌時「可能相關」的新聞（Mac 找好的；朋友版要自己在設定裡打開）
+// 持股大漲大跌時「可能相關」的新聞（Mac 找好的；朋友版要自己在設定裡打開）。股名旁邊的「News」按鈕點了才看
 const whyFor = (kind, id) => { const r = S.why?.data?.[kind]?.[id]; return Array.isArray(r) && r.length ? r : null; };
 let whyTs = 0;
 function renderWhy() { const t = S.why?.ts || 0; if (t === whyTs) return; whyTs = t; htmlCache.delete($('watch')); renderWatch(); }
@@ -6655,9 +6669,9 @@ function renderWatch() {
       } else { noCost++; pl = '<span class="w-pl flat" data-tip="這檔沒有填均價，無法計算損益">—</span>'; }
     }
     const why = whyFor(watchTab, id);
-    return { g: gain, html: `<div class="w" data-id="${esc(id)}"><span class="w-name">${esc(name)}<small>${esc(id)}</small></span>
+    return { g: gain, html: `<div class="w" data-id="${esc(id)}"><span class="w-name"><span class="w-nm">${esc(name)}<small>${esc(id)}</small></span>${why ? `<button class="w-news" data-news="${esc(id)}" aria-label="${esc(name)} 的相關新聞（${why.length} 則）" title="有 ${why.length} 則可能相關的新聞，點一下看">News</button>` : ''}</span>
       <span class="w-px">${ext ? `<i class="w-ext" style="font-style:normal">${ext.type === 'PRE_MKT' ? '盤前' : '盤後'}</i>` : ''}<span data-k="w${esc(id)}" data-v="${px}" data-d="${d}" data-s="">${fmt(px, d)}</span></span>
-      <span class="w-day ${dirCls(dayPct)}">${arrow(dayPct)} ${fmt(Math.abs(dayPct ?? 0), 2)}%</span>${watchPL ? pl : ''}</div>${why ? `<div class="w-why" data-id="${esc(id)}" title="${esc(why[0].title)}｜${esc(why[0].source || '')}">可能相關：${esc(why[0].title)}</div>` : ''}` };
+      <span class="w-day ${dirCls(dayPct)}">${arrow(dayPct)} ${fmt(Math.abs(dayPct ?? 0), 2)}%</span>${watchPL ? pl : ''}</div>` };
   });
   const box = $('watch');
   box.classList.toggle('pl', watchPL);
@@ -8169,7 +8183,7 @@ function openStock(kind, id) {
       row('佔總資產', share == null ? '—' : fmt(share, 1) + '%') + '</div>';
   } else h += '<div class="st-note">沒有填股數，只看漲跌。按「編輯持股」可以加上股數和均價。</div>';
   const why = whyFor(kind, id);
-  if (why) h += '<div class="st-sub">可能相關的新聞<small>（標題提到這檔股票，不一定是漲跌的原因）</small></div><div class="st-why">' + why.map((n) => `<a href="${esc(safeUrl(n.link))}" target="_blank" rel="noopener">${esc(n.title)}<small>${esc(n.source || '')}${n.ts ? '　' + esc(ago(n.ts)) : ''}</small></a>`).join('') + '</div>';
+  if (why) h += '<div class="st-sub">可能相關的新聞<small>（標題提到這檔股票，不一定是漲跌的原因）</small></div>' + whyList(why);
   const tg = (CFG.alertCfg?.targets || []).filter((t) => t.m === kind && t.c === id);
   if (tg.length) h += `<div class="st-note">到價提醒：${tg.map((t) => [t.above ? '高於 ' + fmt(t.above, d) : '', t.below ? '低於 ' + fmt(t.below, d) : ''].filter(Boolean).join('、')).join('；')}</div>`;
   $('st-title').textContent = `${it.name || q.name || id}　${id}`;
@@ -8177,8 +8191,25 @@ function openStock(kind, id) {
   $('st-link').href = isTW ? `https://tw.stock.yahoo.com/quote/${encodeURIComponent(id)}` : `https://finance.yahoo.com/quote/${encodeURIComponent(id)}`;
   openDialog('stock');
 }
+// 持股配新聞：清單（翻譯過的標原文）
+function whyList(why) {
+  return '<div class="st-why">' + why.map((n) => `<a href="${esc(safeUrl(n.link))}" target="_blank" rel="noopener">${esc(n.title)}${n.tr ? `<em class="st-orig">原文：${esc(n.orig || '')}</em>` : ''}<small>${esc(n.source || '')}${n.ts ? '　' + esc(ago(n.ts)) : ''}${n.tr ? '　・英文新聞，由 Mac 內建 AI 翻譯' : ''}</small></a>`).join('') + '</div>';
+}
+let wnewsSel = null;
+function openWhyNews(kind, id) {
+  const why = whyFor(kind, id); if (!why) return;
+  const list = (CFG.watchlist?.[kind] || []), it = list.find((x) => String((kind === 'tw' ? x.code : x.sym) || '').toUpperCase() === id) || {};
+  const q = (kind === 'tw' ? S.tw?.data?.w : S.us?.data?.w)?.[id] || {};
+  wnewsSel = { kind, id };
+  $('wn-title').textContent = `${it.name || q.name || id}　相關新聞`;
+  $('wn-body').innerHTML = whyList(why);
+  openDialog('wnews');
+}
+$('wn-stock').addEventListener('click', () => { const s = wnewsSel; closeDialog($('wnews')); if (s) openStock(s.kind, s.id); });
 $('watch').addEventListener('click', (e) => {
-  const w = e.target.closest('.w[data-id], .w-why[data-id]'); if (!w || e.target.closest('button')) return;      // 點「可能相關」那行也打開個股細節
+  const nb = e.target.closest('.w-news[data-news]');
+  if (nb) { e.stopPropagation(); openWhyNews(watchTab, nb.dataset.news); return; }
+  const w = e.target.closest('.w[data-id]'); if (!w || e.target.closest('button')) return;
   openStock(watchTab, w.dataset.id);
 });
 $('st-edit').addEventListener('click', () => { const k = stockSel?.kind; closeDialog($('stock')); openHold(k); });
