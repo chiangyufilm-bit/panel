@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-LB11vfqlqHerAxstScWAUHu0TQweMRpvEnxSG+GSkQM=' 'sha256-SMBUF+pnK3MVvRYfjPZW5IoKv7tCfbPm6xqItlmjtvU=' 'sha256-V011xx57PNFB6fyLLo8Rb+GEmSfl1X8OaT7YKXR/JEQ='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://geocoding-api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-cHKddfRRd+QC4CojJD8/S5QdNmaX+HNxnPaXDtDYSMc=' 'sha256-SMBUF+pnK3MVvRYfjPZW5IoKv7tCfbPm6xqItlmjtvU=' 'sha256-jDHVoDlh7skiJXnOHKM3NX4UP/hMEN3keWEdNkg4EI0='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://geocoding-api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#06090d">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1797,6 +1797,11 @@ html.standalone .stale-mark { margin-left: 8px; font-size: 10.5px; font-weight: 
 .spl .lb-you { color: #ffd98a; font-weight: 600; }
 .stage.sp-compact .spnote.far { display: block; }       /* 手機：走到太陽系外面之後，比例尺（畫面寬約多少光年）也要看得到 */
 
+/* 地球上的手指動作一律由程式處理（滑動、雙指縮放），不讓瀏覽器拿去捲頁面或縮放整頁（三個版本都一樣；滑鼠不受影響）。
+   以前只有「版面是手機」（視窗寬 < 640）才有這一條；手機橫著拿、大螢幕手機、摺疊機、平板的版面不是手機版面，瀏覽器會在滑動到一半時把手勢搶走（地球卡一下就不動了，也沒辦法順順轉一整圈） */
+#globe { touch-action: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+.al-h.al-go { cursor: pointer; } .al-h.al-go:hover { background: rgba(242,179,107,.08); } .al-h.al-go b::after { content: " 看新聞 ›"; font-weight: 400; font-size: 11px; color: #f2b36b; }
+
 </style>
 </head>
 <body>
@@ -2237,7 +2242,7 @@ html.standalone .stale-mark { margin-left: 8px; font-size: 10.5px; font-weight: 
   </section>
 </div>
 
-<script>window.WP_BOOT={"relay": "https://script.google.com/macros/s/AKfycbzLugRpEa9xaAhAai0sY0j411v24-2Lo_toQYWmwdejUd1V7RCBCQRhfgqPhs8PqtKf/exec", "site": true, "build": "c2a1b80eb5"};</script>
+<script>window.WP_BOOT={"relay": "https://script.google.com/macros/s/AKfycbzLugRpEa9xaAhAai0sY0j411v24-2Lo_toQYWmwdejUd1V7RCBCQRhfgqPhs8PqtKf/exec", "site": true, "build": "d4061d50ad"};</script>
 <script>
 // 全球面板・手機獨立版：把面板原本向「你的 Mac」要資料的地方，改成在這支手機上完成。
 //   個人資料（持股、均價、買賣紀錄、設定）只存在這支手機的瀏覽器裡（localStorage），不會送出去。
@@ -5156,7 +5161,7 @@ class Space {
   }
   // 交還給地球畫面：這時鏡頭已經擺成舞台 A 的樣子
   handOut(extra = 1) {
-    if (!this.active) return; const g = this.globe, st = g.stage;
+    if (!this.active) return; const g = this.globe, st = g.stage; this.spin = null;
     this.active = false; this.leaving = false; this.fl = this.zl = null; st.classList.remove('space-on'); g.labelsEl.style.display = ''; this._giveStars(); if (g.stars) { g.stars.material.opacity = 0.5; g.stars2.material.opacity = 0.8; }
     this.lbBox.style.display = 'none'; this.cardEl.hidden = true; this.noteEl.style.display = 'none'; if (this.gx && this.gx.built) this.gx.show(false); this.leftAt = performance.now(); clearTimeout(this.relTimer); this.relTimer = setTimeout(() => this.releaseTex(), 5 * 60 * 1000);
     g.fly = null; g.zoom = clamp(ZMIN * Math.max(1, extra), ZMIN, 9); g.resize(); g.holdUntil = performance.now() + 4000; g._kick && g._kick();
@@ -5188,7 +5193,7 @@ class Space {
   _zoomTo(d1, ease, dur, done) { this.fl = null; this.zl = { t0: performance.now(), dur, l0: Math.log(this.dist), l1: Math.log(d1), ease, done }; this.globe._kick && this.globe._kick(); }
   // 飛到另一個狀態（換目標）：位置、角度、距離一起平順過去
   _flyTo(st1, done, straight) {
-    this.zl = null; const p0 = this._curPose || this._poseOf(this), d0 = this.dist, p1 = this._poseOf(st1), ld = Math.abs(Math.log(st1.dist / d0)), far = p0.tgt.distanceTo(p1.tgt);
+    this.zl = null; this.spin = null; const p0 = this._curPose || this._poseOf(this), d0 = this.dist, p1 = this._poseOf(st1), ld = Math.abs(Math.log(st1.dist / d0)), far = p0.tgt.distanceTo(p1.tgt);
     this.fl = { t0: performance.now(), dur: clamp(1400 + ld * 260 + far * 8, 1500, 2600), p0, d0, st1, done, arc: straight ? 0 : Math.min(1.4, 0.2 + far / Math.max(d0, st1.dist) * 0.3) };
     this.globe._kick && this.globe._kick();
   }
@@ -5259,6 +5264,7 @@ class Space {
         const z = this.zl, k = clamp((now - z.t0) / z.dur, 0, 1); this.dist = Math.exp(z.l0 + (z.l1 - z.l0) * ez(k, z.ease));
         if (k >= 1) { this.zl = null; this.holdUntil = now + 6000; if (z.done) { z.done(); if (!this.active) return; } }
       }
+      if (this.spin && !this.dragging) { const v = this.spin; this._rot(v.vx * dt, v.vy * dt); const f = Math.exp(-dt * 3.2); v.vx *= f; v.vy *= f; g.activeUntil = now + 300; if (Math.hypot(v.vx, v.vy) < 30) this.spin = null; }       // 放手後的慣性
       if (this._eOf(this) >= 1 && !this.zl && now > this.holdUntil && !this.dragging) { _q.setFromAxisAngle(_ax.set(0, 1, 0), dt * TAU / 240); this.qUser.premultiply(_q); }      // 看全景、沒人碰：極慢地轉
       P = this._poseOf(this);
     }
@@ -5372,6 +5378,25 @@ class Space {
     if (this.anchor === 'earth' && nd < vd.min * 0.92 && f < 1) return this.exit();
     this.dist = clamp(nd, vd.min, this._maxD());
   }
+  // 拖曳轉動一步（dx、dy 是螢幕像素）。手指拖曳與放手後的慣性都用這一個
+  _rot(dx, dy) {
+    // 拖 1 像素、表面走 1 像素：用四元數繞螢幕的 X、Y 軸轉（不鎖南北極）。看全景時用固定的手感
+    // 近看：拖 1 像素、星球表面走 1 像素；拉遠後改成「拖過半個畫面大約轉 90 度」。兩者用同一條式子隨距離連續變化，
+    // 不會在「快到全景」那一段突然變得很靈敏（以前那裡一碰就轉一大圈，看起來像跳了一下）
+    const o = this.bodies[this.anchor], r = o ? o.b.r : 1.2, tan = Math.tan(FOV * D2R / 2), ppu = (this.H / 2) / (tan * this.dist);       // 1 單位長度＝幾個像素
+    const k = 1 / (ppu * Math.max(r, this.dist * 0.18));
+    const up = _ax.set(0, 1, 0).applyQuaternion(this.q), q1 = new THREE.Quaternion().setFromAxisAngle(up, -dx * k * 0.9);
+    const rt = new THREE.Vector3(1, 0, 0).applyQuaternion(this.q), q2 = new THREE.Quaternion().setFromAxisAngle(rt, -dy * k * 0.9);
+    if (this.rwOn) { const ri = this.rw.clone().invert(); this.qUser.premultiply(this.rw).premultiply(q1).premultiply(q2).premultiply(ri); } else this.qUser.premultiply(q1).premultiply(q2);       // 看銀河時視角整個轉過去了，拖曳的旋轉要在轉過去的座標裡算
+    this.qUser.normalize(); this.holdUntil = performance.now() + 6000;
+  }
+  // 甩一下放手：順著慣性繼續轉、慢慢停下（跟地球畫面一樣的手感）；手指停住再放開就不甩
+  _flick(d) {
+    const h = d && d.hist, now = performance.now(); this.spin = null; if (!h || h.length < 2) return;
+    const a = h[0], b = h[h.length - 1], dt = b[0] - a[0]; if (dt < 8 || now - b[0] > 70) return;
+    let vx = (b[1] - a[1]) / dt * 1000, vy = (b[2] - a[2]) / dt * 1000; const sp = Math.hypot(vx, vy); if (sp < 260) return;
+    if (sp > 3200) { vx *= 3200 / sp; vy *= 3200 / sp; } this.spin = { vx, vy }; this.globe.activeUntil = now + 400;
+  }
   _bindEvents() {
     const g = this.globe, c = g.canvas, pts = new Map(); let drag = null, pinch = null, lastTap = 0;
     const stop = (e) => { e.stopImmediatePropagation(); };
@@ -5380,7 +5405,7 @@ class Space {
       if (!(pts.size || (this.active && !(g._touches && g._touches.size)))) return;      // 這個手勢是誰開始的就歸誰管到放手為止（中途換舞台也一樣）
       stop(e); g._kick && g._kick();
       pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); try { c.setPointerCapture(e.pointerId); } catch (_) {}
-      if (pts.size === 1) { drag = { x: e.clientX, y: e.clientY, moved: 0 }; if (this.active) { this.dragging = true; c.classList.add('dragging'); } }
+      if (pts.size === 1) { this.spin = null; drag = { x: e.clientX, y: e.clientY, moved: 0 }; if (this.active) { this.dragging = true; c.classList.add('dragging'); } }
       else if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch = { d: Math.hypot(a.x - b.x, a.y - b.y) }; if (drag) { drag.moved = 99; drag.pinched = true; } }       // 這次手勢是雙指縮放：放開一指後剩下那指不拿來轉（兩指很少同時離開，不然每次縮放完都會被帶著轉一下）
     }, true);
     c.addEventListener('pointermove', (e) => {
@@ -5393,20 +5418,13 @@ class Space {
       if (!drag || !this.active || pinch || drag.pinched) return; const dx = e.clientX - drag.x, dy = e.clientY - drag.y; drag.x = e.clientX; drag.y = e.clientY; drag.moved += Math.abs(dx) + Math.abs(dy);
       if (drag.moved < 5) return;
       if (this.fl) { const f0 = this.fl; this.anchor = f0.st1.anchor; this.nearOK = f0.st1.nearOK; this.qUser = this.q0.clone(); this.fl = null; } this.zl = null;
-      // 拖 1 像素、表面走 1 像素：用四元數繞螢幕的 X、Y 軸轉（不鎖南北極）。看全景時用固定的手感
-      // 近看：拖 1 像素、星球表面走 1 像素；拉遠後改成「拖過半個畫面大約轉 90 度」。兩者用同一條式子隨距離連續變化，
-      // 不會在「快到全景」那一段突然變得很靈敏（以前那裡一碰就轉一大圈，看起來像跳了一下）
-      const o = this.bodies[this.anchor], r = o ? o.b.r : 1.2, tan = Math.tan(FOV * D2R / 2), ppu = (this.H / 2) / (tan * this.dist);       // 1 單位長度＝幾個像素
-      const k = 1 / (ppu * Math.max(r, this.dist * 0.18));
-      const up = _ax.set(0, 1, 0).applyQuaternion(this.q), q1 = new THREE.Quaternion().setFromAxisAngle(up, -dx * k * 0.9);
-      const rt = new THREE.Vector3(1, 0, 0).applyQuaternion(this.q), q2 = new THREE.Quaternion().setFromAxisAngle(rt, -dy * k * 0.9);
-      if (this.rwOn) { const ri = this.rw.clone().invert(); this.qUser.premultiply(this.rw).premultiply(q1).premultiply(q2).premultiply(ri); } else this.qUser.premultiply(q1).premultiply(q2);       // 看銀河時視角整個轉過去了，拖曳的旋轉要在轉過去的座標裡算
-      this.qUser.normalize(); this.holdUntil = performance.now() + 6000;
+      this._rot(dx, dy); { const h = drag.hist || (drag.hist = []), t = performance.now(); h.push([t, e.clientX, e.clientY]); while (h.length > 2 && t - h[0][0] > 120) h.shift(); }       // 記下最後 0.12 秒的軌跡，放手時算甩出去的速度
     }, true);
     const up = (e) => {
       if (!mine(e)) return; stop(e); const wasDrag = drag; pts.delete(e.pointerId);
       if (pts.size === 1) pinch = null;
       if (pts.size === 0) { pinch = null; this.dragging = false; c.classList.remove('dragging'); drag = null;
+        if (this.active && wasDrag && !wasDrag.pinched && wasDrag.moved >= 8) this._flick(wasDrag);
         if (this.active && wasDrag && wasDrag.moved < 8 && e.type === 'pointerup') {
           const id = this.pickBody(e.clientX, e.clientY), now = performance.now();
           if (id) { if (id === 'earth' && this.focus === 'earth' && now - lastTap < 450) this.exit(); else if (id !== this.focus) this.goto(id); lastTap = now; }
@@ -5414,7 +5432,7 @@ class Space {
         } }
     };
     c.addEventListener('pointerup', up, true); c.addEventListener('pointercancel', up, true);
-    c.addEventListener('wheel', (e) => { if (!this.active) return; stop(e); e.preventDefault(); this.zoomBy(Math.exp(wheelStep(e)), e.clientX, e.clientY); }, { capture: true, passive: false });
+    c.addEventListener('wheel', (e) => { if (!this.active) return; stop(e); e.preventDefault(); this.globe.activeUntil = performance.now() + 1200; this.globe._wheel(e); }, { capture: true, passive: false });       // 跟地球畫面同一套滾輪（滑鼠一格會分幾張畫面走完）
     // 地球畫面（舞台 A）：點到遠方的小月亮 → 交棒
     c.addEventListener('click', (e) => { if (this.active) return; const m = g.moonA; if (m && m.hit(e.clientX, e.clientY)) { stop(e); this.enter('moon'); } }, true);
   }
@@ -5977,6 +5995,7 @@ class Globe {
   // ───────── 視角 ─────────
   // opts.exact：把該點放在正中央；opts.zoom：同時縮放到指定倍率
   flyTo(lat, lon, hold = 9000, opts = {}) {
+    this.inertia = null;
     const dLon = ((lon - this.viewLon + 540) % 360) - 180;
     const z1 = opts.zoom || this.zoom;
     this.fly = { t0: performance.now(), dur: opts.zoom && Math.abs(Math.log(z1 / this.zoom)) > 0.5 ? 2200 : 1400,
@@ -6025,6 +6044,24 @@ class Globe {
     return c.dot(p) > 0.45;
   }
 
+  // 甩一下放手：地球順著慣性繼續轉、慢慢停下（以前一放手就立刻停，要轉一圈得來回滑好幾次）。手指或滑鼠停住再放開就不甩。三個版本都一樣
+  _flick(d) {
+    const h = d.hist, now = performance.now(); this.inertia = null; if (!h || h.length < 2) return;
+    const a = h[0], b = h[h.length - 1], dt = b[0] - a[0]; if (dt < 8 || now - b[0] > 70) return;              // 手指停住了再放開：不甩
+    let vx = (b[1] - a[1]) / dt * 1000, vy = (b[2] - a[2]) / dt * 1000; const sp = Math.hypot(vx, vy);
+    if (sp < 260) return; const cap = 3200; if (sp > cap) { vx *= cap / sp; vy *= cap / sp; }
+    this.inertia = { vx, vy }; this.activeUntil = now + 400;
+  }
+  _inertiaStep(now, dt) {
+    const v = this.inertia; if (!v || !this.qFree || this.dragging) { if (this.dragging) this.inertia = null; return; }
+    const k = 1 / Math.max(120, this.ppu || 300);
+    _qa.setFromAxisAngle(_AX_Y, v.vx * dt * k); _qb.setFromAxisAngle(_AX_X, v.vy * dt * k); this.qFree.premultiply(_qa.multiply(_qb)).normalize();
+    this.lonAcc -= v.vx * dt * k / D2R; this._syncView();
+    const f = Math.exp(-dt * 3.2); v.vx *= f; v.vy *= f;
+    this.holdUntil = Math.max(this.holdUntil, now + 6000); this.activeUntil = now + 300;
+    if (Math.hypot(v.vx, v.vy) < 30) this.inertia = null;
+  }
+
   _events() {
     const c = this.canvas; let drag = null;
     const touches = new Map(); let pinch = null;          // 手機：兩指縮放
@@ -6058,7 +6095,7 @@ class Globe {
         }
       }
       drag = { x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY, t: performance.now(), moved: false };
-      this.dragging = true; this.fly = null;
+      this.dragging = true; this.fly = null; this.inertia = null;
       this.settleReq = false; this.settle = null;         // 手一按下就停止轉正（保留目前的角度）；也清掉「飛行時順便轉正」的旗標，不然它會留到下一次放手才發作
       try { c.setPointerCapture(e.pointerId); } catch (_) { /* 指標已經不在了（合成事件、或手指剛好離開）：不影響拖曳 */ } c.classList.add('dragging');
     });
@@ -6083,6 +6120,7 @@ class Globe {
       this.lonAcc -= (e.clientX - drag.x) * k / D2R;          // 星空跟著橫向拖動走
       this._syncView();
       drag.x = e.clientX; drag.y = e.clientY;
+      { const h = drag.hist || (drag.hist = []), t = performance.now(); h.push([t, e.clientX, e.clientY]); while (h.length > 2 && t - h[0][0] > 120) h.shift(); }       // 記下最後 0.12 秒的軌跡，放手時算甩出去的速度
       this.holdUntil = Math.max(this.holdUntil, performance.now() + 6000);
     });
     c.addEventListener('pointerup', (e) => {
@@ -6097,16 +6135,25 @@ class Globe {
         drag = null; this.dragging = false; c.classList.remove('dragging'); return;
       }
       const d = drag; drag = null; this.dragging = false; c.classList.remove('dragging');
+      if (d && d.moved && !this.space.active) this._flick(d);
       if (d && !d.moved && performance.now() - d.t < 500 && !this.space.active) {
         const plane = this.onPlane && !e.altKey ? this.traffic.pickPlane(e.clientX, e.clientY) : null;     // 點到飛機優先；按住 Option 則跳過
         if (plane) this.onPlane(plane);
         else if (this.onPick) { const hit = this.pick(e.clientX, e.clientY); if (hit) this.onPick(hit); }
       }
     });
-    c.addEventListener('pointercancel', (e) => { touches.delete(e.pointerId); pinch = null; drag = null; this.dragging = false; c.classList.remove('dragging'); });
+    c.addEventListener('pointercancel', (e) => { touches.delete(e.pointerId); pinch = null; if (drag && drag.moved && !this.space.active) this._flick(drag); drag = null; this.dragging = false; c.classList.remove('dragging'); });
+    // 滾輪：觸控板本來就是一連串小步，直接照做；滑鼠滾輪一格是一大步，分到接下來幾張畫面慢慢走完（大約 0.1 秒），不會一格一格地跳。太空舞台的滾輪也走這裡
+    this._wheel = (e) => {
+      const L = wheelStep(e), notch = e.deltaMode === 1 || (!e.ctrlKey && Math.abs(e.wheelDeltaY || 0) >= 120 && e.wheelDeltaY % 120 === 0);
+      if (!notch) { this.zoomStep(Math.exp(-L), e.clientX, e.clientY); return; }
+      const q = this._wq, keep = q && Math.sign(q.left) === Math.sign(L) ? q.left : 0, now0 = L * 0.4;
+      this._wq = { left: keep + L - now0, x: e.clientX, y: e.clientY }; this.zoomStep(Math.exp(-now0), e.clientX, e.clientY);
+      this.activeUntil = performance.now() + 400; this._kick && this._kick();
+    };
     c.addEventListener('wheel', (e) => {
       e.preventDefault(); wake();
-      zoomTo(this.zoom * Math.exp(-wheelStep(e)));
+      this._wheel(e);
     }, { passive: false });
     // Mac 觸控板「捏合」（Safari／WebKit 的手勢事件）：每一步看「這次比上次放大多少」，跟雙指一樣走 zoomStep
     let gScale = 1;
@@ -6148,7 +6195,11 @@ class Globe {
   _tick(now) {
     const dt = Math.min(0.1, (now - this.last) / 1000); this.last = now;
     if (PERF.includes('log')) { const P = window.__perf || (window.__perf = { n: 0, over: 0, ms: 0, gaps: 0, t0: now }); P.n++; if (dt > 0.0267) P.over++; P._t = performance.now(); }
-    if (this.space.active) { this.space.tick(now, dt); this.frame++; if (this.onFrame) this.onFrame(now); return; }       // 太空舞台：整個畫面交給它
+    if (this._wq && this._wq.left) {                         // 滑鼠滾輪一格的剩下部分：每張畫面走一點
+      const q = this._wq, a = Math.abs(q.left) < 0.003 ? q.left : q.left * Math.min(1, dt * 16); q.left -= a; if (!q.left) this._wq = null;
+      this.activeUntil = Math.max(this.activeUntil, now + 200); this.zoomStep(Math.exp(-a), q.x, q.y);
+    }
+    if (this.space.active) { this.inertia = null; this.space.tick(now, dt); this.frame++; if (this.onFrame) this.onFrame(now); return; }       // 太空舞台：整個畫面交給它
     if (this.fly) {
       const f = this.fly, k = clamp((now - f.t0) / f.dur, 0, 1), e = f.ease === 'in' ? k * k : f.ease === 'out' ? 1 - Math.pow(1 - k, 3) : (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
       this.viewLon = f.lon0 + f.dLon * e; this.viewLat = f.lat0 + (f.lat1 - f.lat0) * e;
@@ -6158,6 +6209,7 @@ class Globe {
       this.viewLon -= 1.0 * dt / Math.pow(Math.max(this.zoom, 0.6), 2);   // 每 6 分鐘轉一圈，方向與地球自轉一致；放大時放慢（縮得很小時不要加速：除以 zoom² 會爆衝）
       if (this.zoom < 1.4) this.viewLat += (18 - this.viewLat) * Math.min(1, dt * 0.25);
     }
+    if (this.inertia) this._inertiaStep(now, dt);
     this.viewLon = ((this.viewLon + 540) % 360) - 180;
     const qE = this._eulerQ(this.viewLat, this.viewLon);
     if (this.qFree && !this.dragging) {
@@ -8076,23 +8128,29 @@ $('br-re').addEventListener('click', async () => {
 
 // ───────────────────────── 突然變熱門：國際新聞上方的「正在升溫」 ─────────────────────────
 // Mac 每 10 分鐘比一次：某個詞最近 2 小時的新聞，比過去 7 天平均多很多、而且不只一家在報。點一下只看相關的新聞，再點一次取消。
-let surgeTs = -1, surgePick = null;
+let surgeTs = -1, surgePick = null, surgePin = false;      // surgePin：這個話題是從「新聞升溫」提醒點進來的（不在升溫清單裡也先留著）
 const STRAIT_TERMS = ['台海', '共機', '共艦', '軍演', '封鎖', '解放軍'];
 function renderSurge() {
   const st = S.surge, box = $('surge');
-  if (!st?.data) { box.hidden = true; return; }
+  if (!st?.data) { if (!surgePin) box.hidden = true; return; }
   if (st.ts === surgeTs) return;
   surgeTs = st.ts;
-  const d = st.data, terms = d.terms || [];
-  if (surgePick && !terms.some((t) => t.term === surgePick)) { surgePick = null; applySurgeFilter(); }
+  const terms = st.data.terms || [];
+  if (surgePick && !surgePin && !terms.some((t) => t.term === surgePick)) { surgePick = null; applySurgeFilter(); }
   $('strait-hot').hidden = !terms.some((t) => (t.words || [t.term]).some((w) => STRAIT_TERMS.includes(w)));
-  if (!d.ready || d.off) { box.hidden = true; box.innerHTML = ''; return; }      // 學習中（前 24 小時）不佔位置；狀態寫在早報視窗裡
-  if (!terms.length) { box.hidden = true; box.innerHTML = ''; return; }
-  box.innerHTML = '<span class="surge-h">正在升溫</span>' + terms.slice(0, 3).map((t) => `<button class="surge-chip${surgePick === t.term ? ' on' : ''}" data-term="${esc(t.term)}" title="最近 2 小時有 ${t.n} 則相關新聞${isStandalone() ? '' : '（含你訂的主題新聞）'}，平常${t.base < 1 ? '不到 1 則' : '約 ' + Math.round(t.base) + ' 則'}・${t.sources} 家媒體在報。點一下只看國際新聞裡相關的">${esc(t.term)}<small>×${Math.max(1, Math.round(t.n / Math.max(t.base, 1)))}</small></button>`).join('');
+  drawSurge();
+}
+// 畫「正在升溫」那一排；從提醒點進來的話題（surgePin）不在這一排裡時，多放一顆標籤，點它取消
+function drawSurge() {
+  const box = $('surge'), d = S.surge?.data || {}, terms = d.ready && !d.off ? (d.terms || []) : [];      // 學習中（前 24 小時）不佔位置；狀態寫在早報視窗裡
+  const shown = terms.slice(0, 3), extra = surgePick && !shown.some((t) => t.term === surgePick);
+  if (!shown.length && !extra) { box.hidden = true; box.innerHTML = ''; return; }
+  box.innerHTML = '<span class="surge-h">正在升溫</span>' + shown.map((t) => `<button class="surge-chip${surgePick === t.term ? ' on' : ''}" data-term="${esc(t.term)}" title="最近 2 小時有 ${t.n} 則相關新聞${isStandalone() ? '' : '（含你訂的主題新聞）'}，平常${t.base < 1 ? '不到 1 則' : '約 ' + Math.round(t.base) + ' 則'}・${t.sources} 家媒體在報。點一下只看國際新聞裡相關的">${esc(t.term)}<small>×${Math.max(1, Math.round(t.n / Math.max(t.base, 1)))}</small></button>`).join('')
+    + (extra ? `<button class="surge-chip on" data-term="${esc(surgePick)}" title="從提醒點進來的話題。再點一次取消，回到全部新聞">${esc(surgePick)}<small>✕</small></button>` : '');
   box.hidden = false;
 }
 function applySurgeFilter() {
-  const t = surgePick && (S.surge?.data?.terms || []).find((x) => x.term === surgePick);
+  const t = surgePick && ((S.surge?.data?.terms || []).find((x) => x.term === surgePick) || { term: surgePick, ids: [] });       // 提醒點進來、已經不在升溫清單裡的話題：用標題比對
   const ids = new Set(t ? t.ids : []);
   document.querySelectorAll('#news .n').forEach((row) => {
     const n = NEWS[+row.dataset.i];
@@ -8104,8 +8162,8 @@ const noHover = () => { try { return matchMedia('(hover: none)').matches; } catc
 $('cii-body').addEventListener('click', (e) => { const part = e.target.closest('.cii-part[title]'); if (part && noHover()) toast(part.title); });      // 不穩定指數每一項的解釋：觸控裝置點一下顯示
 $('surge').addEventListener('click', (e) => {
   const b = e.target.closest('.surge-chip'); if (!b) return;
-  surgePick = surgePick === b.dataset.term ? null : b.dataset.term;
-  applySurgeFilter();
+  surgePick = surgePick === b.dataset.term ? null : b.dataset.term; surgePin = false;
+  applySurgeFilter(); drawSurge();
   if (noHover() && surgePick) toast(String(b.title || '').replace(/。?點一下只看.*$/, ''));      // 觸控裝置看不到 title：點一下時用提示條說明「幾則、幾家在報」
 });
 $('news').addEventListener('click', (e) => {
@@ -9924,11 +9982,22 @@ function onAlerts(a) {
   alertSeen = Math.max(alertSeen, a.seq || 0);
   $('bell-badge').hidden = !alertUnread; $('bell-badge').textContent = alertUnread > 9 ? '9+' : alertUnread || '';
 }
+// 點「新聞升溫」的提醒：直接把國際新聞篩成那個話題，帶你看過去（以前只會打開提醒設定視窗，看不到是哪些新聞）
+const surgeTermOf = (x) => String(x.title || '').replace(/^新聞升溫[：:]\s*/, '').trim();
+function showSurgeNews(term) {
+  if (!term) return openAlerts();
+  surgePick = term; surgePin = true; applySurgeFilter(); drawSurge();
+  if (!$('alerts').hidden) closeDialog($('alerts'));
+  const n = [...document.querySelectorAll('#news .n')].filter((r) => !r.classList.contains('surge-off')).length;
+  if (!n) { surgePick = null; surgePin = false; applySurgeFilter(); drawSurge(); guideTo(() => $('p-news')); toast(`「${term}」相關的新聞已經不在目前的國際新聞清單裡了`); return; }       // 不要留下一個空的新聞清單
+  guideTo(() => $('surge').hidden ? null : $('surge'), () => $('p-news'));
+  toast(`只看「${term}」相關的 ${n} 則國際新聞；點橘色標籤可以取消`);
+}
 function banner(x) {
   const b = document.createElement('div');
   b.className = 'banner k-' + x.kind;
   b.innerHTML = `<i>${ALERT_ICON[x.kind] || '•'}</i><div><b>${esc(x.title)}</b><span>${esc(x.body)}</span></div>`;
-  b.addEventListener('click', () => { b.remove(); openAlerts(); });
+  b.addEventListener('click', () => { b.remove(); if (x.kind === 'surge') showSurgeNews(surgeTermOf(x)); else openAlerts(); });
   $('banners').prepend(b);
   while ($('banners').children.length > 3) $('banners').lastChild.remove();
   void b.offsetWidth; b.classList.add('on');
@@ -9952,7 +10021,7 @@ function openAlerts() {
   $('al-rules').classList.toggle('off', !$('al-on').checked);
   $('al-tgts').innerHTML = (c.targets || []).map(tgtRow).join('') || '<div class="dim al-empty">還沒有。可以設定「台積電高於 2500 提醒我」這類條件。</div>';
   const when = (t) => new Date(t * 1000).toLocaleString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false });
-  $('al-hist').innerHTML = ALERT_HIST.length ? ALERT_HIST.slice(0, 30).map((x) => `<div class="al-h"><i>${ALERT_ICON[x.kind] || '•'}</i><div><b>${esc(x.title)}</b><span>${esc(x.body)}</span></div><time>${when(x.ts)}</time></div>`).join('')
+  $('al-hist').innerHTML = ALERT_HIST.length ? ALERT_HIST.slice(0, 30).map((x) => `<div class="al-h${x.kind === 'surge' ? ' al-go' : ''}"${x.kind === 'surge' ? ` data-term="${esc(surgeTermOf(x))}" title="點一下看是哪些新聞"` : ''}><i>${ALERT_ICON[x.kind] || '•'}</i><div><b>${esc(x.title)}</b><span>${esc(x.body)}</span></div><time>${when(x.ts)}</time></div>`).join('')
     : '<div class="dim al-empty">目前沒有提醒。</div>';
   $('al-msg').className = 'dlg-note';
   $('al-msg').textContent = REMOTE ? '提醒的設定存在你的 Mac 上；Mac 開著全球面板時會發 macOS 通知，手機開著面板時會顯示在畫面上。'
@@ -9962,6 +10031,7 @@ function openAlerts() {
   pushDraw();
 }
 $('btn-bell').addEventListener('click', openAlerts);
+$('al-hist').addEventListener('click', (e) => { const r = e.target.closest('.al-go[data-term]'); if (r) showSurgeNews(r.dataset.term); });      // 提醒紀錄裡的「新聞升溫」：點了看是哪些新聞
 $('al-on').addEventListener('change', () => $('al-rules').classList.toggle('off', !$('al-on').checked));
 $('al-add').addEventListener('click', () => {
   if (!['tw', 'us'].some((m) => (CFG.watchlist?.[m] || []).length)) { $('al-msg').className = 'dlg-note err'; $('al-msg').textContent = '先在「編輯持股」加入股票，才能設定到價提醒。'; return; }
@@ -11329,7 +11399,7 @@ if (QS_TEST && QS.has('wall')) setTimeout(() => $('insp-wall').click(), 9000);
 // 朋友用的手機網頁版：點最上面的標題回到頂端
 document.querySelector('.topbar .brand')?.addEventListener('click', (e) => { if (!document.documentElement.classList.contains('standalone') || !document.body.classList.contains('tall') || e.target.closest('button')) return; (document.scrollingElement || document.documentElement).scrollTop = 0; document.body.scrollTop = 0; });
 // 測試用的內部入口：只有電腦版（QS_TEST）而且網址帶 ?hook=1 才有（tests/*.js 用）。朋友的網頁（WP_BOOT）沒有。
-if (QS_HOOK && QS.has('hook')) window.__app = { S, globe, get CFG() { return CFG; }, renderWatch, drawBriefDlg, renderClocks, applyLayout, setStageMode, setKey, pauseNews, get hlPaused() { return hlPaused; }, partsIn };
+if (QS_HOOK && QS.has('hook')) window.__app = { banner, onAlerts, openAlerts, showSurgeNews, S, globe, get CFG() { return CFG; }, renderWatch, drawBriefDlg, renderClocks, applyLayout, setStageMode, setKey, pauseNews, get hlPaused() { return hlPaused; }, partsIn };
 
 </script>
 </body>
