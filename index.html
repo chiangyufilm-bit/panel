@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-cHKddfRRd+QC4CojJD8/S5QdNmaX+HNxnPaXDtDYSMc=' 'sha256-SMBUF+pnK3MVvRYfjPZW5IoKv7tCfbPm6xqItlmjtvU=' 'sha256-jDHVoDlh7skiJXnOHKM3NX4UP/hMEN3keWEdNkg4EI0='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://geocoding-api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-qqzMhfOZ91qbwW5+6B/CDhiKAxxZaTKZf9onjqI1iOU=' 'sha256-SMBUF+pnK3MVvRYfjPZW5IoKv7tCfbPm6xqItlmjtvU=' 'sha256-5zQVa3GHSODXpKxSjb8UJlxwHVHeF5Tk+EA0E6i0F8o='; style-src 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; font-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com https://api.open-meteo.com https://geocoding-api.open-meteo.com https://air-quality-api.open-meteo.com https://api.wheretheiss.at https://api.adsbdb.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://maps.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#06090d">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1802,6 +1802,66 @@ html.standalone .stale-mark { margin-left: 8px; font-size: 10.5px; font-weight: 
 #globe { touch-action: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
 .al-h.al-go { cursor: pointer; } .al-h.al-go:hover { background: rgba(242,179,107,.08); } .al-h.al-go b::after { content: " 看新聞 ›"; font-weight: 400; font-size: 11px; color: #f2b36b; }
 
+/* ───────── 天文視窗（今晚、天象、發射）與地球上的發射場標記 ───────── */
+.dlg-astro { width: min(560px, 100%); }
+.as-body { padding: 12px 16px 14px; overflow-y: auto; display: grid; gap: 8px; align-content: start; font-size: 12.5px; color: var(--ink-2); -webkit-overflow-scrolling: touch; }
+.as-sum { font-size: 14.5px; line-height: 1.6; color: var(--ink); }
+.as-cloud { font-size: 12px; color: #9fe0b0; background: rgba(80,200,120,.08); border: 1px solid rgba(80,200,120,.25); border-radius: 8px; padding: 6px 10px; }
+.as-cloud.bad { color: #f4c07a; background: rgba(242,179,107,.08); border-color: rgba(242,179,107,.3); }
+.as-skybox { display: grid; place-items: center; padding: 2px 0; }
+.as-skysvg { width: min(100%, 340px); height: auto; display: block; touch-action: pan-y; }
+.as-dir text { font-size: 11px; fill: rgba(190,210,240,.8); } .as-pl { font-size: 10.5px; fill: #f4f7ff; } .as-st { font-size: 9.5px; fill: rgba(220,232,255,.7); }
+.as-slide { display: flex; align-items: center; gap: 8px; font: 11px var(--mono); color: var(--ink-3); } .as-slide input { flex: 1; min-width: 0; accent-color: var(--accent); }
+.as-tl { text-align: center; font-size: 11.5px; color: var(--ink-2); min-height: 16px; }
+.as-note2 { font-size: 10.5px; color: var(--ink-4); line-height: 1.5; }
+.as-sec { margin-top: 6px; padding-top: 8px; border-top: 1px solid var(--line); font-size: 10.5px; letter-spacing: .14em; color: var(--ink-3); }
+.as-row { display: flex; align-items: flex-start; gap: 10px; padding: 5px 0; } .as-row > div { flex: 1; min-width: 0; } .as-row b { color: var(--ink); font-weight: 600; } .as-row small { display: block; font-size: 11.5px; line-height: 1.55; color: var(--ink-3); }
+.as-dot { flex: none; width: 10px; height: 10px; margin-top: 5px; border-radius: 50%; } .as-dim { opacity: .45; }
+.as-go { flex: none; align-self: center; font-size: 11px; color: var(--accent); padding: 3px 8px; border: 1px solid var(--line-2); border-radius: 6px; white-space: nowrap; } .as-go:hover { background: var(--accent-dim); }
+.as-opts { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 11.5px; color: var(--ink-3); } .as-opts label { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
+.as-hero { display: grid; gap: 2px; padding: 10px 12px; border-radius: 10px; background: linear-gradient(135deg, rgba(120,150,255,.14), rgba(255,170,100,.1)); border: 1px solid var(--line-2); }
+.as-hero small { font-size: 10.5px; letter-spacing: .12em; color: var(--ink-3); } .as-hero b { font-size: 15px; color: var(--ink); } .as-hero span { font: 600 13px var(--mono); color: #ffd28a; } .as-hero em { font-style: normal; font-size: 11.5px; color: var(--ink-3); }
+.as-ev { display: grid; grid-template-columns: 92px 1fr auto; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line); align-items: start; } .as-ev time { font: 11.5px var(--mono); color: var(--ink-2); line-height: 1.5; }
+.as-ev b { color: var(--ink); font-weight: 600; } .as-ev small { display: block; font-size: 11.5px; line-height: 1.55; color: var(--ink-3); } .as-ev.no, .as-ev.past { opacity: .5; }
+.as-star { font-size: 11px; color: #f2b36b; letter-spacing: 1px; white-space: nowrap; } .as-star.bad { color: #ff8f86; }
+.as-tag { display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 8px; font-style: normal; font-size: 10px; color: #f2b36b; border: 1px solid rgba(242,179,107,.4); } .as-tag.no { color: var(--ink-3); border-color: var(--line-2); }
+.as-link { font-size: 11.5px; color: var(--accent); text-decoration: none; } .as-orig { color: var(--ink-4); } .as-empty { padding: 24px 8px; text-align: center; color: var(--ink-3); }
+.lg-launch { width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-bottom: 8px solid #ff9a6a; border-radius: 0; background: none; }
+.lb-launch { pointer-events: auto; cursor: pointer; width: 0; height: 0; }
+.lb-launch::before { content: ""; position: absolute; left: -5px; top: -7px; width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-bottom: 10px solid #ff9a6a; filter: drop-shadow(0 0 4px rgba(255,154,106,.9)); }
+.lb-launch i { position: absolute; left: 0; top: 0; width: 22px; height: 22px; border: 1px solid #ff9a6a; border-radius: 50%; transform: translate(-50%,-50%); opacity: 0; pointer-events: none; } .lb-launch i.soon { animation: ping 2.2s ease-out infinite; }
+.lb-launch span { display: none; position: absolute; left: 10px; top: -9px; font-size: 10.5px; color: #ffe0d0; background: rgba(12,16,22,.86); border: 1px solid rgba(255,154,106,.4); border-radius: 5px; padding: 2px 6px; } .lb-launch:hover span { display: block; }
+.grid.m-phone .as-ev { grid-template-columns: 74px 1fr; } .grid.m-phone .as-ev .as-star { grid-column: 2; }
+@media (max-width: 639px) { .dlg-astro { width: 100%; max-height: calc(100vh - 24px); } .as-body { padding: 10px 12px 12px; } .as-ev { grid-template-columns: 74px 1fr; } .as-ev .as-star { grid-column: 2; } .as-go { padding: 6px 10px; } }
+
+/* 穿梭：自動飛行經過每一站時，上方輕輕顯示那一站的名字；飛行中資訊卡先收起，到站才回來 */
+.sp-trip-name { position: absolute; left: 50%; top: 78px; transform: translateX(-50%); z-index: 3; font-size: 15px; letter-spacing: .32em; color: rgba(236,242,250,.95); text-shadow: 0 0 6px #000, 0 0 14px rgba(0,0,0,.9); opacity: 0; transition: opacity .3s; pointer-events: none; white-space: nowrap; }
+.sp-trip-name.on { opacity: 1; }
+.stage.sp-compact .sp-trip-name { top: 54px; font-size: 13px; letter-spacing: .24em; }
+.stage:not(.space-on) .sp-trip-name { display: none; }
+.stage.sp-trip .spcard { opacity: 0 !important; pointer-events: none !important; transition: opacity .25s; }
+
+/* 發射場小卡、選到的發射場標記 */
+.lp-card { position: absolute; left: 16px; bottom: 138px; z-index: 6; width: min(310px, calc(100% - 32px)); display: grid; gap: 4px; padding: 12px 14px; border-radius: 12px; background: linear-gradient(180deg, rgba(30,38,48,.94), rgba(10,14,19,.94)); border: 1px solid rgba(255,154,106,.45); box-shadow: 0 12px 40px rgba(0,0,0,.6); font-size: 12px; color: var(--ink-2); }
+.lp-card[hidden] { display: none; }
+.lp-h { display: flex; align-items: center; gap: 8px; padding-right: 24px; } .lp-h i { width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-bottom: 10px solid #ff9a6a; } .lp-h b { font-size: 15px; color: var(--ink); }
+.lp-w { color: #ffc9a8; } .lp-card small { color: var(--ink-4); font-size: 10.5px; }
+.lp-row { display: grid; grid-template-columns: 78px 1fr; gap: 8px; padding-top: 6px; border-top: 1px solid var(--line); } .lp-row time { font: 11.5px var(--mono); color: var(--ink-2); } .lp-row em { display: block; font-style: normal; color: var(--ink-3); font-size: 11px; }
+.lp-cd { padding-top: 6px; border-top: 1px solid var(--line); color: var(--ink-3); } .lp-cd b { font: 600 13px var(--mono); color: #ffd28a; }
+.lp-x { position: absolute; right: 8px; top: 6px; width: 26px; height: 26px; border-radius: 7px; color: var(--ink-3); font-size: 18px; line-height: 24px; } .lp-all { justify-self: start; margin-top: 4px; font-size: 11.5px; color: var(--accent); padding: 4px 10px; border: 1px solid var(--line-2); border-radius: 6px; }
+.grid.m-phone .lp-card { left: 8px; right: 8px; bottom: 56px; width: auto; }
+.stage.space-on .lp-card { display: none; }
+.lb-launch.sel span { display: block; } .lb-launch.sel::after { content: ""; position: absolute; left: -15px; top: -17px; width: 30px; height: 30px; border: 1.5px solid #ffb38a; border-radius: 50%; box-shadow: 0 0 10px rgba(255,154,106,.8); pointer-events: none; }
+/* 尋星（手機方向感應） */
+.as-find { display: grid; gap: 6px; justify-items: center; } .as-findbtn { font-size: 13px; color: #04121a; background: var(--accent); border-radius: 18px; padding: 8px 16px; font-weight: 600; }
+.as-findmsg { width: 100%; text-align: center; font-size: 13px; line-height: 1.6; color: var(--ink); background: rgba(120,150,255,.12); border: 1px solid var(--line-2); border-radius: 10px; padding: 8px 10px; } .as-findmsg.ok { color: #9ff0b8; border-color: rgba(80,200,120,.5); background: rgba(80,200,120,.12); }
+.as-skybox { position: relative; }
+.as-aim { position: absolute; left: 0; top: 0; width: 34px; height: 34px; border: 2px solid var(--accent); border-radius: 50%; box-shadow: 0 0 10px rgba(120,220,255,.7), inset 0 0 6px rgba(120,220,255,.5); pointer-events: none; will-change: transform; }
+.as-aim::after { content: ""; position: absolute; left: 50%; top: 50%; width: 4px; height: 4px; margin: -2px; border-radius: 50%; background: var(--accent); } .as-aim.low { border-style: dashed; opacity: .6; } .as-aim.hit { border-color: #7dffa8; box-shadow: 0 0 14px rgba(125,255,168,.9); }
+.as-findit { display: none; flex: none; align-self: center; font-size: 11px; color: #04121a; background: #ffd28a; border-radius: 6px; padding: 4px 8px; white-space: nowrap; font-weight: 600; } .as-can-compass .as-findit { display: inline-block; }
+.as-row.tgt { background: rgba(255,210,138,.08); border-radius: 8px; } .as-compass .as-slide { display: none; }
+.as-sub { font-size: 11px; color: #ffd28a; letter-spacing: .06em; margin-top: 4px; }
+
 </style>
 </head>
 <body>
@@ -1933,6 +1993,7 @@ html.standalone .stale-mark { margin-left: 8px; font-size: 10.5px; font-weight: 
         <button data-layer="cii" data-default="off" title="顯示／隱藏國家不穩定指數（再按旁邊的「排行」看細節）" id="lg-cii"><i class="lg lg-cii"></i>不穩定指數<small>公開資料自算</small></button><button class="lg-more" id="lg-cii-rank" title="國家不穩定指數排行">排行</button>
         <button data-layer="aurora" class="on" title="顯示／隱藏極光" id="lg-aurora"><i class="lg lg-aurora"></i>極光<small>NOAA 即時預報</small></button>
         <button data-layer="cables" class="on" title="顯示／隱藏海底電纜"><i class="lg lg-cable"></i>海底電纜</button>
+        <button data-layer="launch" class="on" title="顯示／隱藏火箭發射場（未來 7 天有發射的）" id="lg-launch"><i class="lg lg-launch"></i>火箭發射<small>未來 7 天</small></button>
         <span data-go="city" title="點一下：地球轉到你的位置"><i class="lg lg-city"></i>城市</span>
         <span data-go="news" title="點一下：地球轉到目前這則新聞的地點"><i class="lg lg-news"></i>新聞</span>
         <span data-go="quake" title="點一下：地球轉到最近一次較大的地震"><i class="lg lg-quake"></i>地震</span>
@@ -2167,6 +2228,14 @@ html.standalone .stale-mark { margin-left: 8px; font-size: 10.5px; font-weight: 
 </div>
 
 <!-- 提醒設定與紀錄 -->
+<div class="dlg-back" id="astro" hidden>
+  <section class="dlg dlg-astro" role="dialog" aria-modal="true" aria-labelledby="as-title">
+    <header class="dlg-h"><b id="as-title">天文</b><span class="tabs" id="as-tabs"><button data-tab="tonight" class="on">今晚</button><button data-tab="events">天象</button><button data-tab="launch">發射</button></span><button class="dlg-x" data-close aria-label="關閉">×</button></header>
+    <div class="as-body" id="as-body"></div>
+    <footer class="dlg-f"><span class="dlg-note" id="as-note"></span></footer>
+  </section>
+</div>
+
 <div class="dlg-back" id="alerts" hidden>
   <section class="dlg dlg-alerts" role="dialog" aria-modal="true" aria-labelledby="al-title">
     <header class="dlg-h"><b id="al-title">提醒</b><button class="dlg-x" data-close aria-label="關閉">×</button></header>
@@ -2178,6 +2247,8 @@ html.standalone .stale-mark { margin-left: 8px; font-size: 10.5px; font-weight: 
         <div class="al-rule"><span>臺灣附近地震規模達</span><input id="al-quake" inputmode="decimal"><span>級</span><em>1000 公里內；全球規模 7 以上一律提醒。填 0 只留全球大地震。</em></div>
         <label class="al-check"><input type="checkbox" id="al-src"><span>資料來源連續好幾個小時更新失敗時提醒我</span></label>
         <label class="al-check not-standalone"><input type="checkbox" id="al-surge"><span>國際新聞突然升溫時提醒我（同一個話題 6 小時內只提醒一次）</span></label>
+        <label class="al-check not-standalone"><input type="checkbox" id="al-astro"><span>今晚有值得看的天象時提醒我（當天傍晚 6 點）</span></label>
+        <label class="al-check not-standalone"><input type="checkbox" id="al-launch"><span>火箭發射前 10 分鐘提醒我</span></label>
         <div class="al-sub">到價提醒</div>
         <div class="al-tgts" id="al-tgts"></div>
         <button class="hold-add" id="al-add">＋ 新增到價提醒</button>
@@ -2242,7 +2313,7 @@ html.standalone .stale-mark { margin-left: 8px; font-size: 10.5px; font-weight: 
   </section>
 </div>
 
-<script>window.WP_BOOT={"relay": "https://script.google.com/macros/s/AKfycbzLugRpEa9xaAhAai0sY0j411v24-2Lo_toQYWmwdejUd1V7RCBCQRhfgqPhs8PqtKf/exec", "site": true, "build": "d4061d50ad"};</script>
+<script>window.WP_BOOT={"relay": "https://script.google.com/macros/s/AKfycbzLugRpEa9xaAhAai0sY0j411v24-2Lo_toQYWmwdejUd1V7RCBCQRhfgqPhs8PqtKf/exec", "site": true, "build": "29fa4ff79b"};</script>
 <script>
 // 全球面板・手機獨立版：把面板原本向「你的 Mac」要資料的地方，改成在這支手機上完成。
 //   個人資料（持股、均價、買賣紀錄、設定）只存在這支手機的瀏覽器裡（localStorage），不會送出去。
@@ -4692,15 +4763,25 @@ const D2R = Math.PI / 180;
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
 const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
 
+// ── 各層的淡入淡出一律看「這一層在畫面上有多大」（f = 這一層的半徑 ÷ 畫面半寬），不看 u 的固定區間：
+//    外面的一層在還很巨大、只有零星幾個點落在畫面裡的時候就慢慢浮現（當遠方的背景光點），等拉遠到看得出結構時它早就在那裡了——不會「啪」一下整層冒出來；
+//    裡面的一層縮到很小才淡掉，而且越縮越暗（幾萬個點擠成一小團不會變成一顆白球）。這樣每一層都是套在上一層外面、連續收攏，沒有跳接。
+const sizeIn = (f, F1 = 90, F2 = 260) => 1 - smooth(F1, F2, f);
+const sizeOut = (f, lo = 0.012, hi = 0.07) => smooth(lo, hi, f);
+const sizeDim = (f, f0 = 0.5, p = 1.2) => clamp(Math.pow(f / f0, p), 0.06, 1);       // 縮得越小越暗：同樣多的點擠在越小的面積，不壓暗就會變成一顆白球
 const AU0 = 90;                         // 太陽系全景那一張，畫面寬度大約是幾天文單位
 const LY = 63241;                       // 1 光年 = 幾天文單位
 const KAPPA = 56 / 39.5;                // 太陽系全景裡 1 天文單位 = 幾個畫面單位（冥王星軌道 56 單位 ↔ 39.5 天文單位）
 const GC_LY = 26000;                    // 太陽離銀河中心約 2.6 萬光年
-const U_STATIONS = { outer: 1.5, stars: 3.2, galaxy: 6.0 };      // 每一站的 u
+const U_STATIONS = { outer: 1.5, stars: 3.2, galaxy: 6.0, neighbors: 7.0, local: 8.1, nearby: 9.2, web: 10.4, universe: 11.6 };      // 每一站的 u（工作表 5 把路延長到可觀測宇宙）
 const GAL_W = 105000;                    // 銀河系那一站的畫面寬度（光年）：整個盤面（直徑約 10 萬光年）放得進畫面
-const U_MAX = 6.5;                      // 再往外捏不動
+const U_MAX = 12.0;                     // 再往外捏不動
+const U_NEAR_MAX = 6.5;                 // 宇宙層建立失敗時退回的最遠處（銀河系再外面一點，跟工作表 4 一樣）
 // 各站的「畫面寬度」：太陽系外圍約 10 萬天文單位（1.6 光年）、鄰近恆星約 100 光年、整個銀河系約 10 萬光年
-const KN = [[0, 0, 1], [U_STATIONS.outer, Math.log(1e5 / AU0), 1.1], [U_STATIONS.stars, Math.log(100 * LY / AU0), 1.1], [U_STATIONS.galaxy, Math.log(GAL_W * LY / AU0), 1.1], [U_MAX, Math.log(GAL_W * LY / AU0) + 0.55, 1.1]];
+const FW = { neighbors: 6e5, local: 1.2e7, nearby: 3e8, web: 4e9, universe: 1e11 };      // 各站的畫面寬度（光年）
+// 每個節點：[u, L, 斜率]。站上的斜率 1.6～2.2、兩站之間 2.6～3.7：整條路的快慢差不到兩倍半（以前站上 1.1、中間 4.4，手感一頓一衝）；只有太陽系剛出去那一段因為要在 1.5 個 u 內跨過一千倍，中間較快
+const KN = [[0, 0, 1], [U_STATIONS.outer, Math.log(1e5 / AU0), 1.6], [U_STATIONS.stars, Math.log(100 * LY / AU0), 1.8], [U_STATIONS.galaxy, Math.log(GAL_W * LY / AU0), 2.0]]
+  .concat([['neighbors', 2.0], ['local', 2.2], ['nearby', 2.2], ['web', 2.2], ['universe', 2.0]].map(([k, m]) => [U_STATIONS[k], Math.log(FW[k] * LY / AU0), m])).concat([[U_MAX, Math.log(FW.universe * LY / AU0) + 0.62, 1.6]]);
 
 // L(u)：畫面寬度是全景的幾個 e 倍（自然對數）。u ≤ 0 就是 u 本身（跟現在一模一樣）；u > 0 用分段三次埃爾米特曲線（每個節點給位置與斜率，所以斜率連續、嚴格遞增）
 function Lof(u) {
@@ -4715,11 +4796,12 @@ const realScaleAU = (u) => AU0 * Math.exp(Lof(u));               // 畫面寬度
 const camSat = (u) => u <= 0 ? u : 0.3 * Math.tanh(u / 0.3);
 const sysScale = (u) => u <= 0 ? 1 : Math.exp(camSat(u) - Lof(u));        // 太陽系那一整組目前的縮放
 // 現在算是在哪一站：資訊卡、列表亮哪一列靠它
-const focusOfU = (u) => u < 0.75 ? 'system' : u < 2.35 ? 'outer' : u < 4.9 ? 'stars' : 'galaxy';
+const focusOfU = (u) => u < 0.75 ? 'system' : u < 2.35 ? 'outer' : u < 4.9 ? 'stars' : u < 6.5 ? 'galaxy' : u < 7.55 ? 'neighbors' : u < 8.65 ? 'local' : u < 9.8 ? 'nearby' : u < 11.0 ? 'web' : 'universe';
 // 角落的比例尺文字
 function frameText(u) {
   const au = realScaleAU(u); if (au < 6300) { const v = au < 10 ? au.toFixed(1) : au < 1000 ? Math.round(au) : Math.round(au / 10) * 10; return '畫面寬約 ' + Number(v).toLocaleString() + ' 天文單位'; }
-  const ly = au / LY; if (ly < 10) return '畫面寬約 ' + ly.toFixed(1) + ' 光年';
+  const ly = au / LY; if (ly >= 1e6) return '畫面寬約 ' + (ly >= 1e8 ? Math.round(ly / 1e8).toLocaleString() + ' 億光年' : Math.round(ly / 1e4).toLocaleString() + ' 萬光年');
+  if (ly < 10) return '畫面寬約 ' + ly.toFixed(1) + ' 光年';
   if (ly < 1000) return '畫面寬約 ' + Math.round(ly) + ' 光年';
   if (ly < 10000) return '畫面寬約 ' + (Math.round(ly / 100) * 100).toLocaleString() + ' 光年';
   return '畫面寬約 ' + (ly / 10000).toFixed(ly < 200000 ? 1 : 0).replace(/\.0$/, '') + ' 萬光年';
@@ -4842,6 +4924,8 @@ class Galaxy {
       put(R * Math.cos(th), R * Math.sin(th), gauss() * 330, [1, 0.88, 0.66], 0.2 + r() * 0.18, 1.1 + r() * 0.8);
     }
     this.disk = makeDots(pos.subarray(0, k * 3), col.subarray(0, k * 3), sz.subarray(0, k)); this.galG.add(this.disk);
+    // 同一批光點每隔幾顆取一顆、調亮一點：銀河縮小之後由這一份接手（位置完全一樣，所以交接時看不出來，只是越縮越疏）
+    { const stp = small ? 14 : 40, n2 = Math.floor(k / stp), p2 = new Float32Array(n2 * 3), c2 = new Float32Array(n2 * 3), s2 = new Float32Array(n2); for (let i = 0; i < n2; i++) { const j = i * stp; p2[i * 3] = pos[j * 3]; p2[i * 3 + 1] = pos[j * 3 + 1]; p2[i * 3 + 2] = pos[j * 3 + 2]; c2[i * 3] = Math.min(1, col[j * 3] * 1.7); c2[i * 3 + 1] = Math.min(1, col[j * 3 + 1] * 1.7); c2[i * 3 + 2] = Math.min(1, col[j * 3 + 2] * 1.7); s2[i] = sz[j] + 0.5; } this.diskMini = makeDots(p2, c2, s2); this.galG.add(this.diskMini); }
     this.gcDot = makeDots([0, 0, 0], [1, 0.9, 0.7], [8]); this.galG.add(this.gcDot);
     this.youDot = makeDots([-GC_LY, 0, 0], [1, 0.85, 0.45], [10]); this.galG.add(this.youDot);
     const armPt = (j, th) => { const R = ARM_R[j] * Math.exp(B * (th - Math.PI)); return new THREE.Vector3(R * Math.cos(th), R * Math.sin(th), 0); };
@@ -4859,16 +4943,22 @@ class Galaxy {
     this.outerG.position.copy(_v); this.starsG.position.copy(_v); this.sunDot.position.copy(_v);
     this.outerG.scale.setScalar(unitAU); this.starsG.scale.setScalar(unitLY);
     this.galG.scale.setScalar(unitLY); this.galG.quaternion.copy(GAL.gq); this.galG.position.copy(GAL.gx).multiplyScalar((GC_LY - off) * unitLY);
-    // 各層什麼時候看得見（個別物件的不透明度，不動整張畫面）
-    const oOut = smooth(0.1, 0.6, u) * (1 - smooth(2.2, 3.2, u)), oStars = smooth(1.9, 2.9, u) * (1 - smooth(4.3, 5.3, u)), oGal = smooth(3.9, 5.0, u), oDot = smooth(0.55, 1.1, u) * (1 - smooth(5.2, 6.0, u));
-    this.oStars = oStars; this.oOut = oOut; this.oGal = oGal; this.u = u;
-    this._set(this.outerG, oOut, px); this._set(this.starsG, oStars, px); this._set(this.galG, oGal, px); this._set(this.sunDot, oDot, px, true);
+    // 各層什麼時候看得見（個別物件的不透明度，不動整張畫面）：依這一層在畫面上的大小（見檔案開頭 sizeIn／sizeOut 的說明）
+    const fh = frameLy / 2, fO = 1.58 / fh, fS = 50 / fh, fM = 50000 / fh;                    // 畫面半寬（光年）；歐特雲、鄰近恆星、銀河盤面各佔畫面半寬的幾倍
+    const oOut = smooth(0.1, 0.6, u) * sizeOut(fO) * sizeDim(fO), oStars = sizeIn(fS) * sizeOut(fS) * sizeDim(fS), uiStars = smooth(1.9, 2.9, u) * (1 - smooth(4.3, 5.3, u));
+    const galIn = smooth(3.9, 5.0, u), oGal = galIn * (this.cosmosOn ? smooth(0.2, 0.45, fM) : 1), oMini = this.cosmosOn ? galIn * (1 - smooth(0.25, 0.5, fM)) * sizeOut(fM, 0.003, 0.02) * sizeDim(fM, 0.12, 0.9) : 0, oDot = smooth(0.55, 1.1, u) * (1 - smooth(5.2, 6.0, u));
+    this.oStars = oStars; this.oOut = oOut; this.oGal = oGal; this.oMini = oMini; this.u = u;
+    this._set(this.outerG, oOut, px); this._set(this.starsG, oStars, px); this._set(this.sunDot, oDot, px, true);
+    for (const [, l] of this.rings || []) l.material.uniforms.uOp.value = uiStars;                 // 距離圈只在鄰近恆星那一站前後才畫（它們是輔助線，不是背景）
+    this.galG.visible = oGal > 0.004 || oMini > 0.004;
+    for (const o of [this.disk, this.gcDot, this.youDot]) { o.visible = oGal > 0.004; o.material.uniforms.uOp.value = oGal; o.material.uniforms.uPx.value = px; }
+    this.diskMini.visible = oMini > 0.004; this.diskMini.material.uniforms.uOp.value = oMini; this.diskMini.material.uniforms.uPx.value = px;
     // 內圈的小東西（古柏帶、航海家）近看才有意義：古柏帶在 u 0.1～1.6、歐特雲在 0.3～3；各自淡入淡出
     const kOp = smooth(0.1, 0.6, u) * (1 - smooth(1.5, 2.3, u)); this.kuiperOp = kOp;
     const lop = this.labelOp = { sun: oDot, kuiper: smooth(0.15, 0.4, u) * (1 - smooth(0.7, 0.95, u)), oort: oOut * smooth(0.9, 1.4, u) * (1 - smooth(2.2, 3.0, u)), voyager: smooth(0.4, 0.6, u) * (1 - smooth(0.85, 1.1, u)) };
-    for (const R of [10, 25, 50]) lop['ring' + R] = oStars * 0.75;
-    const gl = smooth(4.9, 5.6, u); for (const id of ['you', 'gc', 'orion', 'perseus', 'sagittarius', 'scutum', 'norma']) lop[id] = gl; lop.sun = oDot * (1 - gl);
-    for (const id in this.labels) if (this.labels[id].star !== undefined) lop[id] = oStars;
+    for (const R of [10, 25, 50]) lop['ring' + R] = uiStars * 0.75;
+    const gl = smooth(4.9, 5.6, u) * (this.cosmosOn ? smooth(0.2, 0.45, fM) : 1); for (const id of ['you', 'gc', 'orion', 'perseus', 'sagittarius', 'scutum', 'norma']) lop[id] = gl; lop.sun = oDot * (1 - gl);
+    for (const id in this.labels) if (this.labels[id].star !== undefined) lop[id] = uiStars;
     const T = u < 2.35 ? '太陽系' : '太陽'; if (this.labels.sun.text !== T) this.labels.sun.el.textContent = this.labels.sun.text = T;
     return this.sysPos;
   }
@@ -4890,15 +4980,18 @@ class Galaxy {
     };
     place('sun', this.sunDot.position);
     { let bx = -1e9, bp = null; for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4, kp = new THREE.Vector3(60 * Math.cos(a), 0, -60 * Math.sin(a)); this._wp(this.outerG, kp, kp); _v.copy(kp).project(cam); if (_v.x > bx) { bx = _v.x; bp = kp; } } place('kuiper', bp, 12); }       // 古柏帶的名字放在環最靠右的地方，避開太陽與航海家的名字
-    place('oort', this._wp(this.outerG, new THREE.Vector3(0, 0, -62000)));
+    { let best = -1, bp = null; for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4, op = new THREE.Vector3(60000 * Math.cos(a), 0, -60000 * Math.sin(a)); this._wp(this.outerG, op, op); _v.copy(op).project(cam); const d = Math.hypot(_v.x, _v.y); if (_v.z < 1 && Math.abs(_v.x) < 0.8 && Math.abs(_v.y) < 0.8 && d > best) { best = d; bp = op; } } if (bp) place('oort', bp); else this._lbSet(this.labels.oort, 0); }       // 歐特雲的名字：放在球殼上「畫面裡離太陽最遠」的那一點（整個畫面會隨地球自轉轉動，固定一點的話有些鐘點會跑出畫面或疊到太陽的名字）
     place('voyager', this._wp(this.outerG, this.voyagerPos), -20);
     for (const [R] of this.rings || []) place('ring' + R, this._wp(this.starsG, new THREE.Vector3(R * 0.7071, 0, -R * 0.7071)), -2);
     if (this.oGal > 0.03 && this.galLab) for (const id in this.galLab) { const L = this.labels[id]; if (!L) continue; if (compact && !['you', 'gc', 'orion', 'perseus', 'sagittarius'].includes(id)) { this._lbSet(L, 0); continue; } place(id, _w.copy(this.galLab[id]).multiplyScalar(this.galG.scale.x).applyQuaternion(this.galG.quaternion).add(this.galG.position), id === 'gc' ? 26 : id === 'you' ? -20 : 10); }
-    if (this.oStars > 0.03) for (const id in this.labels) { const L = this.labels[id]; if (L.star === undefined) continue; if (compact && L.prio < 8.55) { this._lbSet(L, 0); continue; } place(id, this._wp(this.starsG, this.starV[L.star])); }
+    if (this.oStars > 0.03 && this.u > 1.8 && this.u < 5.4) for (const id in this.labels) { const L = this.labels[id]; if (L.star === undefined) continue; if (compact && L.prio < 8.55) { this._lbSet(L, 0); continue; } place(id, this._wp(this.starsG, this.starV[L.star])); }
+    if (this.cosmos && this.cosmos.built) for (const e of this.cosmos.labelEntries()) { const L = this.labels[e.id]; if (!L) continue; if (compact && L.prio < 8.1) { this._lbSet(L, 0); continue; } place(e.id, e.world(_w), e.dy); }
     // 名字太擠就只留重要的：不會疊在一起看不清
     cand.sort((a, b) => b.prio - a.prio); const taken = [];
     for (const c of cand) { const hit = taken.some((t) => c.box[0] < t[2] && c.box[2] > t[0] && c.box[1] < t[3] && c.box[3] > t[1]); if (!hit) taken.push(c.box); this._lbSet(c.L, hit ? 0 : c.op * 0.85, c.x, c.y); }
     for (const id in this.labels) { const L = this.labels[id]; if (!cand.some((c) => c.L === L) && L.o > 0 && !((this.labelOp && this.labelOp[id]) > 0.03)) this._lbSet(L, 0); }
+    // 被點選的星系（宇宙層）外面的小圈圈
+    if (this.cosSel && this.cosmos && this.cosmos.built) { this.cosmos.worldOf(this.cosSel, _v); _v.project(cam); if (_v.z < 1) { this.selEl.style.display = ''; this.selEl.style.transform = 'translate(' + (((_v.x * 0.5 + 0.5) * W) | 0) + 'px,' + (((1 - (_v.y * 0.5 + 0.5)) * H) | 0) + 'px) translate(-50%,-50%)'; } else this.selEl.style.display = 'none'; return; }
     // 被點選的恆星外面的小圈圈
     if (this.sel && this.oStars > 0.2) { const v = this.sel.sun ? this.sunDot.position : this._wp(this.starsG, this.starV[this.sel.i]); _v.copy(v).project(cam); if (_v.z < 1) { this.selEl.style.display = ''; this.selEl.style.transform = 'translate(' + (((_v.x * 0.5 + 0.5) * W) | 0) + 'px,' + (((1 - (_v.y * 0.5 + 0.5)) * H) | 0) + 'px) translate(-50%,-50%)'; } else this.selEl.style.display = 'none'; } else this.selEl.style.display = 'none';
   }
@@ -4928,11 +5021,234 @@ class Galaxy {
     if (!this.built) return;
     this.root.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
     this.sp.scene.remove(this.root); if (this.lbBox) this.lbBox.remove();
-    this.built = false; this.labels = {}; this.sel = null;
+    this.built = false; this.labels = {}; this.sel = null; this.cosmos = null;
   }
 }
 
-return { smooth, AU0, LY, KAPPA, GC_LY, U_STATIONS, GAL_W, U_MAX, Lof, realScaleAU, camSat, sysScale, focusOfU, frameText, eqToScene, GAL, makeDots, rng, makeRing, SP_NAME, Galaxy };
+return { smooth, sizeIn, sizeOut, sizeDim, AU0, LY, KAPPA, GC_LY, U_STATIONS, GAL_W, U_MAX, U_NEAR_MAX, Lof, realScaleAU, camSat, sysScale, focusOfU, frameText, eqToScene, GAL, makeDots, rng, makeRing, SP_NAME, Galaxy };
+})();
+// ── cosmos-data.js ──
+const __m_cosmos_data_js = (() => {
+// 銀河系以外的地標（手寫的小表，位置是大概的公認值，觀賞用；不連網、不下載任何檔案）。
+// 每列：[代號, 中文名, 英文名, 赤經（度）, 赤緯（度）, 離我們（光年）, 大小半徑（光年）, 種類, 重要程度（1 一定標名字、2 有空間才標）, 一句白話說明]
+// 種類：spiral 旋渦、dwarf 矮星系、irr 不規則、ell 橢圓、cluster 星系團、super 超星系團／長城、void 空洞
+// 位置的來源：McConnachie (2012) 等公開整理的本星系群表、NED 的常見數值；只取到「畫面上差一點看不出來」的準確度。
+const LOCAL_GROUP = [
+  ['lmc', '大麥哲倫雲', 'Large Magellanic Cloud', 80.89, -69.76, 160000, 7000, 'irr', 1, '銀河系的衛星星系，南半球肉眼看得到的一小團雲。1987 年在這裡出現過一顆很亮的超新星'],
+  ['smc', '小麥哲倫雲', 'Small Magellanic Cloud', 13.19, -72.83, 200000, 3500, 'irr', 1, '另一個銀河系的衛星星系，跟大麥哲倫雲像一對兄弟'],
+  ['sgr', '人馬座矮星系', 'Sagittarius Dwarf', 283.76, -30.48, 70000, 5000, 'dwarf', 2, '正在被銀河系的重力慢慢撕開、吞進去的小星系'],
+  ['dra', '天龍座矮星系', 'Draco Dwarf', 260.07, 57.92, 260000, 600, 'dwarf', 2, '暗淡的小星系，裡面暗物質的比例特別高'],
+  ['umi', '小熊座矮星系', 'Ursa Minor Dwarf', 227.28, 67.22, 200000, 700, 'dwarf', 2, '銀河系身邊的一個暗淡矮星系'],
+  ['scl', '玉夫座矮星系', 'Sculptor Dwarf', 15.04, -33.71, 290000, 600, 'dwarf', 2, '銀河系的衛星星系之一，主要是年老的恆星'],
+  ['for', '天爐座矮星系', 'Fornax Dwarf', 39.99, -34.45, 460000, 1000, 'dwarf', 2, '銀河系的衛星星系之一，還帶著幾個自己的球狀星團'],
+  ['car', '船底座矮星系', 'Carina Dwarf', 100.4, -50.97, 330000, 500, 'dwarf', 3, '銀河系的衛星星系之一'],
+  ['sex', '六分儀座矮星系', 'Sextans Dwarf', 153.26, -1.61, 280000, 1000, 'dwarf', 3, '銀河系的衛星星系之一'],
+  ['leo1', '獅子座 I', 'Leo I', 152.12, 12.31, 820000, 800, 'dwarf', 3, '銀河系比較遠的衛星星系之一'],
+  ['leo2', '獅子座 II', 'Leo II', 168.37, 22.15, 690000, 500, 'dwarf', 3, '銀河系比較遠的衛星星系之一'],
+  ['phe', '鳳凰座矮星系', 'Phoenix Dwarf', 27.78, -44.44, 1440000, 1000, 'dwarf', 3, '本星系群邊緣的小星系'],
+  ['n6822', '巴納德星系', "Barnard's Galaxy", 296.24, -14.8, 1600000, 4000, 'irr', 2, '本星系群裡的不規則星系，形狀像一個小小的棒子'],
+  ['ic10', 'IC 10', 'IC 10', 5.07, 59.29, 2200000, 2500, 'irr', 3, '本星系群裡正在大量製造新恆星的小星系'],
+  ['ic1613', 'IC 1613', 'IC 1613', 16.2, 2.12, 2380000, 5000, 'irr', 3, '本星系群裡的不規則星系'],
+  ['m31', '仙女座星系', 'Andromeda Galaxy (M31)', 10.68, 41.27, 2540000, 110000, 'spiral', 1, '離我們最近的大星系，肉眼在黑暗的夜空看得到。大約 40 億年後會跟銀河系相撞、合在一起'],
+  ['m32', 'M32', 'M32', 10.67, 40.87, 2650000, 3000, 'ell', 3, '仙女座星系身邊的小橢圓星系'],
+  ['m110', 'M110', 'M110', 10.09, 41.69, 2690000, 8000, 'ell', 3, '仙女座星系的另一個衛星星系'],
+  ['m33', '三角座星系', 'Triangulum Galaxy (M33)', 23.46, 30.66, 2730000, 30000, 'spiral', 1, '本星系群裡第三大的星系，一個正面朝向我們的漂亮旋渦'],
+  ['n147', 'NGC 147', 'NGC 147', 8.3, 48.51, 2530000, 3000, 'dwarf', 3, '仙女座星系的衛星星系'],
+  ['n185', 'NGC 185', 'NGC 185', 9.74, 48.34, 2050000, 3000, 'dwarf', 3, '仙女座星系的衛星星系'],
+  ['wlm', 'WLM', 'WLM', 0.49, -15.46, 3000000, 4000, 'irr', 3, '本星系群邊緣的不規則星系'],
+  ['leoa', '獅子座 A', 'Leo A', 149.86, 30.75, 2600000, 2000, 'irr', 3, '本星系群邊緣很小的星系'],
+  ['peg', '飛馬座矮星系', 'Pegasus Dwarf', 352.15, 14.74, 3000000, 4000, 'irr', 3, '本星系群邊緣的小星系'],
+  ['sgrdig', '人馬座 DIG', 'Sagittarius DIG', 292.5, -17.68, 3500000, 2000, 'irr', 3, '本星系群最外圍的小星系之一'],
+  ['aqr', '寶瓶座矮星系', 'Aquarius Dwarf', 311.72, -12.85, 3500000, 1000, 'dwarf', 3, '本星系群最外圍的小星系之一'],
+];
+// 鄰近的星系與星系團（離我們幾百萬到幾億光年）
+const NEARBY = [
+  ['lg', '本星系群', 'Local Group', 0, 0, 0, 5000000, 'cluster', 1, '銀河系、仙女座星系、三角座星系和幾十個小星系，用重力綁在一起的一小群。我們住在裡面'],
+  ['m81', 'M81 星系群', 'M81 Group', 148.9, 69.2, 11800000, 1500000, 'cluster', 2, '離本星系群最近的星系群之一，裡面有 M81 和 M82'],
+  ['cena', '半人馬座 A', 'Centaurus A', 201.37, -43.02, 12000000, 400000, 'ell', 2, '一個橢圓星系，中間的黑洞正在噴出巨大的噴流'],
+  ['n253', '玉夫座星系', 'Sculptor Galaxy', 11.89, -25.29, 11400000, 150000, 'spiral', 2, '側著看的旋渦星系，裡面大量製造新恆星'],
+  ['m83', '南風車星系', 'Southern Pinwheel (M83)', 204.25, -29.87, 14700000, 100000, 'spiral', 3, '漂亮的棒旋星系'],
+  ['m101', '風車星系', 'Pinwheel Galaxy (M101)', 210.8, 54.35, 20900000, 170000, 'spiral', 3, '正面朝著我們、很大很完整的旋渦星系'],
+  ['m51', '渦狀星系', 'Whirlpool Galaxy (M51)', 202.47, 47.2, 23000000, 90000, 'spiral', 2, '旋臂一路拉到旁邊一個小星系的經典旋渦星系'],
+  ['m104', '草帽星系', 'Sombrero Galaxy (M104)', 189.99, -11.62, 31000000, 50000, 'spiral', 3, '像一頂草帽的側面旋渦星系'],
+  ['leo', '獅子座星系群', 'Leo I Group', 161.7, 11.8, 35000000, 1500000, 'cluster', 3, '一小群星系，裡面有 M95、M96、M105'],
+  ['virgo', '室女座星系團', 'Virgo Cluster', 187.7, 12.4, 54000000, 7000000, 'cluster', 1, '離我們最近的大星系團，有一千多個星系。我們所在的本星系群正慢慢被它拉過去'],
+  ['m87', 'M87', 'Messier 87', 187.7, 12.39, 54000000, 400000, 'ell', 2, '室女座星系團中心的巨大橢圓星系，2019 年人類第一次拍到黑洞的照片就是它'],
+  ['fornax', '天爐座星系團', 'Fornax Cluster', 54.6, -35.45, 62000000, 3500000, 'cluster', 2, '南半球天空的一個星系團'],
+  ['hydra', '長蛇座星系團', 'Hydra Cluster', 159.2, -27.5, 160000000, 4000000, 'cluster', 3, '一個很大的星系團，也被「大吸引子」拉著走'],
+  ['cen', '半人馬座星系團', 'Centaurus Cluster', 192.2, -41.3, 170000000, 4000000, 'cluster', 2, '一個很大的星系團，離大吸引子不遠'],
+  ['norma', '大吸引子', 'Great Attractor', 243.6, -60.9, 220000000, 20000000, 'cluster', 1, '一個看不太清楚的巨大質量集中區，正在用重力拉著包括我們在內的幾萬個星系。它大部分被銀河系的盤面擋住了'],
+  ['perseus', '英仙座星系團', 'Perseus Cluster', 49.95, 41.51, 240000000, 5000000, 'cluster', 2, '一個很亮的大星系團，中間的黑洞「唱」出了人類聽過最低的音'],
+];
+// 宇宙網尺度的地標（距離是大概的，觀賞用）
+const WEB_MARKS = [
+  ['laniakea', '拉尼亞凱亞超星系團', 'Laniakea Supercluster', 243.6, -60.9, 160000000, 250000000, 'super', 1, '我們所在的超星系團，直徑約 5 億光年，包含十幾萬個星系。名字是夏威夷話「無法測量的天空」'],
+  ['coma', '后髮座長城', 'Coma / CfA Great Wall', 194.95, 27.98, 320000000, 250000000, 'super', 2, '由幾千個星系排成的一道巨大的牆，長約 5 億光年'],
+  ['shapley', '沙普利超星系團', 'Shapley Supercluster', 202.0, -31.0, 650000000, 150000000, 'super', 1, '附近宇宙裡質量最集中的超星系團之一，大吸引子的後面還有它'],
+  ['hercules', '武仙座超星系團', 'Hercules Supercluster', 241.0, 17.7, 500000000, 150000000, 'super', 3, '又一個巨大的星系團集合'],
+  ['sloan', '史隆長城', 'Sloan Great Wall', 170.0, 0.0, 1000000000, 700000000, 'super', 1, '人類發現過最大的結構之一，長約 14 億光年'],
+  ['bootes', '牧夫座空洞', 'Boötes Void', 217.0, 46.0, 700000000, 120000000, 'void', 2, '一大片幾乎什麼都沒有的空洞，直徑約 3 億光年'],
+];
+
+return { LOCAL_GROUP, NEARBY, WEB_MARKS };
+})();
+// ── cosmos.js ──
+const __m_cosmos_js = (() => {
+// 銀河系以外：銀河系的鄰居 → 仙女座與本星系群 → 鄰近的星系 → 宇宙網 → 可觀測宇宙（工作表 5 的 D）。
+// 接在 galaxy.js 的後面：同一條路、同一個變數 u（見 galaxy.js），這裡只管「再往外那幾層」怎麼畫。全部是程式產生（固定亂數種子，每次一樣），
+// 地標（有名字的星系與星系團）用 cosmos-data.js 的手寫小表；不連網、不下載任何檔案。觀賞性第一：位置大概對、結構是示意，資訊卡有寫。
+// 各層用自己的單位（千光年、百萬光年、十億光年），鏡頭距離不變，整層依 Lof(u) 縮放，所以不會有天文數字進顯示卡。
+
+const { makeDots, rng, smooth, eqToScene, GAL, GC_LY, KAPPA, LY, AU0, sizeIn, sizeOut, sizeDim } = __m_galaxy_js;
+const { LOCAL_GROUP, NEARBY, WEB_MARKS } = __m_cosmos_data_js;
+const D2R = Math.PI / 180, TAU = Math.PI * 2;
+const _v = new THREE.Vector3(), _w = new THREE.Vector3();
+const COS_UNITS = { lg: 1e3, near: 1e6, web: 1e6, uni: 1e9 };           // 各層的單位（光年）
+const win = (u, a, b, c, d) => smooth(a, b, u) * (1 - smooth(c, d, u));
+// 各層看得見的 u 區間：[淡入開始, 淡入完成, 淡出開始, 淡出完成]（個別物件的不透明度，永遠有東西可看、不會整個黑掉；站與站之間兩層同時半透明）
+const COS_WIN = { lg: [6.1, 6.9, 9.0, 9.7], mw: [6.2, 6.9, 9.3, 9.9], near: [8.0, 8.7, 10.1, 10.7], web: [9.7, 10.3, 11.0, 11.5], uni: [10.6, 11.3, 99, 100] };
+const gauss = (r) => (r() + r() + r() + r() - 2) * 1.7;
+const TYPE_COL = { spiral: [0.72, 0.84, 1], dwarf: [0.95, 0.9, 0.78], irr: [0.78, 0.9, 1], ell: [1, 0.86, 0.6], cluster: [1, 0.9, 0.7], super: [0.8, 0.85, 1], void: [0.5, 0.6, 0.8] };
+
+// 一個迷你的旋渦星系（幾百到幾千顆光點），local 座標：圓盤在 XY 平面、法線 Z，半徑 R（單位由所在群組決定）
+function discPoints(n, R, seed, tint, spiral) {
+  const r = rng(seed), pos = new Float32Array(n * 3), col = new Float32Array(n * 3), sz = new Float32Array(n), B = Math.tan(14 * D2R);
+  for (let i = 0; i < n; i++) {
+    const t = r(); let rr, th, z;
+    if (t < 0.18) { rr = Math.min(-Math.log(1 - r() * 0.98) * 0.1 * R, 0.4 * R); th = r() * TAU; z = gauss(r) * 0.05 * R; col.set([1, 0.82, 0.55], i * 3); }         // 核球
+    else if (spiral && t < 0.8) { rr = (0.08 + 0.92 * Math.pow(r(), 0.8)) * R; th = (i & 1 ? Math.PI : 0) + Math.log(rr / (0.08 * R)) / B + gauss(r) * 0.22; z = gauss(r) * 0.025 * R; const q = r(); col.set(q < 0.75 ? [0.62, 0.77, 1] : [1, 0.6, 0.72], i * 3); }
+    else { rr = Math.min(-Math.log(1 - r() * 0.985) * 0.28 * R, R); th = r() * TAU; z = gauss(r) * 0.04 * R; col.set([1, 0.88, 0.66], i * 3); }
+    const k = (0.35 + r() * 0.5) * tint; col[i * 3] *= k; col[i * 3 + 1] *= k; col[i * 3 + 2] *= k;
+    pos.set([rr * Math.cos(th), rr * Math.sin(th), z], i * 3); sz[i] = 1.3 + r() * 0.9;
+  }
+  return makeDots(pos, col, sz);
+}
+// 宇宙網：節點（星系團）＋節點之間的絲＋一點散在空洞裡的場星系。nodes: [[x,y,z,weight]...]（單位同 R）
+function webPoints(N, R, nodesN, seed, fixed, opt) {
+  const r = rng(seed), nodes = fixed.map((f) => f.slice()), sph = (rad) => { const z = r() * 2 - 1, a = r() * TAU, q = Math.sqrt(1 - z * z), d = rad * Math.cbrt(r()); return [d * q * Math.cos(a), d * z, -d * q * Math.sin(a)]; };
+  while (nodes.length < nodesN + fixed.length) { const p = sph(R); nodes.push([p[0], p[1], p[2], 0.4 + r() * 1.1]); }
+  const edges = [], seen = new Set();
+  for (let i = 0; i < nodes.length; i++) {
+    const d = []; for (let j = 0; j < nodes.length; j++) if (j !== i) d.push([Math.hypot(nodes[i][0] - nodes[j][0], nodes[i][1] - nodes[j][1], nodes[i][2] - nodes[j][2]), j]);
+    d.sort((a, b) => a[0] - b[0]); for (let k = 0; k < (opt.knn || 3); k++) { const j = d[k][1], key = i < j ? i + ',' + j : j + ',' + i; if (!seen.has(key) && d[k][0] < R * 0.55) { seen.add(key); edges.push([i, j]); } }
+  }
+  const pos = new Float32Array(N * 3), col = new Float32Array(N * 3), sz = new Float32Array(N), gz = opt.gz, tint = opt.tint || [1, 0.92, 0.8];
+  const wsum = nodes.reduce((a, n) => a + n[3], 0);
+  for (let i = 0; i < N; i++) {
+    const t = r(); let p, b, s;
+    if (t < 0.5 && edges.length) { const e = edges[(r() * edges.length) | 0], a = nodes[e[0]], c = nodes[e[1]], u = r(), sg = R * 0.012; p = [a[0] + (c[0] - a[0]) * u + gauss(r) * sg, a[1] + (c[1] - a[1]) * u + gauss(r) * sg, a[2] + (c[2] - a[2]) * u + gauss(r) * sg]; b = 0.38 + r() * 0.3; s = 1.2 + r() * 0.8; }
+    else if (t < 0.9) { let w = r() * wsum, k = 0; for (; k < nodes.length - 1; k++) { w -= nodes[k][3]; if (w <= 0) break; } const n = nodes[k], sg = R * (0.014 + 0.012 * n[3]); p = [n[0] + gauss(r) * sg, n[1] + gauss(r) * sg, n[2] + gauss(r) * sg]; b = 0.55 + r() * 0.4; s = 1.5 + r() * 1.3; }
+    else { p = sph(R); b = 0.2 + r() * 0.2; s = 1.1 + r() * 0.6; }
+    if (opt.avoid) { const len = Math.hypot(p[0], p[1], p[2]) || 1; if (Math.abs((p[0] * gz.x + p[1] * gz.y + p[2] * gz.z) / len) < opt.avoid) { i--; continue; } }           // 被銀河盤面擋住的方向（隱匿帶）：不放點
+    pos.set(p, i * 3); const warm = r(); col.set([tint[0] * (0.85 + 0.15 * warm) * b, tint[1] * (0.85 + 0.15 * (1 - warm)) * b, tint[2] * (0.8 + 0.2 * (1 - warm)) * b], i * 3); sz[i] = s;
+  }
+  return makeDots(pos, col, sz);
+}
+const fmtLy = (ly) => ly >= 1e9 ? (ly / 1e9).toFixed(ly < 1e10 ? 1 : 0).replace(/\.0$/, '') + ' 十億光年' : ly >= 1e8 ? (ly / 1e8).toFixed(1).replace(/\.0$/, '') + ' 億光年' : ly >= 1e6 ? (ly / 1e6).toFixed(ly < 1e7 ? 1 : 0).replace(/\.0$/, '') + ' 百萬光年' : ly >= 1e4 ? (ly / 1e4).toFixed(1).replace(/\.0$/, '') + ' 萬光年' : Math.round(ly).toLocaleString() + ' 光年';
+
+class Cosmos {
+  constructor(gx) { this.gx = gx; this.sp = gx.sp; this.built = false; this.sel = null; this.named = []; }
+  build() {
+    if (this.built) return; const gx = this.gx, small = this.sp._small(), root = gx.root;
+    if (window.__cosmosFail) throw new Error('測試：模擬宇宙層建立失敗');
+    if (!Array.isArray(LOCAL_GROUP) || LOCAL_GROUP.length < 10) throw new Error('星系資料不對');
+    this.g = {}; for (const k of ['lg', 'near', 'web', 'uni']) { const g = this.g[k] = new THREE.Group(); root.add(g); }
+    gx.extra = gx.extra || []; this.small = small; const gz = GAL.gz;
+    // ── 本星系群（單位：千光年）
+    { const G = this.g.lg, pos = [], col = [], sz = [], tn = (e) => e[7]; const disc = new Set(['m31', 'm33', 'lmc']);
+      for (const e of LOCAL_GROUP) {
+        const v = eqToScene(e[3], e[4], new THREE.Vector3()).multiplyScalar(e[5] / COS_UNITS.lg); this.named.push({ id: e[0], zh: e[1], en: e[2], layer: 'lg', v, dist: e[5], r: e[6], type: e[7], tier: e[8], note: e[9] });
+        if (disc.has(e[0])) continue; const c = TYPE_COL[tn(e)] || TYPE_COL.dwarf, big = e[6] > 3000 ? 1 : 0.7; pos.push(v.x, v.y, v.z); col.push(c[0] * big, c[1] * big, c[2] * big); sz.push(e[7] === 'dwarf' ? 3.2 : e[7] === 'ell' ? 3.8 : 4.4);
+      }
+      this.lgPts = makeDots(pos, col, sz); G.add(this.lgPts);
+      // 迷你旋渦：銀河系（用真的方向）、仙女座（幾乎側著看）、三角座（正面）、大麥哲倫雲
+      const orient = (e, incl, pa) => { const L = eqToScene(e[3], e[4], new THREE.Vector3()), up = new THREE.Vector3(0, 1, 0), E = new THREE.Vector3().crossVectors(up, L).normalize(), N = new THREE.Vector3().crossVectors(L, E).normalize(), m = N.clone().multiplyScalar(Math.cos(pa * D2R)).addScaledVector(E, Math.sin(pa * D2R)), q = new THREE.Vector3().crossVectors(L, m).normalize(), toObs = L.clone().negate(), n = toObs.multiplyScalar(Math.cos(incl * D2R)).addScaledVector(q, Math.sin(incl * D2R)).normalize(), y = new THREE.Vector3().crossVectors(n, m); return new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(m, y, n)); };
+      const mk = (id, n, R, seed, tint, spiral, quat, center) => { const p = discPoints(n, R / COS_UNITS.lg, seed, tint, spiral); p.position.copy(center); p.quaternion.copy(quat); G.add(p); return p; };
+      const byId = (id) => LOCAL_GROUP.find((e) => e[0] === id), cen = (id) => this.named.find((x) => x.id === id).v.clone();
+      this.m31 = mk('m31', small ? 800 : 2000, 110000, 92, 1, true, orient(byId('m31'), 77, 38), cen('m31'));
+      this.m33 = mk('m33', small ? 350 : 900, 30000, 93, 0.9, true, orient(byId('m33'), 54, 22), cen('m33'));
+      this.lmc = mk('lmc', small ? 130 : 300, 7000, 94, 0.9, false, orient(byId('lmc'), 35, 170), cen('lmc'));
+      this.mwV = new THREE.Vector3().copy(GAL.gx).multiplyScalar(GC_LY / COS_UNITS.lg);          // 銀河中心（太陽為原點）
+      { const m31 = cen('m31'), m33 = cen('m33'); this.glow = makeDots([this.mwV.x, this.mwV.y, this.mwV.z, m31.x, m31.y, m31.z, m33.x, m33.y, m33.z], [0.5, 0.58, 0.9, 0.95, 0.78, 0.55, 0.55, 0.72, 1], [16, 24, 13]); G.add(this.glow); }       // 三個大星系外面一圈柔柔的光：縮很小的時候它們不會只剩幾個看不見的點
+      this.named.unshift({ id: 'mw', zh: '銀河系', en: 'Milky Way', layer: 'lg', v: this.mwV, dist: GC_LY, r: 50000, type: 'spiral', tier: 1, note: '我們的家。這張圖是依觀測資料重建的示意圖' });
+    }
+    // ── 鄰近的星系（單位：百萬光年）：星系團與絲狀結構，被銀河盤面擋住的那一帶是空的（真的星表也是空的）
+    { const G = this.g.near, fixed = [[0, 0, 0, 0.9]], U = COS_UNITS.near;
+      for (const e of NEARBY) { if (e[0] === 'lg') { this.named.push({ id: e[0], zh: e[1], en: e[2], layer: 'near', v: new THREE.Vector3(), dist: 0, r: e[6], type: e[7], tier: e[8], note: e[9] }); continue; } const v = eqToScene(e[3], e[4], new THREE.Vector3()).multiplyScalar(e[5] / U); this.named.push({ id: e[0], zh: e[1], en: e[2], layer: 'near', v, dist: e[5], r: e[6], type: e[7], tier: e[8], note: e[9] }); if (e[7] === 'cluster' && e[5] > 3e7) fixed.push([v.x, v.y, v.z, 1.3 + (e[6] / 7e6)]); }
+      this.nearPts = webPoints(small ? 2500 : 6500, 140, 22, 71, fixed, { gz, avoid: 0.13, knn: 3, tint: [1, 0.92, 0.78] }); G.add(this.nearPts);
+    }
+    // ── 宇宙網（單位：百萬光年）：幾億到幾十億光年的絲、牆與空洞（示意）
+    { const G = this.g.web, U = COS_UNITS.web, fixed = []; this.webU = U;
+      for (const e of WEB_MARKS) { const v = eqToScene(e[3], e[4], new THREE.Vector3()).multiplyScalar(e[5] / U); this.named.push({ id: e[0], zh: e[1], en: e[2], layer: 'web', v, dist: e[5], r: e[6], type: e[7], tier: e[8], note: e[9] }); if (e[7] !== 'void') fixed.push([v.x, v.y, v.z, 1.5]); }
+      this.webPts = webPoints(small ? 3800 : 11000, 1700, 150, 72, fixed, { gz, avoid: 0, knn: 3, tint: [0.9, 0.9, 1] }); G.add(this.webPts);
+    }
+    // ── 可觀測宇宙（單位：十億光年）：我們在正中間；最外面是宇宙微波背景（最早的光），裡面是更大尺度的網
+    { const G = this.g.uni, r = rng(73), n = small ? 1200 : 3200, pos = new Float32Array(n * 3), col = new Float32Array(n * 3), sz = new Float32Array(n), R = 46.5;
+      for (let i = 0; i < n; i++) {
+        const z = r() * 2 - 1, a = r() * TAU, q = Math.sqrt(1 - z * z), x = q * Math.cos(a), y = z, zz = -q * Math.sin(a), nz = 0.5 + 0.28 * Math.sin(x * 5.1 + y * 3.3) + 0.22 * Math.sin(y * 9.7 - zz * 6.1 + 1.3) + 0.12 * Math.sin(zz * 13.3 + x * 7.7);       // 斑駁的明暗（宇宙微波背景的樣子）
+        const b = Math.max(0.12, Math.min(1, nz * (0.7 + r() * 0.6))); pos.set([x * R, y * R, zz * R], i * 3); col.set([1 * b, (0.5 + 0.2 * nz) * b, (0.3 + 0.1 * nz) * b], i * 3); sz[i] = 1.4 + r() * 1.2;
+      }
+      this.cmb = makeDots(pos, col, sz); G.add(this.cmb);
+      this.uniWeb = webPoints(small ? 1400 : 4500, 43, 260, 74, [], { gz, avoid: 0, knn: 3, tint: [0.85, 0.88, 1] }); G.add(this.uniWeb);
+      this.here = makeDots([0, 0, 0], [1, 0.85, 0.45], [9]); G.add(this.here);
+    }
+    // ── 名字（共用 galaxy.js 的標籤系統）
+    const L = (id, text, prio, cls) => gx._lab(id, text, { prio, cls }); this.lab = {};
+    for (const e of this.named) { if (e.id === 'lg') continue; const id = 'c-' + e.id; this.lab[id] = L(id, e.zh, 6 + (4 - e.tier) * 0.8 + (e.layer === 'lg' ? 0.3 : 0)); }
+    this.lab['c-lg'] = L('c-lg', '本星系群', 8.2); this.lab['c-here'] = L('c-here', '我們在這裡', 9.5, 'lb-you'); this.lab['c-cmb'] = L('c-cmb', '宇宙微波背景（最早的光）', 8); this.lab['c-edge'] = L('c-edge', '可觀測宇宙的邊緣', 7.5);
+    this.built = true;
+  }
+  _unitScale(k, S) { return S.s * KAPPA * LY * COS_UNITS[k]; }
+  _set(obj, op, px) { obj.visible = op > 0.004; obj.traverse((o) => { if (o.material && o.material.uniforms) { o.material.uniforms.uOp.value = op; o.material.uniforms.uPx.value = px; } }); }
+  // 每張畫面：S 同 Galaxy.update 的參數；pos 是「以太陽為原點的座標」在世界裡的位置（畫面中心往銀河中心滑的那一段，各層一起移）
+  update(S, pos) {
+    if (!this.built) return; const u = S.u, px = this.sp.globe.renderer.getPixelRatio(), gx = this.gx, lop = gx.labelOp || (gx.labelOp = {});
+    if (u < 4.6) { for (const k in this.g) this.g[k].visible = false; this.active = false; this.w = { lg: 0, mw: 0, near: 0, web: 0, uni: 0 }; return; } this.active = true;
+    const sc = (k) => this._unitScale(k, S); for (const k of ['lg', 'near', 'web', 'uni']) { const g = this.g[k]; g.position.copy(pos); g.scale.setScalar(sc(k)); }
+    // 每一層的不透明度看它在畫面上多大（見 galaxy.js 開頭的說明）：外層很早就以零星的背景光點浮現、內層縮到很小才淡掉
+    const fh = AU0 * Math.exp(S.L) / LY / 2, f = { lg: 3.5e6 / fh, near: 1.4e8 / fh, web: 1.7e9 / fh, uni: 4.3e10 / fh };
+    const w = { lg: sizeIn(f.lg) * sizeOut(f.lg) * sizeDim(f.lg), near: sizeIn(f.near) * sizeOut(f.near) * sizeDim(f.near), web: sizeIn(f.web) * sizeOut(f.web, 0.008, 0.05) * sizeDim(f.web), uni: sizeIn(f.uni), mw: gx.oMini || 0 };
+    this.w = w;
+    this._set(this.g.lg, w.lg, px); this._set(this.g.near, w.near, px); this._set(this.g.web, w.web, px);
+    // 可觀測宇宙：裡面更大尺度的網照上面的規則很早就在；最外面那層宇宙微波背景晚一點才浮現（它是「邊界」，太早出現會變成到處都是橘點）
+    this.g.uni.visible = w.uni > 0.004; const cmb = sizeIn(f.uni, 12, 30);
+    for (const [o, op] of [[this.uniWeb, w.uni], [this.cmb, cmb], [this.here, cmb]]) { o.visible = op > 0.004; o.material.uniforms.uOp.value = op; o.material.uniforms.uPx.value = px; }
+    // 標籤的不透明度
+    for (const e of this.named) {
+      const id = 'c-' + e.id; if (!this.lab[id]) continue; const wl = e.id === 'mw' ? win(u, 6.4, 6.9, 9.2, 9.8) : e.layer === 'lg' ? (e.dist < 1.2e6 ? win(u, 6.4, 6.9, 7.9, 8.5) : win(u, 7.3, 7.8, 8.9, 9.5)) : e.layer === 'near' ? win(u, 8.6, 9.0, 10.0, 10.5) : win(u, 9.9, 10.3, 11.1, 11.6);
+      lop[id] = wl * (e.tier <= 2 ? 1 : 0.85);
+    }
+    lop['c-lg'] = win(u, 8.6, 9.0, 9.8, 10.3); lop['c-here'] = smooth(11.0, 11.5, u); lop['c-cmb'] = smooth(11.2, 11.6, u); lop['c-edge'] = smooth(11.3, 11.7, u);
+    // 迷你銀河（仙女座等）一起在 lg 那一層裡；點選圈圈的位置由 galaxy.js 算
+  }
+  // 名字的位置：回傳 [{ id, world: (out) => Vector3, dy }]，交給 galaxy.js 的 labelsPass 擺
+  labelEntries() {
+    if (!this.built || !this.active) return [];
+    const out = [], W = (k, v, o) => (o || _w).copy(v).multiplyScalar(this.g[k].scale.x).add(this.g[k].position);
+    for (const e of this.named) { if (e.id === 'lg') continue; const id = 'c-' + e.id; out.push({ id, prio: this.lab[id].prio, world: (o) => W(e.layer, e.v, o), dy: e.id === 'mw' ? 16 : (e.id === 'm31' || e.id === 'm33') ? -18 : e.layer === 'lg' ? 10 : 8 }); }
+    out.push({ id: 'c-lg', prio: 8.2, world: (o) => W('near', _v.set(0, 0, 0), o), dy: 12 });
+    out.push({ id: 'c-here', prio: 9.5, world: (o) => W('uni', _v.set(0, 0, 0), o), dy: 14 });
+    out.push({ id: 'c-cmb', prio: 8, world: (o) => W('uni', _v.set(0, 46.5, 0), o), dy: -16 });
+    out.push({ id: 'c-edge', prio: 7.5, world: (o) => W('uni', _v.set(46.5, 0, 0), o), dy: 12 });
+    return out;
+  }
+  worldOf(e, out) { const g = this.g[e.layer]; return out.copy(e.v).multiplyScalar(g.scale.x).add(g.position); }
+  dispose() { for (const k in this.g) { const g = this.g[k]; g.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); g.parent && g.parent.remove(g); } this.built = false; }
+  // 點選：最近的有名字的地標（螢幕上 22 像素內）
+  pick(cx, cy) {
+    if (!this.built || !this.active) return null; const sp = this.sp, r = sp.globe.canvas.getBoundingClientRect(), x = cx - r.left, y = cy - r.top, cam = sp.camera, Wd = sp.W, H = sp.H; cam.updateMatrixWorld();
+    let best = null, bd = sp.compact() ? 28 : 22; const u = sp.u;
+    for (const e of this.named) { const id = 'c-' + e.id, op = (this.gx.labelOp && this.gx.labelOp[id]) || 0; if (e.id === 'lg' || op < 0.4) continue; const g = this.g[e.layer]; _v.copy(e.v).multiplyScalar(g.scale.x).add(g.position).project(cam); if (_v.z > 1) continue; const d = Math.hypot((_v.x * 0.5 + 0.5) * Wd - x, (1 - (_v.y * 0.5 + 0.5)) * H - y); if (d < bd) { bd = d; best = e; } }
+    void u; return best;
+  }
+  // 被點的地標的資訊卡
+  card(e) {
+    const kind = { spiral: '旋渦星系', dwarf: '矮星系', irr: '不規則星系', ell: '橢圓星系', cluster: '星系團／星系群', super: '超星系團／巨大結構', void: '宇宙空洞' }[e.type] || '', honest = e.layer === 'lg' ? '位置大概對，星系的樣子是示意。' : e.layer === 'near' ? '位置大概對，細節是示意。' : '位置與大小是大概的，結構是示意。';
+    return '<h3>' + e.zh + ' <i>' + e.en + '</i><span class="sp-tag">' + kind + '</span></h3><p class="sp-b">' + e.note + '</p><ul>' + (e.dist ? '<li><b>離我們</b>約 ' + fmtLy(e.dist) + '</li>' : '') + (e.r ? '<li><b>大小</b>約 ' + fmtLy(e.r * 2) + '寬</li>' : '') + '</ul><p class="sp-f">' + honest + '</p>';
+  }
+}
+
+return { COS_UNITS, COS_WIN, Cosmos };
 })();
 // ── space.js ──
 const __m_space_js = (() => {
@@ -4942,13 +5258,18 @@ const __m_space_js = (() => {
 
 const { BODIES, BODY, helio, moonEcl, moonSub, viewDist, gmstDeg } = __m_space_data_js;
 const { buildModel, MODEL_INFO, MODEL_KEYS } = __m_sat_models_js;
-const { Galaxy, GAL, U_MAX, U_STATIONS, Lof, camSat, sysScale, focusOfU, smooth, frameText, eqToScene, realScaleAU, LY } = __m_galaxy_js;
+const { Galaxy, GAL, U_MAX, U_NEAR_MAX, U_STATIONS, Lof, camSat, sysScale, focusOfU, smooth, frameText, eqToScene, realScaleAU, LY } = __m_galaxy_js;
 const { STARS } = __m_stars_data_js;
+const { Cosmos } = __m_cosmos_js;
+const { LOCAL_GROUP, NEARBY, WEB_MARKS } = __m_cosmos_data_js;
 const D2R = Math.PI / 180, TAU = Math.PI * 2;
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
 const ll2v = (lat, lon, r = 1) => { const la = lat * D2R, lo = lon * D2R; return new THREE.Vector3(r * Math.cos(la) * Math.cos(lo), r * Math.sin(la), -r * Math.cos(la) * Math.sin(lo)); };
 const VZ = 3.2;                                             // 自動縮放在交棒那一刻的速度（每秒幾個 e 倍），兩個舞台用同一個數字才接得順
 const ZMIN = 0.06;                                          // 跟 globe.js 的 ZOOM_MIN 一樣（這裡不能 import globe.js，會循環）
+// 穿梭時各站的位置（u）與名字：自動飛行經過時，上方輕輕顯示站名
+const TRIP_STATIONS = [0, 1.5, 3.2, 6.0, 7.0, 8.1, 9.2, 10.4, 11.6];
+const TRIP_NAMES = [['太陽系', 0], ['太陽系外圍', 1.5], ['鄰近的恆星', 3.2], ['銀河系', 6.0], ['銀河系的鄰居', 7.0], ['仙女座與本星系群', 8.1], ['鄰近的星系', 9.2], ['宇宙網', 10.4], ['可觀測宇宙', 11.6]];
 const FOV = 30, MV = new THREE.Vector3(0, 0, 3000);        // 模型觀賞區放在很遠的地方（不跟行星重疊）
 const MV_EARTH_R = 80;                                      // 模型觀賞時背景那顆大地球的半徑（模型約 1.2 長）
 const _v = new THREE.Vector3(), _q = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), _ax = new THREE.Vector3(), _w = new THREE.Vector3();
@@ -4971,8 +5292,8 @@ class Space {
   constructor(globe) {
     this.globe = globe; this.active = false; this.built = false; this.focus = 'earth'; this.onChange = null;
     this.q = new THREE.Quaternion(); this.qUser = new THREE.Quaternion(); this.mq = new THREE.Quaternion(); this.anchor = 'earth'; this.nearOK = false; this.dist = 10; this.tgt = new THREE.Vector3(); this.fl = null; this.zl = null; this.voF = null; this.vo = 0; this.fd = 0; this.holdUntil = 0; this.lastPos = 0; this.leftAt = 0; this.tex = {}; this.queue = []; this.loading = false;
-    this.mod = { Lof, GAL, U_MAX, U_STATIONS, smooth, eqToScene, realScaleAU, LY, sysScale, camSat, STARS };       // 給驗算用（朋友版是單一檔案，測試沒辦法 import 各個模組）
-    this.gx = null; this.gxFail = false; this.u = 0; this.sk = 1; this.camD = 10; this.q0 = new THREE.Quaternion();
+    this.mod = { Cosmos, LOCAL_GROUP, NEARBY, WEB_MARKS, Lof, GAL, U_MAX, U_STATIONS, smooth, eqToScene, realScaleAU, LY, sysScale, camSat, STARS };       // 給驗算用（朋友版是單一檔案，測試沒辦法 import 各個模組）
+    this.gx = null; this.gxFail = false; this.cosmos = null; this.cosFail = false; this.cosPick = null; this.u = 0; this.sk = 1; this.camD = 10; this.q0 = new THREE.Quaternion();
     this._bindEvents();
   }
   // ---------- 建立（第一次需要才做） ----------
@@ -5056,7 +5377,7 @@ class Space {
   releaseTex() {
     if (this.active || !this.built) return; this.released = true; this.queue = [];
     for (const f in (this.texFile || {})) { try { this.texFile[f].dispose(); } catch (_) {} }
-    this.texFile = {}; this.tex = {}; if (this.gx) { try { this.gx.release(); } catch (_) {} this.gx = null; }
+    this.texFile = {}; this.tex = {}; if (this.gx) { try { this.gx.release(); } catch (_) {} this.gx = null; this.cosmos = null; }
     for (const it of (this.texUse || [])) { if (it.loaded) { it.loaded = false; it.mat.map = null; it.mat.needsUpdate = true; } }
     const em = this.bodies.earth.mat; if (em.emissiveMap) { try { em.emissiveMap.dispose(); } catch (_) {} em.emissiveMap = null; em.emissive = new THREE.Color(0x000000); em.needsUpdate = true; this.nightLoaded = false; }
   }
@@ -5095,12 +5416,19 @@ class Space {
     const st = this.globe.stage, c = this.cardEl = document.createElement('div'); c.className = 'spcard'; c.hidden = true; c.id = 'spcard'; st.appendChild(c);
     c.addEventListener('click', () => { if (this.compact()) { c.classList.toggle('exp'); setTimeout(() => this._applyFrame(), 30); } });      // 手機：資訊卡平常收成兩行，點一下展開
     const x = this.exitEl = document.createElement('button'); x.className = 'sp-exit'; x.type = 'button'; x.textContent = '‹ 回地球'; x.addEventListener('click', (e) => { e.stopPropagation(); this.exit(); }); st.appendChild(x);
+    const tn = this.tripEl = document.createElement('div'); tn.className = 'sp-trip-name'; st.appendChild(tn);       // 自動飛行經過每一站時，在上方輕輕顯示那一站的名字
     const n = this.noteEl = document.createElement('div'); n.className = 'spnote'; n.textContent = '距離與大小經過調整，方便觀看'; st.appendChild(n);
   }
   _cardFill() {
     const c = this.cardEl, f = this.focus; let h = '';
     if (f === 'system') h = '<h3>太陽系全景</h3><p class="sp-b">一顆恆星、八大行星和一顆矮行星。亮的線是它們的軌道，位置是「現在」真實的方位。</p><p class="sp-f">拖曳轉動、滾輪或雙指縮放，點任何一顆就會飛過去。</p>';
     else if (f === 'outer') h = '<h3>太陽系外圍</h3><p class="sp-b">行星外面還有一圈圈冰冷的小天體（古柏帶），再往外是一大團像球殼的彗星巢（歐特雲，示意）。航海家 1 號飛了快 50 年，才剛到這裡的入口。</p><p class="sp-f">畫面寬度大約 1.6 光年（10 萬天文單位）。</p>';
+    else if (this.cosPick && this.cosmos && this.cosmos.built && ['neighbors', 'local', 'nearby', 'web', 'universe'].includes(f)) h = this.cosmos.card(this.cosPick);
+    else if (f === 'neighbors') h = '<h3>銀河系的鄰居</h3><p class="sp-b">銀河系縮成中間一個小盤，旁邊是被它的重力拉著繞行的衛星星系——大、小麥哲倫雲是其中最亮的兩個。</p><p class="sp-f">畫面寬度大約 60 萬光年。位置大概對，星系的樣子是示意。點有名字的星系看說明。</p>';
+    else if (f === 'local') h = '<h3>仙女座與本星系群</h3><p class="sp-b">銀河系、仙女座星系、三角座星系，加上幾十個小星系，用重力綁成「本星系群」，直徑約 1,000 萬光年。仙女座正朝我們靠近，大約 40 億年後會跟銀河系合在一起。</p><p class="sp-f">畫面寬度大約 1,200 萬光年。位置大概對，星系的樣子是示意。</p>';
+    else if (f === 'nearby') h = '<h3>鄰近的星系</h3><p class="sp-b">再拉遠，每一個光點都是一個星系。它們聚成一團一團的星系團，中間隔著空洞。左右那條空空的帶子，是被我們自己銀河的盤面擋住、看不到的方向。</p><p class="sp-f">畫面寬度大約 3 億光年。依觀測資料畫的示意圖。</p>';
+    else if (f === 'web') h = '<h3>宇宙網</h3><p class="sp-b">在這個尺度，星系排成長長的絲和牆，交會的地方是巨大的星系團，絲與絲之間是幾乎什麼都沒有的空洞，整體像一張立體的網。</p><p class="sp-f">畫面寬度大約 40 億光年。依大尺度結構的樣子畫的示意圖，不是真實的每一個星系。</p>';
+    else if (f === 'universe') h = '<h3>可觀測宇宙</h3><p class="sp-b">我們在正中間，最外面那一層是宇宙微波背景——宇宙大約 38 萬歲時發出的光，現在才到我們這裡。可觀測的範圍半徑約 465 億光年，裡面大約有 2 兆個星系。</p><p class="sp-f">宇宙年齡 138 億年，但空間一直在膨脹，所以範圍比 138 億光年大得多。我們在正中間，只是因為「看得到的範圍」本來就以觀察者為中心。示意圖。</p>';
     else if (f === 'stars' && this.starPick && this.gx && this.gx.built) h = this.gx.starCard(this.starPick);
     else if (f === 'stars') h = '<h3>鄰近的恆星</h3><p class="sp-b">太陽在正中間，周圍是離我們最近的 200 顆左右的恆星，位置是真實的。光從最近的那一顆走到我們這裡要 4 年多。</p><p class="sp-f">點任何一顆看看。星表：HYG（CC BY-SA 4.0）</p>';
     else if (f === 'galaxy') h = '<h3>銀河系</h3><p class="sp-b">我們住在銀河系邊緣的一條旋臂上，離中心約 2.6 萬光年。這是依觀測資料重建的示意圖，沒有人真的從外面拍過。</p><p class="sp-f">畫面寬度大約 10 萬光年。</p>';
@@ -5131,7 +5459,21 @@ class Space {
   _dH() { return this._distFor(this.rpxMin || 12); }                       // 交棒的距離：這時地球跟舞台 A 縮到最小時一樣大
   _axisOf(st) { return st.anchor === 'earth' && !st.nearOK; }                // 走在「地球畫面 ↔ 太陽系」這條路上
   _dN(st) { return this._axisOf(st) ? this._dH() : this.bodies[st.anchor].b.r * 14; }
-  _maxD() { return this.dS * (this.gxFail ? 4 : Math.exp(U_MAX)); }                  // 縮放最遠到哪：能往外延伸到銀河系；延伸的部分壞掉時退回只到太陽系全景外一點
+  // 銀河系外面那幾層：第一次需要才建（走過 u 5.2，或自動飛行會經過時）；建不起來就退回只到銀河系外一點（跟工作表 4 一樣），其他照常
+  _buildCosmos() {
+    if (this.cosmos || this.cosFail || !this.gx || !this.gx.built) return;
+    try { const c = new Cosmos(this.gx); c.build(); this.cosmos = c; this.gx.cosmos = c; this.gx.cosmosOn = true; }
+    catch (e) { this._cosFailed(e); }
+  }
+  // 飛行前先把會經過的層建好（起飛前建，不要飛到一半才建而卡一下）
+  _ensureFar(u1) {
+    if (this.gxFail) return;
+    try { if (u1 > 0.25 && !this.gx) { this.gx = new Galaxy(this); this.gx.build(); } else if (this.gx && !this.gx.built) this.gx.build(); }
+    catch (e) { this.gxFail = true; this.gx = null; return; }
+    if (u1 > 5.2) this._buildCosmos();
+  }
+  _cosFailed(e) { this.cosFail = true; try { if (this.cosmos && this.cosmos.built) this.cosmos.dispose(); } catch (_) {} this.cosmos = null; if (this.gx) { this.gx.cosmos = null; this.gx.cosmosOn = false; } console.warn('宇宙層建立失敗，路退回只到銀河系外一點', e); }
+  _maxD() { return this.dS * (this.gxFail ? 4 : Math.exp(this.cosFail ? U_NEAR_MAX : U_MAX)); }                  // 縮放最遠到哪：能往外延伸到銀河系；延伸的部分壞掉時退回只到太陽系全景外一點
   _eOf(st) { if (MODEL_INFO[st.anchor]) return 0; const dN = this._dN(st), dS = Math.max(this.dS || 200, dN * 1.5), x = clamp(Math.log(st.dist / dN) / Math.log(dS / dN), 0, 1); return x * x * (3 - 2 * x); }
   _poseOf(st) {
     const orbit = BODY.moon.orbit;
@@ -5162,7 +5504,7 @@ class Space {
   // 交還給地球畫面：這時鏡頭已經擺成舞台 A 的樣子
   handOut(extra = 1) {
     if (!this.active) return; const g = this.globe, st = g.stage; this.spin = null;
-    this.active = false; this.leaving = false; this.fl = this.zl = null; st.classList.remove('space-on'); g.labelsEl.style.display = ''; this._giveStars(); if (g.stars) { g.stars.material.opacity = 0.5; g.stars2.material.opacity = 0.8; }
+    this.active = false; this.leaving = false; this.fl = this.zl = null; this.stage_trip(false); st.classList.remove('space-on'); g.labelsEl.style.display = ''; this._giveStars(); if (g.stars) { g.stars.material.opacity = 0.5; g.stars2.material.opacity = 0.8; }
     this.lbBox.style.display = 'none'; this.cardEl.hidden = true; this.noteEl.style.display = 'none'; if (this.gx && this.gx.built) this.gx.show(false); this.leftAt = performance.now(); clearTimeout(this.relTimer); this.relTimer = setTimeout(() => this.releaseTex(), 5 * 60 * 1000);
     g.fly = null; g.zoom = clamp(ZMIN * Math.max(1, extra), ZMIN, 9); g.resize(); g.holdUntil = performance.now() + 4000; g._kick && g._kick();
     this.focus = 'earth'; if (this.onChange) this.onChange('earth', false);
@@ -5174,7 +5516,7 @@ class Space {
     if (this.active) return this.goto(key);
     if (!this.built) this._build();
     const g = this.globe;
-    const go = () => { this.entering = false; this.handIn(1); if (key === 'system') this._zoomTo(this.dS, 'out', clamp(3000 * Math.log(this.dS / this._dH()) / VZ, 500, 2400)); else this.goto(key); };       // 兩段的速度在交棒那一刻一樣（前段越來越快、後段慢慢停）
+    const go = () => { this.entering = false; this.handIn(1); if (key === 'system') this._zoomTo(this.dS, 'out', clamp(3000 * Math.log(this.dS / this._dH()) / VZ, 500, 2400)); else { this.fromHand = true; this.goto(key); this.fromHand = false; } };       // 兩段的速度在交棒那一刻一樣（前段越來越快、後段慢慢停）
     if (fromA && g.zoom > ZMIN * 1.02) {
       this.entering = true; const dl = Math.log(g.zoom / ZMIN), durA = clamp(2000 * dl / VZ, 300, 2400);
       g.flyTo(g.viewLat, g.viewLon, 8000, { zoom: ZMIN, exact: true }); g.fly.dur = durA; g.fly.ease = 'in'; g.fly.done = () => go();
@@ -5182,18 +5524,48 @@ class Space {
   }
   // 回地球：沿著同一條路縮回去，接到地球畫面後繼續放大到平常的大小
   exit(zoomAfter = 1) {
+    if (this.active && this.leaving && this.zl && this.zl.trip) { this._tripFast(); return; }       // 回地球的途中再按一次＝我趕時間：剩下的路 1.5 秒內走完
     if (!this.active || (this.leaving && (this.fl || this.zl))) return; const g = this.globe;       // 正在回地球的途中不重複觸發；但如果被手勢打斷（飛行已經停了），還是可以再按
     this.leaving = true;
-    const far = this.u > 0.3;                                  // 從更遠的地方回來：總共約 3.5 秒內到家
-    const land = () => { this.handOut(1); g.flyTo(g.viewLat, g.viewLon, 9000, { zoom: zoomAfter, exact: true }); g.fly.dur = clamp(3000 * Math.log(zoomAfter / ZMIN) / VZ, 400, far ? 1500 : 2800); g.fly.ease = 'out'; };
-    if (this._axisOf(this) && !this.fl) this._zoomTo(this._dH(), 'in', clamp(2000 * Math.log(this.dist / this._dH()) / VZ, 250, far ? 2000 : 2200), land);
+    if (this.u > 0.3 && !this._axisOf(this)) { this.anchor = 'earth'; this.nearOK = false; }       // 拉得很遠的時候看著誰都一樣（畫面中心是太陽系），改成走地球這條路回家
+    this.hurry = false;
+    const land = () => { this.handOut(1); g.flyTo(g.viewLat, g.viewLon, 9000, { zoom: zoomAfter, exact: true }); g.fly.dur = clamp(3000 * Math.log(zoomAfter / ZMIN) / VZ, 400, this.hurry ? 1000 : 2800); g.fly.ease = 'out'; this.hurry = false; };       // 趕時間：連最後地球放大回來也縮短
+    if (this._axisOf(this) && !this.fl) this._trip(this._dH(), { done: land, noOut: true });       // 一路經過每一層：每一站放慢讓你看一眼，空曠處加速；到地球那一端的速度跟地球畫面接得上
     else this._flyTo({ anchor: 'earth', nearOK: false, dist: this._dH(), qUser: this._sysQ(this.mq) }, land, true);
   }
+  // ───────── 穿梭：自動飛行的速度曲線 ─────────
+  // 時間跟著「經過幾站」走：每一站附近放慢（讓你瞄得到那一層），兩站之間的空曠處加速，全程不停、速度連續。
+  // 速度是「每秒幾個 e 倍」（ln dist 的變化率）：u ≥ 0（太陽系全景以外）是 V0 除以「站的減速係數」；地球那一端（u < 0）從全景的速度平順加快到 VZ，跟地球畫面接得上。
+  _tripTable(l0, l1, o = {}) {
+    const lS = Math.log(this.dS), lH = Math.log(this._dH()), N = 360, V0 = 1.75, A = 1.4, AS = 0.9, Lr = 0.5, st = TRIP_STATIONS, dir = l1 >= l0 ? 1 : -1;
+    const bump = (x) => Math.abs(x) >= 1 ? 0 : Math.pow(Math.cos(Math.PI * x / 2), 2);
+    const v0 = V0 / (1 + AS);
+    const base = (l) => { const u = l - lS; if (u <= 0) { const k = clamp((lS - l) / Math.max(1e-6, lS - lH), 0, 1); return v0 + (VZ - v0) * Math.pow(k, 1.5); } let w = 1; for (let i = 0; i < st.length; i++) w += (i === 0 ? AS : A) * bump((u - st[i]) / 0.5); return V0 / w; };
+    const t = new Float32Array(N + 1), ls = new Float32Array(N + 1), dl = (l1 - l0) / N; ls[0] = l0;
+    for (let k = 0; k < N; k++) { const lm = l0 + (k + 0.5) * dl, ri = o.noIn ? 1 : 0.25 + 0.75 * Math.sqrt(clamp(Math.abs(lm - l0) / Lr, 0, 1)), ro = o.noOut ? 1 : 0.2 + 0.8 * Math.sqrt(clamp(Math.abs(l1 - lm) / Lr, 0, 1)); t[k + 1] = t[k] + Math.abs(dl) / (base(lm) * ri * ro); ls[k + 1] = l0 + (k + 1) * dl; }
+    let T = t[N]; const want = clamp(T, o.tmin == null ? 1.6 : o.tmin, o.tmax == null ? 14 : o.tmax), f = T > 0 ? want / T : 1; if (Math.abs(l1 - l0) < 0.02) return { T: 0, at: () => l1, l0, l1 };
+    for (let k = 0; k <= N; k++) t[k] *= f; T = t[N];
+    return { T, l0, l1, dir, at(e) { if (e <= 0) return l0; if (e >= T) return l1; let a = 0, b = N; while (b - a > 1) { const m = (a + b) >> 1; if (t[m] <= e) a = m; else b = m; } const u = (e - t[a]) / Math.max(1e-9, t[b] - t[a]); return ls[a] + (ls[b] - ls[a]) * u; } };
+  }
+  // 沿著這條路飛到 dist = d1（不換目標）。opts：done 到了要做的事、noOut 到終點不減速（接著要交棒）、noIn 起飛不從零開始（已經在動）、tmin／tmax 時間範圍
+  _trip(d1, o = {}) {
+    this.fl = null; const l1 = Math.log(d1); this._ensureFar(Math.max(this.u, l1 - Math.log(this.dS)));
+    const tb = this._tripTable(Math.log(this.dist), l1, o);
+    this.zl = { trip: true, t0: performance.now(), tb, l1, o, done: o.done, dur: tb.T * 1000, fast: false }; this.stage_trip(true); this.holdUntil = performance.now() + 6000; this.globe._kick && this.globe._kick();
+  }
+  _tripFast() { const z = this.zl; if (!z || !z.trip || z.fast) return; this.hurry = true; const l = Math.log(this.dist), tb = this._tripTable(l, z.l1, Object.assign({}, z.o, { noIn: true, tmin: 0.3, tmax: 1.5 })), T = Math.min(tb.T, 1.5); this.zl = Object.assign(z, { t0: performance.now(), tb, dur: T * 1000, fast: true }); }
+  stage_trip(on) { this.globe.stage.classList.toggle('sp-trip', on); if (!on && this.tripEl) { this.tripEl.classList.remove('on'); this._tripName = ''; } }
+  _tripEnd() { this.stage_trip(false); if (this.active) this._cardFill(); }
+  _tripCaption(u, on) {          // 經過哪一站：上方一行小字，用文字自己的淡入淡出
+    let name = ''; if (on) { let best = 0.5; for (const [k, ui] of TRIP_NAMES) if (Math.abs(u - ui) < best) { best = Math.abs(u - ui); name = k; } }
+    if (name === this._tripName) return; this._tripName = name; const el = this.tripEl; if (!el) return;
+    if (name) { el.textContent = name; el.classList.add('on'); } else el.classList.remove('on');
+  }
   // 沿著目前這條路自動縮放到某個距離（不換目標）
-  _zoomTo(d1, ease, dur, done) { this.fl = null; this.zl = { t0: performance.now(), dur, l0: Math.log(this.dist), l1: Math.log(d1), ease, done }; this.globe._kick && this.globe._kick(); }
+  _zoomTo(d1, ease, dur, done) { this.fl = null; this.stage_trip(false); this.zl = { t0: performance.now(), dur, l0: Math.log(this.dist), l1: Math.log(d1), ease, done }; this.globe._kick && this.globe._kick(); }
   // 飛到另一個狀態（換目標）：位置、角度、距離一起平順過去
   _flyTo(st1, done, straight) {
-    this.zl = null; this.spin = null; const p0 = this._curPose || this._poseOf(this), d0 = this.dist, p1 = this._poseOf(st1), ld = Math.abs(Math.log(st1.dist / d0)), far = p0.tgt.distanceTo(p1.tgt);
+    this.zl = null; this.stage_trip(false); this.spin = null; const p0 = this._curPose || this._poseOf(this), d0 = this.dist, p1 = this._poseOf(st1), ld = Math.abs(Math.log(st1.dist / d0)), far = p0.tgt.distanceTo(p1.tgt);
     this.fl = { t0: performance.now(), dur: clamp(1400 + ld * 260 + far * 8, 1500, 2600), p0, d0, st1, done, arc: straight ? 0 : Math.min(1.4, 0.2 + far / Math.max(d0, st1.dist) * 0.3) };
     this.globe._kick && this.globe._kick();
   }
@@ -5205,23 +5577,32 @@ class Space {
     const dir = o.pos.lengthSq() > 1e-6 ? o.pos.clone().negate().normalize() : new THREE.Vector3(0, 0, 1);        // 從太陽那一側看：受光的一面朝向我們
     if (key === 'moon') { const sd = dir.clone(); dir.copy(this.bodies.earth.pos).sub(o.pos).normalize().addScaledVector(sd, 0.7).normalize(); }      // 月亮：地球那一側（看到同一面）再偏向太陽，露出一點月相
     dir.applyAxisAngle(_ax.set(0, 1, 0), 0.55); dir.y += 0.3; dir.normalize();
+    const dist = clamp(need, vd.min * 1.2, Math.min(vd.max, o.b.r * 13));
+    // 鏡頭不可以落在別顆星球（尤其太陽）旁邊：水星、金星離太陽很近，照預設的角度鏡頭會貼著太陽——多繞開一點，直到鏡頭在外面
+    for (let k = 0; k < 14 && this._blocked(_v.copy(o.pos).addScaledVector(dir, dist), key); k++) { dir.applyAxisAngle(_ax.set(0, 1, 0), 0.16); dir.y += 0.04; dir.normalize(); }
     const m = new THREE.Matrix4().lookAt(dir, new THREE.Vector3(), new THREE.Vector3(0, 1, 0));
-    return { dist: clamp(need, vd.min * 1.2, Math.min(vd.max, o.b.r * 13)), q: new THREE.Quaternion().setFromRotationMatrix(m) };
+    return { dist, q: new THREE.Quaternion().setFromRotationMatrix(m) };
   }
+  // 這個位置是不是在別顆星球（不是 key）的「不要貼太近」範圍裡
+  _blocked(p, key) { for (const id in this.bodies) { if (id === key) continue; const o = this.bodies[id]; if (p.distanceTo(o.pos) < o.b.r * 1.7) return true; } return false; }
   goto(key) {
     if (!this.active) return this.enter(key);
     if (this.leaving) this.leaving = false;
     if (U_STATIONS[key]) {                                    // 更遠的地方（太陽系外圍、鄰近恆星、銀河系）：沿著同一條路自動縮放過去，時間依距離 1.5～3.5 秒
-      if (this.gxFail) key = 'system'; else {
+      if (!this.gxFail) this._ensureFar(U_STATIONS[key]);
+      if (this.gxFail || (U_STATIONS[key] > U_NEAR_MAX && this.cosFail)) key = this.gxFail ? 'system' : 'galaxy';
+      if (U_STATIONS[key]) {
         const d1 = this.dS * Math.exp(U_STATIONS[key]); this.leaving = false;
         if (MODEL_INFO[this.anchor]) return this._flyTo({ anchor: 'earth', nearOK: false, dist: d1, qUser: this._sysQ(this.mq) });
-        return this._zoomTo(d1, 'inout', clamp(1000 + 400 * Math.abs(Math.log(d1 / Math.max(this.dist, this.dS * 0.2))), 1500, 3500));
+        return this._trip(d1, { noIn: this.fromHand });
       }
     }
     if (key === 'system') {
       if (MODEL_INFO[this.anchor]) return this._flyTo({ anchor: 'earth', nearOK: false, dist: this.dS, qUser: this._sysQ(this.mq) });
+      if (this.u > 0.3) return this._trip(this.dS);
       return this._zoomTo(this.dS, 'inout', clamp(600 * Math.abs(Math.log(this.dS / this.dist)) + 500, 700, 2200));
     }
+    if (this.u > 0.3 && (this.bodies[key] || MODEL_INFO[key])) return this._trip(this.dS, { done: () => this.goto(key) });       // 從很遠的地方點某顆星球：先一路飛回太陽系全景（每一層都經過），再飛過去
     if (this.bodies[key] || MODEL_INFO[key]) { this.focus = key; this._cardFill(); }       // 先換資訊卡（要量它多高，才知道星球可以放多大）
     const T = this._target(key); if (!T) return; if (MODEL_INFO[key]) this.mvD0 = T.dist;
     this._flyTo({ anchor: key, nearOK: key === 'earth', dist: T.dist, qUser: T.q });
@@ -5261,8 +5642,14 @@ class Space {
       if (k >= 1) { this.anchor = f.st1.anchor; this.nearOK = f.st1.nearOK; this.qUser = f.st1.qUser.clone(); this.dist = f.st1.dist; this.fl = null; this.holdUntil = now + 6000; P = this._poseOf(this); if (f.done) { this._curPose = P; f.done(); if (!this.active) return; } }
     } else {
       if (this.zl) {                                            // 沿著同一條路自動縮放
-        const z = this.zl, k = clamp((now - z.t0) / z.dur, 0, 1); this.dist = Math.exp(z.l0 + (z.l1 - z.l0) * ez(k, z.ease));
-        if (k >= 1) { this.zl = null; this.holdUntil = now + 6000; if (z.done) { z.done(); if (!this.active) return; } }
+        const z = this.zl;
+        if (z.trip) {                                           // 穿梭（見 _tripTable）：一路經過每一層，每一站放慢
+          const el = (now - z.t0) / 1000; this.dist = Math.exp(el >= z.tb.T ? z.l1 : z.tb.at(el));
+          if (el >= z.tb.T) { this.zl = null; this.holdUntil = now + 6000; this._tripEnd(); if (z.done) { z.done(); if (!this.active) return; } }
+        } else {
+          const k = clamp((now - z.t0) / z.dur, 0, 1); this.dist = Math.exp(z.l0 + (z.l1 - z.l0) * ez(k, z.ease));
+          if (k >= 1) { this.zl = null; this.holdUntil = now + 6000; if (z.done) { z.done(); if (!this.active) return; } }
+        }
       }
       if (this.spin && !this.dragging) { const v = this.spin; this._rot(v.vx * dt, v.vy * dt); const f = Math.exp(-dt * 3.2); v.vx *= f; v.vy *= f; g.activeUntil = now + 300; if (Math.hypot(v.vx, v.vy) < 30) this.spin = null; }       // 放手後的慣性
       if (this._eOf(this) >= 1 && !this.zl && now > this.holdUntil && !this.dragging) { _q.setFromAxisAngle(_ax.set(0, 1, 0), dt * TAU / 240); this.qUser.premultiply(_q); }      // 看全景、沒人碰：極慢地轉
@@ -5273,6 +5660,8 @@ class Space {
     let u = (this.gxFail || !this.dS) ? 0 : Math.max(0, Math.log(this.dist / this.dS)); if (this.gxFail && this.dist > this.dS * 4) this.dist = this.dS * 4;
     if (u > 0.25 && !this.gx) { try { this.gx = new Galaxy(this); this.gx.build(); } catch (e) { this.gxFail = true; try { this.gx && this.gx.release(); } catch (_) {} this.gx = null; u = 0; if (this.dist > this.dS * 4) this.dist = this.dS * 4; console.warn('銀河系延伸建立失敗，退回只到太陽系全景', e); } }
     if (u > 0 && this.gx && !this.gx.built) { try { this.gx.build(); } catch (e) { this.gxFail = true; this.gx = null; u = 0; } }
+    if (this.gx && this.gx.built && !this.cosmos && !this.cosFail && !this.gxFail && (u > 5.2 || this._wantFar)) this._buildCosmos();
+    if (this.cosFail && !this.gxFail && this.dist > this.dS * Math.exp(U_NEAR_MAX)) { this.dist = this.dS * Math.exp(U_NEAR_MAX); u = Math.min(u, U_NEAR_MAX); }
     this.u = u; this.rwOn = false;
     { const nt = u > 0.05 ? frameText(u) : '距離與大小經過調整，方便觀看'; if (nt !== this._nt) { this._nt = nt; this.noteEl.textContent = nt; this.noteEl.classList.toggle('far', u > 0.05); } }       // 角落的比例尺：走到太陽系外面之後，改成畫面寬度大約多少
     const L = Lof(u), sk = u > 0 ? sysScale(u) : 1; this.sk = sk; this.camD = u > 0 ? this.dS * Math.exp(camSat(u)) : this.dist;
@@ -5280,13 +5669,14 @@ class Space {
     const w2 = smooth(3.6, 5.4, u); if (w2 > 0.001) { this.rw = (this.rw || new THREE.Quaternion()).identity().slerp(GAL.G, w2); this.q.premultiply(this.rw); this.rwOn = true; }       // 往銀河那一站走的時候，視角慢慢轉成從銀河盤面斜上方看
     this.sysG.scale.setScalar(sk); const fs = 1 - smooth(0.45, 1.0, u);          // 行星、軌道、光暈在 u 0.45～1 之間淡掉（個別物件的不透明度）
     this.sysG.visible = fs > 0.004;
-    if (this.gx && this.gx.built) { const sp0 = this.gx.update({ u, L, s: sk, camD: this.camD, W: this.W, H: this.H, camera: this.camera, dt, now }); this.sysG.position.copy(sp0); } else this.sysG.position.set(0, 0, 0);
+    if (this.gx && this.gx.built) { const sp0 = this.gx.update({ u, L, s: sk, camD: this.camD, W: this.W, H: this.H, camera: this.camera, dt, now }); this.sysG.position.copy(sp0); if (this.cosmos && this.cosmos.built) { try { this.cosmos.update({ u, s: sk, L }, sp0); } catch (e) { this._cosFailed(e); } } } else this.sysG.position.set(0, 0, 0);
     this.fs = fs;
     if (Math.abs((this.moonD || BODY.moon.orbit) - P.moonD) > 1e-4) { this.moonD = P.moonD; this._place(ms); if (!this.fl && this.anchor === 'moon') this.tgt.copy(this._poseOf(this).tgt); }
     if (this._eOf(this) < 0.98 && this.bodies[this.anchor]) this.lastAnchor = this.anchor;          // 記住拉遠是從哪一顆出來的，縮回來時走原路
     // 現在算是在看誰（資訊卡、列表亮哪一列）
     const st = this.fl ? this.fl.st1 : this, name = MODEL_INFO[st.anchor] ? st.anchor : ((this.fl ? this._eOf(st) : P.e) > 0.5 ? (this.fl ? 'system' : focusOfU(u)) : st.anchor);
-    if (name !== this.focus) { this.focus = name; this.starPick = null; if (this.gx && this.gx.built) this.gx.select(null); this._cardFill(); if (this.onChange) this.onChange(name, true); }
+    if (name !== this.focus) { this.focus = name; this.starPick = null; this.cosPick = null; if (this.gx && this.gx.built) { this.gx.select(null); this.gx.cosSel = null; } if (!(this.zl && this.zl.trip)) this._cardFill(); if (this.onChange) this.onChange(name, true); }       // 穿梭途中不要一張張換卡片（閃來閃去很吵），到站才換
+    this._tripCaption(u, !!(this.zl && this.zl.trip && !this.zl.fast));
     // 自轉
     for (const id in this.bodies) { const o = this.bodies[id]; if (o.b.id === 'moon' || o.b.id === 'earth') continue; o.spinG.rotation.y += o.b.spin * 2.2 * dt; }
     if (this.glow) { const sc = 1 + 0.03 * Math.sin(now / 1800); this.glow.scale.setScalar(BODY.sun.r * 6 * sc); }
@@ -5314,9 +5704,15 @@ class Space {
     if (!mvOn && this.sk === 1) for (const id in this.bodies) {
       if (id === this.anchor || (this.fl && id === this.fl.st1.anchor)) continue;
       const o = this.bodies[id], lim = o.b.r * 1.6; _w.copy(cam.position).sub(o.pos); const L = _w.length();
-      if (L < lim) { if (L < 1e-6) _w.set(0, 1, 0); cam.position.copy(o.pos).addScaledVector(_w.normalize(), lim); }
+      if (L >= lim) continue;
+      if (this.fl) { if (L < 1e-6) _w.set(0, 1, 0); cam.position.copy(o.pos).addScaledVector(_w.normalize(), lim); }       // 飛行途中：往外推開（路過而已，畫面中心本來就在移動）
+      else {                                                    // 停著看某一顆（使用者拖著轉、縮放）：不可以往旁邊推（星球會偏離畫面中心、一轉就晃）——改成沿著視線往前靠近目標，直到離開那顆星球的範圍，目標一直在正中間
+        _v.set(0, 0, 1).applyQuaternion(this.q); let lo = 0, hi = this.camD;             // 鏡頭 = tgt + 視線 × d；找最大的 d（≤ 現在的距離）讓鏡頭在範圍外
+        for (let k = 0; k < 14; k++) { const md = (lo + hi) / 2; _w.copy(this.tgt).addScaledVector(_v, md).sub(o.pos); if (_w.length() < lim) hi = md; else lo = md; }
+        cam.position.copy(this.tgt).addScaledVector(_v, lo);
+      }
     }
-    cam.near = Math.max(0.02, this.camD * 0.01); cam.far = 9000; cam.updateProjectionMatrix();
+    cam.near = Math.max(0.02, this.camD * 0.01); cam.far = this.u > 0.3 ? 60000 : 9000; cam.updateProjectionMatrix();       // 拉遠之後：外面幾層還很巨大時，落在視線深處的光點也要畫得到（當背景），所以看得更遠
     this.sky.position.copy(cam.position);
     if (this.starRig) { this.starRig.quaternion.copy(this.mq); this.starRig.position.copy(_v.set(0, 0, -this.starD).applyQuaternion(this.mq)).add(cam.position); }
     this._updLabels(mvOn); if (this.gx && this.gx.built) this.gx.labelsPass({ W: this.W, H: this.H, camera: cam });
@@ -5361,7 +5757,7 @@ class Space {
   zoomBy(f, x, y) {
     if (!this.active) return; const now = performance.now(); this.holdUntil = now + 6000; this.globe.activeUntil = now + 1200; this.globe._kick && this.globe._kick();
     if (this.fl) { const f0 = this.fl; this.anchor = f0.st1.anchor; this.nearOK = f0.st1.nearOK; this.qUser = this.q0.clone(); this.fl = null; }       // 飛到一半被手勢打斷：從現在的樣子接手
-    this.zl = null; this.leaving = false;
+    if (this.zl && this.zl.trip) this._tripEnd(); this.zl = null; this.leaving = false;
     const nd = this.dist * f;
     if (MODEL_INFO[this.anchor]) { const mx = Math.max(9, (this.mvD0 || 9) * 1.5); if (nd > mx * 1.1 && f > 1) return this.goto('system'); this.dist = clamp(nd, 0.9, mx * 1.1); return; }
     // 在太陽系全景往裡縮：朝手指所在的那顆星球去；沒有對著哪一顆就回地球
@@ -5417,7 +5813,7 @@ class Space {
       }
       if (!drag || !this.active || pinch || drag.pinched) return; const dx = e.clientX - drag.x, dy = e.clientY - drag.y; drag.x = e.clientX; drag.y = e.clientY; drag.moved += Math.abs(dx) + Math.abs(dy);
       if (drag.moved < 5) return;
-      if (this.fl) { const f0 = this.fl; this.anchor = f0.st1.anchor; this.nearOK = f0.st1.nearOK; this.qUser = this.q0.clone(); this.fl = null; } this.zl = null;
+      if (this.fl) { const f0 = this.fl; this.anchor = f0.st1.anchor; this.nearOK = f0.st1.nearOK; this.qUser = this.q0.clone(); this.fl = null; } if (this.zl && this.zl.trip) this._tripEnd(); this.zl = null; this.leaving = false;
       this._rot(dx, dy); { const h = drag.hist || (drag.hist = []), t = performance.now(); h.push([t, e.clientX, e.clientY]); while (h.length > 2 && t - h[0][0] > 120) h.shift(); }       // 記下最後 0.12 秒的軌跡，放手時算甩出去的速度
     }, true);
     const up = (e) => {
@@ -5428,6 +5824,7 @@ class Space {
         if (this.active && wasDrag && wasDrag.moved < 8 && e.type === 'pointerup') {
           const id = this.pickBody(e.clientX, e.clientY), now = performance.now();
           if (id) { if (id === 'earth' && this.focus === 'earth' && now - lastTap < 450) this.exit(); else if (id !== this.focus) this.goto(id); lastTap = now; }
+          else if (this.cosmos && this.cosmos.built && this.u >= 6.2) { const t = this.cosmos.pick(e.clientX, e.clientY); this.cosPick = t; this.gx.cosSel = t; this._cardFill(); }
           else if (this.gx && this.gx.built && this.focus === 'stars') { const t = this.gx.pickStar(e.clientX, e.clientY); this.gx.select(t); this.starPick = t; this._cardFill(); }
         } }
     };
@@ -5978,6 +6375,17 @@ class Globe {
     }
   }
 
+  // 火箭發射場的標記：list = [{ lat, lon, soon, title, label }]；點了呼叫 onClick
+  setLaunches(list, onClick) {
+    this.clearLabels('launch');
+    for (const p of list || []) {
+      if (typeof p.lat !== 'number' || typeof p.lon !== 'number') continue;
+      const it = this.addLabel('launch', p.lat, p.lon, { html: `<i class="${p.soon ? 'soon' : ''}"></i><span></span>`, title: p.title, pri: 55, data: p });
+      it.el.querySelector('span').textContent = p.label || '';
+      if (onClick) it.el.addEventListener('click', () => onClick(p));
+    }
+  }
+
   // list: [{ id, lat, lon, title }]
   setNews(list, activeId) {
     this.clearLabels('news');
@@ -6364,6 +6772,414 @@ function createFx({ $, reduce }) {
 }
 
 return { createFx };
+})();
+// ── sky.js ──
+const __m_sky_js = (() => {
+// 今晚的天空：太陽、月亮、五顆行星、幾顆亮星，在「所在地」的方向與高度、升落時間。純函式、不碰 three.js、不連網。
+// 精度是「大概對」：行星用 JPL 簡化根數（space-data.js）、月亮用 Meeus 低精度公式（誤差約 0.5°，升落時間約差幾分鐘到十來分鐘）。介面上時間都寫「約」。
+const { helio, moonEcl, eclToEq, gmstDeg, sunLon, moonPhase } = __m_space_data_js;
+const D2R = Math.PI / 180, R2D = 180 / Math.PI, HOUR = 3600000;
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+const norm360 = (x) => ((x % 360) + 360) % 360;
+const SKY_PLANETS = [['mercury', '水星'], ['venus', '金星'], ['mars', '火星'], ['jupiter', '木星'], ['saturn', '土星']];
+// 全天最亮的恆星（公認的星表數值，赤經赤緯 J2000，單位度）：[中文名, 英文名, 赤經, 赤緯, 星等]
+const BRIGHT_STARS = [
+  ['天狼星', 'Sirius', 101.287, -16.716, -1.46], ['老人星', 'Canopus', 95.988, -52.696, -0.74], ['南門二', 'Alpha Centauri', 219.9, -60.834, -0.27], ['大角星', 'Arcturus', 213.915, 19.182, -0.05],
+  ['織女星', 'Vega', 279.235, 38.784, 0.03], ['五車二', 'Capella', 79.172, 45.998, 0.08], ['參宿七', 'Rigel', 78.634, -8.202, 0.13], ['南河三', 'Procyon', 114.825, 5.225, 0.34],
+  ['參宿四', 'Betelgeuse', 88.793, 7.407, 0.42], ['牛郎星', 'Altair', 297.696, 8.868, 0.76], ['畢宿五', 'Aldebaran', 68.98, 16.509, 0.85], ['心宿二', 'Antares', 247.352, -26.432, 1.06],
+  ['角宿一', 'Spica', 201.298, -11.161, 0.97], ['北河三', 'Pollux', 116.329, 28.026, 1.14], ['北落師門', 'Fomalhaut', 344.413, -29.622, 1.16], ['天津四', 'Deneb', 310.358, 45.28, 1.25],
+  ['軒轅十四', 'Regulus', 152.093, 11.967, 1.35], ['北極星', 'Polaris', 37.955, 89.264, 1.98],
+];
+const DIRS = ['北', '東北', '東', '東南', '南', '西南', '西', '西北'];
+const dirName = (az) => DIRS[Math.round(norm360(az) / 45) % 8];
+const levelName = (alt) => alt < 15 ? '低' : alt < 45 ? '中' : '高';
+
+// ---------- 座標 ----------
+// 高度角與方位角（度）。方位從正北順時針算（東 90、南 180）。高度是幾何高度（沒含大氣折射）
+function altAz(raDeg, decDeg, latDeg, lonDeg, ms) {
+  const H = (gmstDeg(ms) + lonDeg - raDeg) * D2R, d = decDeg * D2R, f = latDeg * D2R;
+  const sinAlt = Math.sin(f) * Math.sin(d) + Math.cos(f) * Math.cos(d) * Math.cos(H);
+  const alt = Math.asin(clamp(sinAlt, -1, 1)) * R2D;
+  const az = Math.atan2(-Math.cos(d) * Math.sin(H), Math.sin(d) * Math.cos(f) - Math.cos(d) * Math.cos(H) * Math.sin(f)) * R2D;
+  return { alt, az: norm360(az) };
+}
+const refract = (alt) => alt < -1 ? 0 : 1.02 / Math.tan((alt + 10.3 / (alt + 5.11)) * D2R) / 60;       // 大氣折射（度）：貼近地平線時抬高約半度
+function eqOfPlanet(id, ms) {
+  const p = helio(id, ms), e = helio('earth', ms), x = p.x - e.x, y = p.y - e.y, z = p.z - e.z, d = Math.hypot(x, y, z);
+  const lon = norm360(Math.atan2(y, x) * R2D), lat = Math.asin(z / d) * R2D, eq = eclToEq(lon, lat, ms);
+  return { ra: eq.ra, dec: eq.dec, dist: d, lon, lat, r: p.r, R: e.r };
+}
+const eqOfSun = (ms) => Object.assign(eclToEq(sunLon(ms), 0, ms), { lon: sunLon(ms) });
+function eqOfMoon(ms) { const m = moonEcl(ms), eq = eclToEq(m.lon, m.lat, ms); return { ra: eq.ra, dec: eq.dec, lon: m.lon, lat: m.lat, dist: m.dist }; }
+// 某個天體（'sun'、'moon'、行星 id）的赤道座標
+function eqOf(id, ms) { return id === 'sun' ? eqOfSun(ms) : id === 'moon' ? eqOfMoon(ms) : eqOfPlanet(id, ms); }
+// 在所在地看的高度方位。月亮離得近，要做地平視差修正（最多約 1°）
+function bodyAltAz(id, lat, lon, ms) {
+  const q = eqOf(id, ms), a = altAz(q.ra, q.dec, lat, lon, ms);
+  if (id === 'moon') a.alt -= Math.asin(1 / q.dist) * R2D * Math.cos(a.alt * D2R);
+  return a;
+}
+const sep = (a, b) => { const d1 = a.dec * D2R, d2 = b.dec * D2R, c = Math.sin(d1) * Math.sin(d2) + Math.cos(d1) * Math.cos(d2) * Math.cos((a.ra - b.ra) * D2R); return Math.acos(clamp(c, -1, 1)) * R2D; };
+const separation = sep;
+// 視星等（簡化公式：Meeus 第 41 章；土星環的影響略過，所以土星的亮度只是大概）
+function planetMag(id, ms) {
+  const q = eqOfPlanet(id, ms), r = q.r, d = q.dist, R = q.R, i = Math.acos(clamp((r * r + d * d - R * R) / (2 * r * d), -1, 1)) * R2D, L = 5 * Math.log10(r * d);
+  switch (id) {
+    case 'mercury': return -0.42 + L + 0.038 * i - 0.000273 * i * i + 0.000002 * i * i * i;
+    case 'venus': return -4.4 + L + 0.0009 * i + 0.000239 * i * i - 0.00000065 * i * i * i;
+    case 'mars': return -1.52 + L + 0.016 * i;
+    case 'jupiter': return -9.4 + L + 0.005 * i;
+    default: return -8.88 + L;
+  }
+}
+function magText(m) { return m < -3.5 ? '非常亮，比任何星星都亮' : m < -1.5 ? '比天狼星還亮' : m < 0.3 ? '很亮，跟最亮的幾顆星差不多' : m < 1.3 ? '亮' : '普通亮度'; }
+// ---------- 月相 ----------
+function moonInfo(ms) {
+  const el = moonPhase(ms), illum = (1 - Math.cos(el * D2R)) / 2; let name;
+  if (el < 6 || el >= 354) name = '新月'; else if (el < 84) name = '眉月'; else if (el < 96) name = '上弦月'; else if (el < 174) name = '盈凸月'; else if (el < 186) name = '滿月'; else if (el < 264) name = '虧凸月'; else if (el < 276) name = '下弦月'; else name = '殘月';
+  return { el, illum, name };
+}
+// ---------- 升落 ----------
+// 從 t0 到 t1，每 step 取樣一次高度（fn(ms) → 高度），找第一個升起、第一個落下（線性內插）。h0 是地平線的門檻（太陽 −0.833°）
+function riseSet(fn, t0, t1, h0, step = 300000) {
+  let rise = null, set = null, prevT = t0, prev = fn(t0) - h0; const start = prev > 0;
+  for (let t = t0 + step; t <= t1 + 1; t += step) {
+    const v = fn(t) - h0;
+    if (rise === null && prev <= 0 && v > 0) rise = prevT + (t - prevT) * (-prev) / (v - prev);
+    if (set === null && prev > 0 && v <= 0) set = prevT + (t - prevT) * prev / (prev - v);
+    if (rise !== null && set !== null) break; prevT = t; prev = v;
+  }
+  return { rise, set, up0: start };
+}
+// ---------- 時間的說法 ----------
+const tzOf = (off) => (off == null || !isFinite(off)) ? -new Date().getTimezoneOffset() * 60 : off;
+function localParts(ms, off) { const d = new Date(ms + tzOf(off) * 1000); return { y: d.getUTCFullYear(), mo: d.getUTCMonth() + 1, d: d.getUTCDate(), h: d.getUTCHours(), mi: d.getUTCMinutes(), wd: d.getUTCDay() }; }
+const hm = (ms, off) => { const p = localParts(ms, off); return String(p.h).padStart(2, '0') + ':' + String(p.mi).padStart(2, '0'); };
+const hmAbout = (ms, off) => { const t = Math.round(ms / 300000) * 300000; return '約 ' + hm(t, off); };       // 四捨五入到 5 分鐘，前面加「約」
+function wordsTime(ms, off) {                      // 「晚上 11 點多」「凌晨 2 點半」「快 7 點」
+  const p = localParts(ms, off); let h = p.h; const m = p.mi; let lab;
+  if (m < 10) lab = '點'; else if (m < 25) lab = '點多'; else if (m < 40) lab = '點半'; else { h = (h + 1) % 24; lab = '點'; }
+  const pre = (m >= 40 && m < 50) ? '快 ' : '', per = h < 5 ? '凌晨' : h < 12 ? '早上' : h < 13 ? '中午' : h < 18 ? '下午' : '晚上', h12 = h % 12 === 0 ? 12 : h % 12;
+  return per + ' ' + pre + h12 + ' ' + lab;
+}
+const localNoon = (ms, off) => { const o = tzOf(off) * 1000; return Math.floor((ms + o) / 86400000) * 86400000 + 12 * HOUR - o; };
+
+// ---------- 今晚 ----------
+// 回傳一包東西給介面畫：{ night: {start, end, polar}, sun, moon, planets[], stars[], times[], summary, lat, lon, off }
+function tonight(lat, lon, nowMs, off) {
+  off = tzOf(off); const sunAlt = (t) => bodyAltAz('sun', lat, lon, t).alt;
+  const lh = localParts(nowMs, off).h, T0 = localNoon(nowMs, off) - (lh < 6 ? 86400000 : 0);       // 凌晨 6 點以前還算「昨天的夜晚」
+  const ss = riseSet(sunAlt, T0, T0 + 40 * HOUR, -0.833); let start, end, polar = null;
+  if (ss.up0 && ss.set === null) { polar = 'day'; start = T0 + 12 * HOUR; end = start + 12 * HOUR; }
+  else if (!ss.up0 && ss.rise === null && ss.set === null) { polar = 'night'; start = T0; end = T0 + 24 * HOUR; }
+  else {
+    start = ss.set !== null ? ss.set : T0;
+    const sr = riseSet(sunAlt, start, start + 30 * HOUR, -0.833); end = sr.rise !== null ? sr.rise : start + 12 * HOUR;
+  }
+  const dark = (t) => sunAlt(t) < -4;
+  const res = { lat, lon, off, night: { start, end, polar }, now: nowMs, planets: [], stars: [], times: [] };
+  for (let t = start; t <= end + 1; t += 1800000) res.times.push(t);
+  // 一顆天體整晚的樣子：天黑之後（太陽低於 −4°）取樣，找最高的那一刻
+  const analyse = (id, h0) => {
+    const f = (t) => bodyAltAz(id, lat, lon, t).alt; let best = null;
+    for (let t = start; t <= end; t += 600000) { if (polar !== 'night' && !dark(t)) continue; const a = bodyAltAz(id, lat, lon, t); if (!best || a.alt > best.alt) best = { ms: t, alt: a.alt, az: a.az }; }
+    const rs = riseSet(f, start, end, h0, 300000); const app = best ? best.alt + refract(best.alt) : -90;
+    return { best, app, rise: rs.rise, set: rs.set, up0: rs.up0, alwaysUp: rs.up0 && rs.set === null, never: !rs.up0 && rs.rise === null };
+  };
+  const sq = eqOfSun(nowMs);
+  for (const [id, name] of SKY_PLANETS) {
+    const a = analyse(id, -0.57), mag = planetMag(id, a.best ? a.best.ms : nowMs), el = sep(eqOfPlanet(id, start), eqOfSun(start)), ok = !!a.best && a.app >= 8;
+    let why = ''; if (!ok) why = a.never || !a.best || a.best.alt < 0 ? (el < 25 ? '太靠近太陽，被陽光蓋過了' : '整晚都在地平線下') : (el < 25 ? '太靠近太陽，只在天剛黑時很低很低' : '整晚高度都太低');
+    res.planets.push({ id, name, visible: ok, why, mag, magText: magText(mag), elong: el, best: a.best && { ms: a.best.ms, alt: a.app, az: a.best.az, dir: dirName(a.best.az), level: levelName(a.app) }, rise: a.rise, set: a.set, up0: a.up0, alwaysUp: a.alwaysUp });
+  }
+  const mi = moonInfo(start + (end - start) / 2), ma = analyse('moon', -0.833);
+  res.moon = { name: mi.name, illum: mi.illum, el: mi.el, visible: !!ma.best && ma.app >= 5, best: ma.best && { ms: ma.best.ms, alt: ma.app, az: ma.best.az, dir: dirName(ma.best.az), level: levelName(ma.app) }, rise: ma.rise, set: ma.set, up0: ma.up0, alwaysUp: ma.alwaysUp, never: ma.never };
+  // 亮星：晚上 9 點（太陽還沒下去的高緯度地方就取夜晚三分之一處）
+  const ref = (() => { const nine = localNoon(nowMs, off) - (lh < 6 ? 86400000 : 0) + 9 * HOUR; return nine > start && nine < end ? nine : start + (end - start) * 0.3; })(); res.refMs = ref;
+  res.stars = BRIGHT_STARS.map(([zh, en, ra, dec, mag]) => { const a = altAz(ra, dec, lat, lon, ref); return { name: zh, en, mag, alt: a.alt, az: a.az, dir: dirName(a.az) }; }).filter((s) => s.alt >= 20).sort((p, q) => p.mag - q.mag).slice(0, 5);
+  res.sun = { set: ss.set, rise: end, polar };
+  res.summary = summarize(res);
+  return res;
+}
+function summarize(r) {
+  if (r.night.polar === 'day') return '這個地方現在太陽整天都不落，沒有真正的夜晚。';
+  const vis = r.planets.filter((p) => p.visible).map((p) => p.name), parts = [];
+  parts.push(vis.length ? '今晚看得到' + vis.join('、') : '今晚沒有特別亮的行星');
+  const m = r.moon; let ms = '月亮是' + m.name;
+  if (m.visible && m.set && m.set > r.night.start && m.set < r.night.end) ms += '，' + wordsTime(m.set, r.off) + '落下'; else if (m.visible && m.rise && m.rise > r.night.start && m.rise < r.night.end) ms += '，' + wordsTime(m.rise, r.off) + '升起'; else if (!m.visible) ms += '，今晚不在天上';
+  parts.push(ms);
+  return parts.join('；') + '。';
+}
+// 滑桿拖到某個時刻：天空裡有哪些東西、各在哪（天空圖用）。亮星只給最亮的那幾顆
+function skyAt(lat, lon, ms) {
+  const out = [];
+  for (const id of ['moon', ...SKY_PLANETS.map((p) => p[0])]) { const a = bodyAltAz(id, lat, lon, ms), nm = id === 'moon' ? '月亮' : SKY_PLANETS.find((p) => p[0] === id)[1]; out.push({ id, kind: id === 'moon' ? 'moon' : 'planet', name: nm, alt: a.alt, az: a.az, mag: id === 'moon' ? -12 : planetMag(id, ms) }); }
+  for (const [zh, en, ra, dec, mag] of BRIGHT_STARS) { if (mag > 1.3) continue; const a = altAz(ra, dec, lat, lon, ms); out.push({ id: en, kind: 'star', name: zh, alt: a.alt, az: a.az, mag }); }
+  const sa = bodyAltAz('sun', lat, lon, ms); out.push({ id: 'sun', kind: 'sun', name: '太陽', alt: sa.alt, az: sa.az, mag: -26 });
+  return out;
+}
+
+// app.js 裡已經有同名的函式，所以另外給一組不會撞名的
+const skyTonight = tonight;
+const skyHm = hm;
+
+// 手機的方向感應（alpha＝繞垂直軸、beta＝前後傾、gamma＝左右傾，單位度；alpha 要是「以北為準」的）→ 手機背面（鏡頭那一面）指向天空的哪裡。
+// 回傳 { az: 方位角（北 0、東 90）, alt: 高度角 }。手機平放、螢幕朝上時指著地面（alt −90）；直立面向北時指著北方地平線。
+function deviceAim(alpha, beta, gamma) {
+  const a = alpha * D2R, b = beta * D2R, g = gamma * D2R, sA = Math.sin(a), cA = Math.cos(a), sB = Math.sin(b), cB = Math.cos(b), sG = Math.sin(g), cG = Math.cos(g);
+  const e = -(cG * sA * sB + cA * sG), n = -(sA * sG - cA * cG * sB), up = -cB * cG;
+  return { az: norm360(Math.atan2(e, n) * R2D), alt: Math.asin(clamp(up, -1, 1)) * R2D };
+}
+
+return { norm360, SKY_PLANETS, BRIGHT_STARS, dirName, levelName, altAz, refract, eqOfPlanet, eqOfSun, eqOfMoon, eqOf, bodyAltAz, separation, planetMag, magText, moonInfo, riseSet, tzOf, localParts, hm, hmAbout, wordsTime, tonight, skyAt, skyTonight, skyHm, deviceAim };
+})();
+// ── almanac.js ──
+const __m_almanac_js = (() => {
+// 天象日曆：未來一年值得知道的天象（滿月與超級月亮、日食月食、流星雨、月亮靠近行星、行星相合、衝、大距、二分二至）。
+// 純函式、不碰 three.js、不連網；行星與月亮的位置用 sky.js（大概對就好：日期對、時刻差一兩小時）。
+// 日食月食是憑記憶手寫的小表：每一筆都會用月相與月亮的黃緯自己驗算一次，對不上的就丟掉（寧可少列，不列錯）。
+const { moonPhase, sunLon } = __m_space_data_js;
+const { eqOfPlanet, eqOfMoon, separation, bodyAltAz, moonInfo, SKY_PLANETS, localParts, tzOf } = __m_sky_js;
+const D2R = Math.PI / 180, HOUR = 3600000, DAY = 86400000;
+const PN = Object.fromEntries(SKY_PLANETS);
+const wrap180 = (x) => ((x + 540) % 360 + 360) % 360 - 180;
+
+// ---------- 日食月食的手寫小表 ----------
+// 日食：[UTC 時間, 種類, 看得到的地方, 台灣：'no'｜'maybe'｜'partial']；月食：[UTC 時間, 種類（total／partial）, 看得到的地方]（台灣看不看得到用當時月亮在不在地平線上判斷）
+const SOLAR = [
+  ['2026-02-17T12:12', '金環食', '南極洲', 'no'], ['2026-08-12T17:46', '日全食', '格陵蘭、冰島、西班牙', 'no'], ['2027-02-06T16:00', '金環食', '南美洲南部、大西洋、非洲', 'no'],
+  ['2027-08-02T10:07', '日全食', '北非、埃及、沙烏地阿拉伯', 'no'], ['2028-01-26T15:08', '金環食', '南美洲北部、西班牙', 'no'], ['2028-07-22T02:56', '日全食', '澳洲、紐西蘭', 'no'],
+  ['2029-01-14T17:13', '日偏食', '北美洲', 'no'], ['2030-06-01T06:29', '金環食', '北非、希臘、土耳其、俄羅斯、中國北部、日本北海道', 'maybe'], ['2030-11-25T06:51', '日全食', '南非、澳洲南部', 'no'],
+  ['2031-05-21T07:16', '金環食', '非洲、斯里蘭卡、馬來西亞、印尼', 'maybe'], ['2031-11-14T21:07', '日環全食', '太平洋', 'no'], ['2032-05-09T13:26', '金環食', '南大西洋', 'no'],
+  ['2033-03-30T18:02', '日全食', '阿拉斯加、俄羅斯遠東', 'no'], ['2034-03-20T10:18', '日全食', '非洲、中東、伊朗、巴基斯坦、中國西部', 'maybe'], ['2034-09-12T16:19', '金環食', '南美洲、非洲', 'no'],
+  ['2035-03-09T23:05', '金環食', '太平洋', 'no'], ['2035-09-02T01:56', '日全食', '中國、北韓、日本', 'maybe'],
+];
+const LUNAR = [
+  ['2026-03-03T11:33', 'total', '亞洲、澳洲、美洲'], ['2026-08-28T04:13', 'partial', '美洲、歐洲、非洲'], ['2028-07-06T18:20', 'partial', '亞洲、澳洲、非洲、歐洲'],
+  ['2028-12-31T16:52', 'total', '亞洲、澳洲、歐洲、非洲'], ['2029-06-26T03:22', 'total', '美洲、歐洲、非洲'], ['2029-12-20T22:42', 'total', '美洲、歐洲、非洲、亞洲'],
+  ['2032-04-25T15:14', 'total', '亞洲、澳洲'], ['2032-10-18T19:03', 'total', '亞洲、美洲'], ['2033-04-14T19:13', 'total', '美洲、非洲'], ['2033-10-08T10:55', 'total', '亞洲、太平洋、美洲'],
+  ['2035-02-22T09:07', 'total', '亞洲、澳洲、美洲'], ['2035-08-19T01:12', 'partial', '亞洲、澳洲、美洲'],
+];
+const utc = (s) => Date.parse(s + ':00Z');
+// 自己驗算：日食要在新月（月相差 0°）附近、月亮黃緯夠小；月食要在滿月（180°）附近、黃緯夠小。回傳 { ok: [...], bad: [...] }
+function checkEclipses() {
+  const ok = [], bad = [];
+  for (const r of SOLAR) { const t = utc(r[0]), el = wrap180(moonPhase(t)), b = eqOfMoon(t).lat; (Math.abs(el) < 4 && Math.abs(b) < 2.0 ? ok : bad).push({ kind: 'solar', row: r, el, lat: b }); }
+  for (const r of LUNAR) { const t = utc(r[0]), el = wrap180(moonPhase(t) - 180), b = eqOfMoon(t).lat; (Math.abs(el) < 4 && Math.abs(b) < (r[1] === 'total' ? 1.3 : 1.9) ? ok : bad).push({ kind: 'lunar', row: r, el, lat: b }); }
+  return { ok, bad };
+}
+let _eclOK = null;
+const eclipseRows = () => (_eclOK || (_eclOK = checkEclipses().ok.map((o) => ({ kind: o.kind, row: o.row }))));
+
+// ---------- 找時刻的小工具 ----------
+// fn 從負變正的時刻（取樣間隔 step，二分法逼近到 1 分鐘）。fn 在 ±180 繞回來的地方不算
+function crossUp(fn, t0, t1, step) {
+  const out = []; let pt = t0, pv = fn(t0);
+  for (let t = t0 + step; t <= t1; t += step) {
+    const v = fn(t);
+    if (pv < 0 && v >= 0 && Math.abs(v) + Math.abs(pv) < 90) { let a = pt, b = t; for (let i = 0; i < 20 && b - a > 60000; i++) { const m = (a + b) / 2; if (fn(m) < 0) a = m; else b = m; } out.push((a + b) / 2); }
+    pt = t; pv = v;
+  }
+  return out;
+}
+// ---------- 天象 ----------
+const SHOWERS = [[1, 4, '象限儀座流星雨', 80, '牧夫座'], [4, 22, '天琴座流星雨', 18, '天琴座'], [5, 6, '寶瓶座 η 流星雨', 50, '寶瓶座'], [8, 12, '英仙座流星雨', 100, '英仙座'], [10, 21, '獵戶座流星雨', 20, '獵戶座'], [11, 17, '獅子座流星雨', 15, '獅子座'], [12, 14, '雙子座流星雨', 150, '雙子座'], [12, 22, '小熊座流星雨', 10, '小熊座']];
+const SHOWER_DEC = { 牧夫座: 49, 天琴座: 34, 寶瓶座: -1, 英仙座: 58, 獵戶座: 16, 獅子座: 22, 雙子座: 33, 小熊座: 75 };
+const NOTE_LUNAR = { total: '整個過程約 3 個多小時，月亮完全進入地球影子時會變成暗紅色', partial: '月亮只有一部分進入地球影子' };
+
+// events(緯度, 經度, 起, 迄, 時區秒數) → 依時間排好的陣列：{ ts, kind, title, note, stars(1~3), vis('yes'｜'no'｜'maybe') }
+function events(lat, lon, fromMs, toMs, off) {
+  off = tzOf(off); const ev = [], add = (e) => { if (e.ts >= fromMs && e.ts <= toMs) ev.push(e); };
+  const lt = (ms, h) => { const p = localParts(ms, off); return Date.UTC(p.y, p.mo - 1, p.d, h, 0, 0) - off * 1000; };      // 所在地那一天的幾點（毫秒）
+  const north = lat >= 0;
+  // 1 滿月與超級月亮
+  for (const t of crossUp((x) => wrap180(moonPhase(x) - 180), fromMs, toMs, 6 * HOUR)) { const d = eqOfMoon(t).dist, sup = d < 57.2; add({ ts: t, kind: 'moon', title: sup ? '超級月亮（滿月）' : '滿月', note: sup ? '滿月剛好遇到月亮最靠近地球的時候，看起來比平常大一點、亮一點' : '整晚都看得到月亮', stars: sup ? 2 : 1, vis: 'yes' }); }
+  // 2 日食月食（表裡通過驗算的）
+  for (const { kind, row } of eclipseRows()) {
+    const t = utc(row[0]);
+    if (kind === 'solar') { const near = Math.hypot(lat - 25, (lon - 121) * Math.cos(25 * D2R)) < 14; const vis = near ? (row[3] === 'no' ? 'no' : 'maybe') : 'no';
+      add({ ts: t, kind: 'eclipse', title: row[1], note: '主要在' + row[2] + '看得到' + (near ? (row[3] === 'no' ? '；台灣看不到' : '；台灣有沒有偏食沒有確認') : ''), stars: vis === 'no' ? (row[1] === '日全食' ? 2 : 1) : 3, vis }); }
+    else { const a = bodyAltAz('moon', lat, lon, t), up = a.alt > 0; add({ ts: t, kind: 'eclipse', title: row[1] === 'total' ? '月全食' : '月偏食', note: (up ? '這時月亮在天上，看得到。' : '這時月亮在地平線下，這裡看不到。') + NOTE_LUNAR[row[1]] + '（全球可見的地區：' + row[2] + '）', stars: up ? (row[1] === 'total' ? 3 : 2) : 1, vis: up ? 'yes' : 'no' }); }
+  }
+  // 3 流星雨（月光影響用當晚月相與月亮高度算）
+  for (let y = new Date(fromMs).getUTCFullYear(); y <= new Date(toMs).getUTCFullYear(); y++) for (const [mo, d, name, zhr, con] of SHOWERS) {
+    const t = lt(Date.UTC(y, mo - 1, d, 12), 23), t2 = t + 3 * HOUR, mi = moonInfo(t2), ma = bodyAltAz('moon', lat, lon, t2), bright = mi.illum > 0.6 && ma.alt > 10, rad = 90 - Math.abs(lat - SHOWER_DEC[con]) >= 10;
+    add({ ts: t, kind: 'shower', title: name, note: '極大期在這一兩晚的半夜到清晨，理想時每小時約 ' + zhr + ' 顆；輻射點在' + con + (bright ? '。這晚月光很亮，看到的會少很多' : '。這晚月光不太礙事，是好時機'), stars: !rad ? 1 : bright ? 1 : zhr >= 100 ? 3 : 2, vis: rad ? 'yes' : 'no' });
+  }
+  // 4～6 用一張 6 小時一格的格子：月亮、行星的位置只算一次
+  const STEP = 6 * HOUR, g0 = fromMs - STEP, G = [];
+  for (let t = g0; t <= toMs + STEP; t += STEP) { const o = { t, moon: eqOfMoon(t), sun: sunLon(t) }; for (const [id] of SKY_PLANETS) o[id] = eqOfPlanet(id, t); G.push(o); }
+  const upTogether = (t, ids) => { for (const tt of [lt(t, 20), lt(t, 22), lt(t + DAY, 2), lt(t + DAY, 4)]) if (ids.every((id) => bodyAltAz(id, lat, lon, tt).alt > 10)) return true; return false; };
+  // 4 月亮靠近行星、5 行星相合（格子上的局部最小）
+  for (let i = 1; i < G.length - 1; i++) {
+    for (const [id] of SKY_PLANETS) {
+      const s0 = separation(G[i - 1].moon, G[i - 1][id]), s1 = separation(G[i].moon, G[i][id]), s2 = separation(G[i + 1].moon, G[i + 1][id]);
+      if (s1 < s0 && s1 <= s2 && s1 < 4) { const vis = upTogether(G[i].t, ['moon', id]), strong = (id === 'venus' || id === 'jupiter') && s1 < 2.5; if (vis) add({ ts: G[i].t, kind: 'conj', title: '月亮靠近' + PN[id], note: '兩個靠得很近（約 ' + s1.toFixed(1) + '°，大約是三根手指併起來的寬度），天黑後很好認', stars: strong ? 2 : 1, vis: 'yes' }); }
+    }
+    for (let a = 0; a < SKY_PLANETS.length; a++) for (let b = a + 1; b < SKY_PLANETS.length; b++) {
+      const A = SKY_PLANETS[a][0], B = SKY_PLANETS[b][0], s0 = separation(G[i - 1][A], G[i - 1][B]), s1 = separation(G[i][A], G[i][B]), s2 = separation(G[i + 1][A], G[i + 1][B]);
+      if (s1 < s0 && s1 <= s2 && s1 < 2.2 && Math.abs(wrap180(G[i][A].lon - G[i].sun)) > 18) { const vis = upTogether(G[i].t, [A, B]); add({ ts: G[i].t, kind: 'conj', title: PN[A] + '與' + PN[B] + '相合', note: '兩顆行星在天上靠得很近（約 ' + s1.toFixed(1) + '°）' + (vis ? '，可以一起看' : '，但剛好在地平線附近或白天，不好看'), stars: vis ? 2 : 1, vis: vis ? 'yes' : 'no' }); }
+    }
+  }
+  // 6 衝（火星、木星、土星）與大距（水星、金星）
+  for (const id of ['mars', 'jupiter', 'saturn']) {
+    const f = (t) => wrap180(eqOfPlanet(id, t).lon - sunLon(t) - 180);
+    for (const t of crossUp((x) => -f(x), fromMs, toMs, 2 * DAY)) add({ ts: t, kind: 'opp', title: PN[id] + '衝', note: PN[id] + '跟太陽剛好在地球的兩側：整晚都看得到、也是一年裡最近最亮的時候', stars: id === 'mars' ? 3 : 2, vis: 'yes' });
+  }
+  for (const id of ['mercury', 'venus']) {
+    const el = (t) => wrap180(eqOfPlanet(id, t).lon - sunLon(t)), minAbs = id === 'mercury' ? 17 : 44; let p2 = el(fromMs - DAY), p1 = el(fromMs);
+    for (let t = fromMs + DAY; t <= toMs + DAY; t += DAY) { const c = el(t); if (Math.abs(p1) > Math.abs(p2) && Math.abs(p1) >= Math.abs(c) && Math.abs(p1) >= minAbs && p1 * c > 0) {
+      let best = t - DAY, bv = Math.abs(p1); for (let k = -12; k <= 12; k++) { const tt = t - DAY + k * 2 * HOUR, v = Math.abs(el(tt)); if (v > bv) { bv = v; best = tt; } }
+      const east = p1 > 0; add({ ts: best, kind: 'elong', title: PN[id] + '大距（' + (east ? '傍晚' : '清晨') + '）', note: PN[id] + '離太陽最遠（約 ' + bv.toFixed(0) + '°），' + (east ? '日落後在西方天空最容易看到' : '日出前在東方天空最容易看到'), stars: 2, vis: 'yes' }); }
+      p2 = p1; p1 = c; }
+  }
+  // 7 二分二至（北半球的說法；南半球反過來）
+  for (const [k, nm] of [[0, north ? '春分' : '秋分'], [90, north ? '夏至' : '冬至'], [180, north ? '秋分' : '春分'], [270, north ? '冬至' : '夏至']]) for (const t of crossUp((x) => wrap180(sunLon(x) - k), fromMs, toMs, 2 * DAY)) add({ ts: t, kind: 'season', title: nm, note: k === 0 || k === 180 ? '晝夜差不多一樣長' : (k === 90) === north ? '一年裡白天最長' : '一年裡白天最短', stars: 1, vis: 'yes' });
+  ev.sort((a, b) => a.ts - b.ts);
+  const seen = new Set(); return ev.filter((e) => { const k = e.kind + e.title + Math.round(e.ts / (2 * DAY)); if (seen.has(k)) return false; seen.add(k); return true; });
+}
+// 下一件值得看的（★★ 以上、這裡看得到）：給「太陽系」列表的小字用
+function nextNotable(list, nowMs, off) {
+  const e = list.find((x) => x.ts >= nowMs - 6 * HOUR && x.stars >= 2 && x.vis !== 'no'); if (!e) return null; const p = localParts(e.ts, off);
+  return { ev: e, text: p.mo + '/' + p.d + ' ' + e.title };
+}
+
+const almEvents = events;
+
+return { checkEclipses, eclipseRows, events, nextNotable, almEvents };
+})();
+// ── astro-view.js ──
+const __m_astro_view_js = (() => {
+// 「天文」視窗的畫面零件（只組 HTML／SVG 字串，不碰網頁元素、不連網）：今晚的天空圖、天象清單、火箭發射清單。接線在 app.js。
+const { localParts, hm, hmAbout, skyAt } = __m_sky_js;
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const WD = '日一二三四五六';
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+const PL_COL = { mercury: '#b9b2a6', venus: '#fff1c4', mars: '#ff7b5c', jupiter: '#e8c79a', saturn: '#e9d58f' };
+const mdw = (ms, off) => { const p = localParts(ms, off); return p.mo + '/' + p.d + '（週' + WD[p.wd] + '）'; };
+
+// ---------- 圓形天空圖：圓周是地平線、圓心是頭頂；上北下南、左東右西（跟抬頭看一樣，東西跟地圖相反是對的） ----------
+function skySVG(lat, lon, ms, sel) {
+  const S = 320, C = 160, R = 142, list = skyAt(lat, lon, ms), sun = list.find((b) => b.kind === 'sun'), sa = sun ? sun.alt : -30;
+  const mix = clamp((sa + 18) / 18, 0, 1), c1 = [8, 12, 24], c2 = [46, 78, 120], bg = c1.map((v, i) => Math.round(v + (c2[i] - v) * mix)), day = sa > 0 ? 1 : 0;
+  const pt = (alt, az) => { const r = (90 - alt) / 90 * R, a = az * Math.PI / 180; return [C - r * Math.sin(a), C - r * Math.cos(a)]; };
+  let s = `<svg class="as-skysvg" viewBox="0 0 ${S} ${S}" role="img" aria-label="今晚的天空圖"><defs><radialGradient id="as-bg" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="rgb(${bg.join(',')})"/><stop offset="1" stop-color="rgb(${bg.map((v) => Math.min(255, v + 18 + 40 * mix)).join(',')})"/></radialGradient></defs>`;
+  s += `<circle cx="${C}" cy="${C}" r="${R}" fill="url(#as-bg)" stroke="rgba(160,190,230,.45)" stroke-width="1.2"/>`;
+  for (const a of [30, 60]) s += `<circle cx="${C}" cy="${C}" r="${(90 - a) / 90 * R}" fill="none" stroke="rgba(160,190,230,.14)" stroke-dasharray="2 4"/>`;
+  s += `<path d="M${C} ${C - R}V${C + R}M${C - R} ${C}H${C + R}" stroke="rgba(160,190,230,.12)"/>`;
+  s += `<g class="as-dir"><text x="${C}" y="${C - R - 5}" text-anchor="middle">北</text><text x="${C}" y="${C + R + 13}" text-anchor="middle">南</text><text x="${C - R - 6}" y="${C + 4}" text-anchor="end">東</text><text x="${C + R + 6}" y="${C + 4}" text-anchor="start">西</text></g>`;
+  const items = list.filter((b) => b.alt > -0.5 && (b.kind !== 'sun' || b.alt > -14)).sort((a, b) => b.mag - a.mag);
+  for (const b of items) {
+    const [x, y] = pt(Math.max(0, b.alt), b.az), on = sel && sel === b.id;
+    if (b.kind === 'star') { if (day && sa > -6) continue; s += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${clamp(2.4 - b.mag * 0.5, 1.1, 3.2).toFixed(1)}" fill="#dfe9ff" opacity=".85"/>`; if (b.mag < 0.9) s += `<text class="as-st" x="${(x + 5).toFixed(1)}" y="${(y + 3).toFixed(1)}">${esc(b.name)}</text>`; }
+    else if (b.kind === 'sun') s += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="6" fill="#ffb347" opacity=".9"/><text class="as-pl" x="${(x + 9).toFixed(1)}" y="${(y + 3).toFixed(1)}">太陽</text>`;
+    else if (b.kind === 'moon') s += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="7.5" fill="#f1ece0"/><text class="as-pl" x="${(x + 11).toFixed(1)}" y="${(y + 3).toFixed(1)}">月亮</text>`;
+    else s += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${on ? 5.5 : 4}" fill="${PL_COL[b.id] || '#fff'}" stroke="${on ? '#fff' : 'none'}"/><text class="as-pl" x="${(x + 8).toFixed(1)}" y="${(y + 3).toFixed(1)}">${esc(b.name)}</text>`;
+  }
+  return s + '</svg>';
+}
+
+// 發射場的中文地名（對不到就回空字串，畫面顯示原文）
+const PAD_ZH = [[/Kennedy/i, '甘迺迪太空中心', '美國佛羅里達州'], [/Cape Canaveral/i, '卡納維爾角', '美國佛羅里達州'], [/Vandenberg/i, '范登堡太空軍基地', '美國加州'], [/Starbase|Boca Chica/i, '星艦基地', '美國德州'], [/Wallops/i, '沃洛普斯', '美國維吉尼亞州'],
+  [/Kodiak|Pacific Spaceport/i, '科迪亞克', '美國阿拉斯加州'], [/Corn Ranch|West Texas/i, '西德州發射場', '美國德州'], [/Mojave/i, '莫哈維', '美國加州'], [/Spaceport America/i, '美國太空港', '美國新墨西哥州'],
+  [/Jiuquan/i, '酒泉衛星發射中心', '中國西北'], [/Xichang/i, '西昌衛星發射中心', '中國四川'], [/Taiyuan/i, '太原衛星發射中心', '中國山西'], [/Wenchang/i, '文昌航天發射場', '中國海南'], [/Haiyang|Yellow Sea|South China Sea|East China Sea|Sea Launch/i, '海上發射平台', '中國近海'],
+  [/Baikonur/i, '拜科努爾', '哈薩克'], [/Plesetsk/i, '普列謝茨克', '俄羅斯北部'], [/Vostochny/i, '東方發射場', '俄羅斯遠東'], [/Tanegashima/i, '種子島宇宙中心', '日本'], [/Uchinoura/i, '內之浦', '日本'], [/Kourou|Guiana/i, '圭亞那太空中心', '南美洲法屬圭亞那'],
+  [/Mahia|Onenui/i, '瑪希亞半島', '紐西蘭'], [/Satish Dhawan|Sriharikota/i, '斯里哈里科塔', '印度'], [/Naro/i, '羅老宇宙中心', '韓國'], [/Sohae/i, '西海衛星發射場', '北韓'], [/Semnan|Shahroud/i, '伊朗的發射場', '伊朗'],
+  [/And[øo]ya/i, '安島', '挪威'], [/SaxaVord|Shetland/i, '昔德蘭群島', '英國'], [/Esrange|Kiruna/i, '基律納', '瑞典'], [/Alc[âa]ntara/i, '阿爾坎塔拉', '巴西'], [/Bowen|Arnhem/i, '澳洲的發射場', '澳洲']];
+function padZh(pad) { const s = String(pad || ''); for (const [re, name, where] of PAD_ZH) if (re.test(s)) return { name, where }; return null; }
+function goBtn(id) { return id ? `<button type="button" class="as-go" data-go="${esc(id)}">看位置 ›</button>` : ''; }
+function bodyRow(color, name, sub, id, find) { return `<div class="as-row"${find ? ` data-find="${esc(find)}" data-name="${esc(String(name).split('・')[0])}"` : ''}><i class="as-dot" style="background:${color}"></i><div><b>${esc(name)}</b><small>${sub}</small></div>${find ? '<button type="button" class="as-findit">帶我找</button>' : ''}${goBtn(id)}</div>`; }
+const bestText = (b, off) => b ? hmAbout(b.ms, off) + ' 最好看・在' + b.dir + '方、高度' + b.level + '（約 ' + Math.round(b.alt) + '°）' : '';
+const upDown = (x, off, win) => { const p = []; if (x.rise && x.rise >= win.start - 1800000 && x.rise <= win.end) p.push(hmAbout(x.rise, off) + ' 升起'); if (x.set && x.set >= win.start && x.set <= win.end + 1800000) p.push(hmAbout(x.set, off) + ' 落下'); if (x.alwaysUp) p.push('整晚都在天上'); return p.join('、'); };
+
+// ---------- 去哪裡看：雙北與全台的觀星點（手寫的清單，一般公認的好地點；光害程度是大概的印象，不是即時量測） ----------
+// [名稱, 區域, 緯度, 經度, 暗的程度（3 最暗）, 一句說明, 是不是雙北近郊]
+const SPOTS = [
+  ['陽明山擎天崗', '台北市', 25.167, 121.574, 1, '離市區最近的大草原，視野開闊；城市的光還是看得到，適合看月亮、行星和亮星', 1],
+  ['陽明山小油坑', '台北市', 25.176, 121.547, 1, '停車方便、往北的天空比較暗，適合臨時起意', 1],
+  ['大屯山助航站', '台北市', 25.176, 121.522, 1, '海拔約一千公尺，天氣好時可以俯瞰台北盆地的夜景和頭頂的星空', 1],
+  ['五分山', '新北市瑞芳', 25.071, 121.781, 2, '氣象雷達站旁，雙北公認比較暗的地方之一，流星雨時很多人來', 1],
+  ['石門富貴角／老梅', '新北市石門', 25.297, 121.537, 2, '北海岸往海面那一側沒有城市的光，適合看北邊與東邊的天空', 1],
+  ['三芝淺水灣', '新北市三芝', 25.255, 121.462, 1, '海邊視野開闊，開車就到，適合看日落後西邊的行星', 1],
+  ['坪林／北宜公路', '新北市坪林', 24.937, 121.711, 2, '山區光害少，往宜蘭方向的路邊觀景台就不錯', 1],
+  ['烏來', '新北市烏來', 24.865, 121.551, 2, '進到山裡之後天空明顯變暗，冬天注意路況', 1],
+  ['福隆／貢寮', '新北市貢寮', 25.02, 121.945, 2, '東北角海邊，往太平洋那一側很暗', 1],
+  ['合歡山（武嶺、鳶峰、昆陽）', '南投／花蓮', 24.137, 121.276, 3, '台灣第一個國際認證的暗空公園，海拔三千公尺、開車就到，全台最熱門的觀星點', 0],
+  ['阿里山小笠原山', '嘉義', 23.511, 120.811, 3, '海拔約兩千五百公尺，雲海上方的星空，銀河很清楚', 0],
+  ['塔塔加', '南投／嘉義', 23.487, 120.889, 3, '玉山國家公園入口，又高又暗，夏天看銀河的好地方', 0],
+  ['福壽山農場／武陵農場', '台中', 24.245, 121.243, 3, '高山農場，可以住下來慢慢看', 0],
+  ['太平山／翠峰湖', '宜蘭', 24.494, 121.535, 3, '宜蘭山區，離雙北相對近的高山暗空', 0],
+  ['司馬庫斯', '新竹尖石', 24.578, 121.335, 3, '深山部落，幾乎沒有光害', 0],
+  ['墾丁龍磐公園', '屏東恆春', 21.936, 120.846, 3, '緯度最低，看得到南十字星等南方的星，冬天也不冷', 0],
+  ['台東三仙台／鹿野高台', '台東', 23.124, 121.416, 3, '東海岸面向太平洋，東邊的天空非常暗', 0],
+  ['澎湖', '澎湖', 23.57, 119.58, 3, '離島光害少，夏天銀河橫跨海面', 0],
+];
+const kmBetween = (a, b, c, d) => { const r = Math.PI / 180, x = (d - b) * r * Math.cos((a + c) / 2 * r), y = (c - a) * r; return Math.hypot(x, y) * 6371; };
+function spotsHTML(lat, lon) {
+  const inTW = kmBetween(lat, lon, 23.7, 121) < 500, nearTPE = kmBetween(lat, lon, 25.04, 121.56) < 70;
+  const row = (s, i) => { const km = Math.round(kmBetween(lat, lon, s[2], s[3])); return `<div class="as-row"><i class="as-dot" style="background:${s[4] >= 3 ? '#8fb4ff' : s[4] === 2 ? '#b9c7e6' : '#d8d2c0'}"></i><div><b>${esc(s[0])}</b><small>${esc(s[1])}・${['', '有些光害', '比較暗', '非常暗'][s[4]]}${inTW ? '・離你約 ' + km + ' 公里' : ''}<br>${esc(s[5])}</small></div><button type="button" class="as-go" data-spot="${i}">看位置 ›</button></div>`; };
+  const idx = SPOTS.map((s, i) => [s, i, kmBetween(lat, lon, s[2], s[3])]);
+  const near = idx.filter((x) => x[0][6]).sort((a, b) => a[2] - b[2]), far = idx.filter((x) => !x[0][6]).sort((a, b) => a[2] - b[2]);
+  let h = '<div class="as-sec">去哪裡看' + (inTW ? '' : '（台灣的推薦地點；你設定的所在地不在台灣）') + '</div>';
+  if (nearTPE || !inTW) h += '<div class="as-sub">雙北近郊（當晚來回）</div>' + near.map((x) => row(x[0], x[1])).join('') + '<div class="as-sub">想看銀河、流星雨：全台更暗的地方</div>' + far.map((x) => row(x[0], x[1])).join('');
+  else h += '<div class="as-sub">離你比較近的</div>' + idx.sort((a, b) => a[2] - b[2]).slice(0, 8).map((x) => row(x[0], x[1])).join('');
+  return h + '<div class="as-note2">月亮、行星、亮星在市區也看得到；銀河與流星雨要去暗的地方，而且避開滿月前後。光害程度是一般的印象，不是即時量測。山區夜晚氣溫低、路況多變，出發前先看天氣。</div>';
+}
+// ---------- 「今晚」分頁 ----------
+function tonightHTML(t, o = {}) {
+  if (!t) return '<div class="as-empty">算不出天空（缺少所在地）</div>';
+  const off = t.off, win = t.night, n = t.times.length, label = (i) => hm(t.times[clamp(i, 0, n - 1)], off);
+  let h = `<div class="as-sum">${esc(t.summary)}</div>`;
+  if (o.cloud) h += `<div class="as-cloud ${o.cloud.bad ? 'bad' : ''}">${esc(o.cloud.text)}</div>`;
+  h += `<div class="as-skybox" id="as-skybox"></div>`;
+  if (n > 1) h += `<div class="as-slide"><span>${label(0)}</span><input type="range" id="as-time" min="0" max="${n - 1}" value="${o.idx != null ? o.idx : Math.round((n - 1) * 0.3)}" aria-label="拖曳看不同時間的天空"><span>${label(n - 1)}</span></div><div class="as-tl" id="as-tl"></div>`;
+  if (o.compass) h += `<div class="as-find"><button type="button" class="as-findbtn" id="as-findbtn">📱 用手機指著天空找星星</button><div class="as-findmsg" id="as-findmsg" hidden></div></div>`;
+  h += `<div class="as-note2">${esc(o.place || '')}・圖上是你抬頭看的樣子：上北下南、左東右西，圓心是頭頂。時間與方向都是大概的。</div>`;
+  const m = t.moon;
+  h += '<div class="as-sec">月亮</div>' + bodyRow('#f1ece0', '月亮・' + m.name, `亮面約 ${Math.round(m.illum * 100)}%${m.visible ? '・' + bestText(m.best, off) : '・今晚不在天上或太低'}${upDown(m, off, win) ? '<br>' + upDown(m, off, win) : ''}`, null, 'moon');
+  h += '<div class="as-sec">行星</div>' + t.planets.map((p) => bodyRow(PL_COL[p.id], p.name, p.visible ? `${bestText(p.best, off)}・${esc(p.magText)}${upDown(p, off, win) ? '<br>' + upDown(p, off, win) : ''}` : `<span class="as-dim">今晚看不到：${esc(p.why)}</span>`, p.id, p.id)).join('');
+  if (t.stars.length) h += '<div class="as-sec">亮星（晚上 9 點左右）</div>' + t.stars.map((s) => bodyRow('#dfe9ff', s.name, `在${s.dir}方、高度約 ${Math.round(s.alt)}°`, null, s.en)).join('');
+  if (o.tonightEvents && o.tonightEvents.length) h += '<div class="as-sec">今晚的特別事件</div>' + o.tonightEvents.map((e) => `<div class="as-row"><i class="as-dot" style="background:#f2b36b"></i><div><b>${esc(e.title)}</b><small>${esc(e.note)}</small></div></div>`).join('');
+  return h + spotsHTML(t.lat, t.lon);
+}
+// ---------- 「天象」分頁 ----------
+function eventsHTML(list, o = {}) {
+  const off = o.off, now = o.now, minor = !!o.minor, hidden = !!o.hidden;
+  const shown = list.filter((e) => (hidden || e.vis !== 'no') && (minor || e.stars >= 2));
+  let h = `<div class="as-opts"><label><input type="checkbox" id="as-minor"${minor ? ' checked' : ''}> 也顯示小事件</label><label><input type="checkbox" id="as-hidden"${hidden ? ' checked' : ''}> 也顯示這裡看不到的</label></div>`;
+  if (!shown.length) return h + '<div class="as-empty">這段時間沒有符合的天象。勾上面的選項可以看更多。</div>';
+  const next = shown.find((e) => e.ts >= now - 3 * 3600000);
+  if (next) { const d = Math.max(0, Math.ceil((next.ts - now) / 86400000)); h += `<div class="as-hero"><small>下一件</small><b>${esc(next.title)}</b><span>${mdw(next.ts, off)} ${hmAbout(next.ts, off).replace('約 ', '約 ')}・${d <= 0 ? '就是今天' : '還有 ' + d + ' 天'}</span><em>${esc(next.note)}</em></div>`; }
+  let mon = '';
+  shown.forEach((e, i) => {
+    const p = localParts(e.ts, off), key = p.y + ' 年 ' + p.mo + ' 月'; if (key !== mon) { mon = key; h += `<div class="as-sec">${key}</div>`; }
+    const star = '★'.repeat(e.stars) + '<span class="as-dim">' + '★'.repeat(3 - e.stars) + '</span>', tag = e.vis === 'no' ? '<em class="as-tag no">這裡看不到</em>' : e.vis === 'maybe' ? '<em class="as-tag">不確定</em>' : '';
+    h += `<div class="as-ev${e.vis === 'no' ? ' no' : ''}${e.ts < now ? ' past' : ''}" data-i="${i}"><time>${mdw(e.ts, off)}</time><div><b>${esc(e.title)}</b>${tag}<small>${esc(e.note)}</small></div><span class="as-star">${star}</span></div>`;
+  });
+  return h + (o.lat != null ? spotsHTML(o.lat, o.lon) : '');
+}
+// ---------- 「發射」分頁 ----------
+const ST = { go: '預定', tbc: '待確認', tbd: '待確認', success: '成功', failure: '失敗', partial: '部分成功', hold: '暫停', inflight: '飛行中' };
+function launchHTML(L, o = {}) {
+  const off = o.off, now = o.now;
+  if (!L || !Array.isArray(L.items) || !L.items.length) return '<div class="as-empty">暫時沒有發射資料。</div>';
+  let h = ''; const age = now - (L.ts || 0) * 1000;
+  if (L.ts && age > 6 * 3600000) h += `<div class="as-cloud bad">資料停在 ${hm(L.ts * 1000, off)}，下面的倒數可能不準。</div>`;
+  const items = L.items.filter((x) => x.net && x.net * 1000 > now - 24 * 3600000).sort((a, b) => a.net - b.net), nx = items.find((x) => x.net * 1000 > now && x.status !== 'failure');
+  if (nx) h += `<div class="as-hero"><small>下一次發射</small><b>${esc(nx.name)}</b><span class="as-cd" id="as-cd" data-t="${nx.net * 1000}">${launchCd(nx.net * 1000 - now)}</span><em>${esc(nx.provider)}・${padZh(nx.pad) ? esc(padZh(nx.pad).name + '（' + padZh(nx.pad).where + '）') : esc(nx.pad)}${nx.prec && nx.prec !== 'exact' ? '・時間為暫定' : ''}</em></div>`;
+  for (const x of items) {
+    const p = localParts(x.net * 1000, off), past = x.net * 1000 <= now, st = ST[x.status] || '', done = past && (x.status === 'success' || x.status === 'failure' || x.status === 'partial');
+    h += `<div class="as-ev lx${past ? ' past' : ''}" data-id="${esc(x.id)}"><time>${p.mo}/${p.d}<br>${String(p.h).padStart(2, '0')}:${String(p.mi).padStart(2, '0')}${x.prec && x.prec !== 'exact' ? '<br><em class="as-tag">暫定</em>' : ''}</time><div><b>${esc(x.rocket || x.name)}${x.provider ? '・' + esc(x.provider) : ''}</b><small>${esc(x.mission || x.name)}${x.orbit ? '・' + esc(x.orbit) : ''}<br>${padZh(x.pad) ? '<b class="as-place">' + esc(padZh(x.pad).name) + '</b>（' + esc(padZh(x.pad).where) + '）・' : ''}${esc(x.pad)}${x.desc ? '<br><span class="as-orig">（原文）' + esc(x.desc) + '</span>' : ''}</small>${x.webcast ? `<a class="as-link" href="${esc(x.webcast)}" target="_blank" rel="noopener noreferrer">看直播 ›</a>` : ''}${x.lat != null ? ` <button type="button" class="as-go" data-pad="${esc(x.id)}">看發射場 ›</button>` : ''}</div><span class="as-star${done && x.status !== 'success' ? ' bad' : ''}">${esc(st)}</span></div>`;
+  }
+  return h + '<div class="as-note2">資料：Launch Library 2（The Space Devs）。任務說明是英文原文。時間以你所在地的時區顯示。</div>';
+}
+function launchCd(ms) {
+  if (ms <= 0) return '就是現在';
+  const s = Math.floor(ms / 1000), d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), ss = s % 60;
+  return (d ? d + ' 天 ' : '') + (d || h ? h + ' 小時 ' : '') + m + ' 分 ' + (d ? '' : ss + ' 秒');
+}
+
+return { skySVG, padZh, SPOTS, spotsHTML, tonightHTML, eventsHTML, launchHTML, launchCd };
 })();
 // ── palette.js ──
 const __m_palette_js = (() => {
@@ -7187,6 +8003,9 @@ const { geotag, CITIES, PLACES } = __m_geo_js;
 const { COUNTRIES } = __m_world_js;
 const { createFx } = __m_fx_js;
 const { BODIES: SPACE_BODIES } = __m_space_data_js;
+const { skyTonight, skyAt, skyHm, tzOf, bodyAltAz, altAz, dirName, planetMag, moonInfo, localParts, BRIGHT_STARS, riseSet, deviceAim } = __m_sky_js;
+const { almEvents, nextNotable, checkEclipses } = __m_almanac_js;
+const { skySVG, tonightHTML, eventsHTML, launchHTML, launchCd, padZh, SPOTS } = __m_astro_view_js;
 const { matchCommands, matchSpoken, scoreCmd, pushRecent, nextGroup } = __m_palette_js;
 const { parseBrokerText, joinParts } = __m_scantext_js;
 const { PANELS, PANEL_CODE, PANEL_NAME, BP_COLS, COLS, COL_DEFAULT, SCENES, SCENE_IDS, defaultLayout, sanitizeLayout, visiblePanels, hiddenPanels, layoutDiff, normJoin, rowsOf, ROW_MAX, ROW_BPS } = __m_layout_js;
@@ -8231,15 +9050,16 @@ document.addEventListener('pointerdown', (e) => { if (!$('keyp').hidden && !e.ta
 // ───────────────────────── 「太陽系」列表：地面尺度以外的東西（衛星、月亮、行星）─────────────────────────
 // 和「圖示說明」並排、各自獨立開合（開一個就收另一個）。點一列：面板收起、鏡頭順暢飛過去，並說一句「飛往…」。
 const SP_MODELS = [['iss', '國際太空站', '住著太空人的實驗室'], ['css', '天宮太空站', '中國的 T 字形太空站'], ['hubble', '哈伯望遠鏡', '拍下深空經典影像'], ['starlink', '星鏈衛星（模型）', '一枚火箭送上幾十顆'], ['gps', 'GPS 衛星（模型）', '手機定位靠它']];
-const SP_FAR = [['outer', '太陽系外圍', '古柏帶、歐特雲', '#8fb4ff'], ['stars', '鄰近恆星', '真實位置的 200 顆恆星', '#ffe9b0'], ['galaxy', '銀河系', '整個銀河，標出我們在哪', '#c9a8ff']];
+const SP_FAR = [['outer', '太陽系外圍', '古柏帶、歐特雲', '#8fb4ff'], ['stars', '鄰近恆星', '真實位置的 200 顆恆星', '#ffe9b0'], ['galaxy', '銀河系', '整個銀河，標出我們在哪', '#c9a8ff'], ['neighbors', '銀河系的鄰居', '麥哲倫雲與衛星星系', '#7fd0ff'], ['local', '仙女座與本星系群', '仙女座、三角座與幾十個小星系', '#ffcf8f'], ['nearby', '鄰近的星系', '一團一團的星系團', '#ffd9a0'], ['web', '宇宙網', '星系排成的絲、牆與空洞', '#a8b8ff'], ['universe', '可觀測宇宙', '我們在正中間，最外面是最早的光', '#ff9a6a']];
 const SP_SATS = [['starlink', 1, '星鏈', '#cfe4ff'], ['nav', 2, '導航', '#ffd166'], ['weather', 3, '氣象', '#7fe3f2'], ['other', 0, '其他', '#8fa3b8']];
-const SPACE_NAME = Object.fromEntries([['system', '太陽系全景'], ['iss', '國際太空站'], ['css', '天宮太空站'], ['hubble', '哈伯望遠鏡'], ['starlink', '星鏈衛星'], ['gps', 'GPS 衛星'], ['outer', '太陽系外圍'], ['stars', '鄰近恆星'], ['galaxy', '銀河系'], ...SPACE_BODIES.map((b) => [b.id, b.name])]);
+const SPACE_NAME = Object.fromEntries([['astro:tonight', '今晚的天空'], ['astro:events', '近期天象'], ['astro:launch', '火箭發射'], ['system', '太陽系全景'], ['iss', '國際太空站'], ['css', '天宮太空站'], ['hubble', '哈伯望遠鏡'], ['starlink', '星鏈衛星'], ['gps', 'GPS 衛星'], ['outer', '太陽系外圍'], ['stars', '鄰近恆星'], ['galaxy', '銀河系'], ['neighbors', '銀河系的鄰居'], ['local', '仙女座與本星系群'], ['nearby', '鄰近的星系'], ['web', '宇宙網'], ['universe', '可觀測宇宙'], ...SPACE_BODIES.map((b) => [b.id, b.name])]);
 let spHiCls = -1, spTimer = 0;
 const spBox = () => $('spp'), spIsOpen = () => !$('spp').hidden;
 function spDraw() {
   if (!spIsOpen()) return;
   const sp = globe.space, cur = sp.active ? sp.focus : '', rows = [];
   const dot = (b) => `<i class="sp-dot${b.ring && b.id === 'saturn' ? ' ring' : ''}" style="background:${b.color}"></i>`;
+  const astroRows = astroSummaryRows().map(([k, n, d, col]) => `<button type="button" data-sp="${k}"><i class="sp-dot" style="background:radial-gradient(${col} 24%,#334 72%)"></i><b>${n}</b><small>${esc(d.length > 22 ? d.slice(0, 21) + '…' : d)}</small><em>看 ›</em></button>`).join('');
   rows.push(`<button type="button" data-sp="system" class="${cur === 'system' ? 'cur' : ''}"><i class="sp-dot" style="background:radial-gradient(#ffb347 28%,#445 29%)"></i><b>太陽系全景</b><small>所有行星一次看</small><em>看 ›</em></button>`);
   for (const b of SPACE_BODIES) rows.push(`<button type="button" data-sp="${b.id}" class="${cur === b.id ? 'cur' : ''}">${dot(b)}<b>${b.name}${b.tag === '矮行星' ? '<small>（矮行星）</small>' : ''}</b><small>${esc(b.blurb.length > 16 ? b.blurb.slice(0, 15) + '…' : b.blurb)}</small><em>看 ›</em></button>`);
   const sats = globe.sats, st = sats ? sats.status : 'loading', cnt = sats && sats.counts;
@@ -8250,7 +9070,7 @@ function spDraw() {
   }).join('');
   const far = SP_FAR.map(([k, n, d, col]) => `<button type="button" data-sp="${k}" class="${cur === k ? 'cur' : ''}"><i class="sp-dot" style="background:radial-gradient(${col} 22%,#334 70%)"></i><b>${n}</b><small>${d}</small><em>看 ›</em></button>`).join('');
   const away = sp.active || globe.zoom < 0.9;
-  spBox().innerHTML = `<div class="spp-h">太陽系<span>地面尺度以外的東西，點一下飛過去看</span></div><div class="spp-s">星球</div>${rows.join('')}<div class="spp-s">地球周圍</div>${model}${satRows}<div class="spp-s">更遠的地方</div>${far}`
+  spBox().innerHTML = `<div class="spp-h">太陽系<span>地面尺度以外的東西，點一下飛過去看</span></div><div class="spp-s">天文</div>${astroRows}<div class="spp-s">星球</div>${rows.join('')}<div class="spp-s">地球周圍</div>${model}${satRows}<div class="spp-s">更遠的地方</div>${far}`
     + (away ? '<button type="button" class="sp-back" data-sp="home">回地球</button>' : '')
     + '<div class="spp-f">距離與大小經過調整，方便觀看。<br>星球影像：Solar System Scope（CC BY 4.0）、NASA<br>恆星位置：HYG 星表（CC BY-SA 4.0）。銀河系是依觀測資料重建的示意圖</div>';
 }
@@ -8263,6 +9083,7 @@ function setSp(open) {
 function spGo(id) {
   const sp = globe.space;
   if (id === 'home') { spHiCls = -1; if (globe.sats) globe.sats.highlight(-1); if (sp.active) sp.exit(); else globe.flyTo(globe.viewLat, globe.viewLon, 9000, { zoom: 1, exact: true }); toast('回到地球'); return; }
+  if (id.startsWith('astro:')) { openAstro(id.slice(6)); return; }
   const b = SPACE_NAME[id]; sp.goto(id); toast('飛往' + b);
 }
 function spHighlight(cls) {
@@ -8342,7 +9163,7 @@ async function syncFlights() {
 const layerPrefs = (() => { try { return JSON.parse(localStorage.getItem('layers') || '{}'); } catch (e) { return {}; } })();
 document.querySelectorAll('#legend button[data-layer]').forEach((b) => {
   const k = b.dataset.layer;
-  const apply = (on) => (k === 'war' ? globe.setWarVisible(on) : k === 'aurora' ? globe.setAuroraVisible(on) : k === 'cii' ? setCiiLayer(on) : globe.traffic.setShow(k, on));
+  const apply = (on) => (k === 'war' ? globe.setWarVisible(on) : k === 'aurora' ? globe.setAuroraVisible(on) : k === 'cii' ? setCiiLayer(on) : k === 'launch' ? setLaunchLayer(on) : globe.traffic.setShow(k, on));
   if (layerPrefs[k] === false) { b.classList.remove('on'); apply(false); }
   else if (b.dataset.default === 'off') { const on = layerPrefs[k] === true; b.classList.toggle('on', on); apply(on); }      // 預設關的圖層（不穩定指數）：使用者打開過才開
   b.addEventListener('click', () => {
@@ -8826,6 +9647,189 @@ const FIXED_ROWS = [['taiex', '加權指數', '加權 大盤 台股 taiex'], ['o
   ['tsm', '台積電 ADR', '台積電 adr tsm'], ['nvda', '輝達', '輝達 nvidia nvda']];
 const PANEL_WORDS = [['p-clocks', '世界時間 時鐘'], ['p-weather', '天氣 空氣 氣溫 金色時刻'], ['p-system', '系統 cpu 記憶體 網路'], ['p-storage', '儲存 硬碟 davinci'], ['p-cal', '財經行事曆 行事曆 數據'],
   ['p-tw', '台股'], ['p-us', '美股'], ['p-gold', '黃金 匯率'], ['p-watch', '自選股 持股 損益'], ['p-insp', '靈感 大圖 設計 時尚 藝術 圖片 inspiration'], ['p-mv', 'mv 音樂 熱門 youtube'], ['p-film', '影視 產業 電影 好萊塢 film'], ['p-strait', '臺海 台海 共機 共艦 國防部'], ['p-news', '新聞 國際']];
+
+
+// ───────────────────────── 天文：今晚的天空、天象日曆、火箭發射 ─────────────────────────
+// 一個「天文」視窗、三個分頁（今晚／天象／發射）。入口在「太陽系」列表最上面一組、指令列、提醒的橫幅。
+// 今晚與天象都是在這台機器上用所在地算的（所在地不會送到任何地方）；發射資料由 Mac 抓（朋友版經中轉站拿）。畫面零件在 astro-view.js。
+let astroEvIdle = false, astroTab = 'tonight', astroIdx = null, astroSel = null, astroOpts = { minor: false, hidden: false }, astroCache = null, almCache = null, astroTimer = 0, astroRaf = 0;
+const astroLoc = () => { const l = CFG.location || {}; return { lat: Number.isFinite(l.lat) ? l.lat : 25.04, lon: Number.isFinite(l.lon) ? l.lon : 121.56, name: l.name || '台北' }; };
+const astroOff = () => { const o = S.weather?.data?.utcOffset; return Number.isFinite(o) ? o : tzOf(null); };
+const astroNow = () => Date.now() + skew;
+// 今晚（每 10 分鐘才重算一次）
+function astroTonight(force) {
+  const L = astroLoc(), off = astroOff(), now = astroNow(), key = L.lat + ',' + L.lon + ',' + off;
+  if (!force && astroCache && astroCache.key === key && now - astroCache.at < 600000) return astroCache.T;
+  let T = null; try { T = skyTonight(L.lat, L.lon, now, off); } catch (e) { T = null; }
+  astroCache = { key, at: now, T }; return T;
+}
+// 未來一年的天象（所在地或日期變了才重算；排到瀏覽器閒的時候）
+function astroEventsList(peek) {
+  const L = astroLoc(), off = astroOff(), now = astroNow(), day = Math.floor((now + off * 1000) / 86400000), key = L.lat + ',' + L.lon + ',' + off + ',' + day;
+  if (almCache && almCache.key === key) return almCache.list;
+  if (peek) {                          // 只是要看一眼（列表上的小字、今晚的特別事件）：還沒算過就排到瀏覽器閒的時候算，算完再畫一次，不要在打開的那一刻卡一下
+    if (!astroEvIdle) { astroEvIdle = true; (window.requestIdleCallback || ((f) => setTimeout(f, 200)))(() => { astroEvIdle = false; astroEventsList(); try { spDraw(); if (!$('astro').hidden && astroTab === 'tonight') drawAstro(); } catch (e) { /* 畫面還沒準備好 */ } }); }
+    return null;
+  }
+  let list = []; try { list = almEvents(L.lat, L.lon, now - 86400000, now + 370 * 86400000, off); } catch (e) { list = []; }
+  almCache = { key, list }; return list;
+}
+// 今晚的雲量一句話（天氣資料只有未來 13 小時；沒有資料就不顯示）
+function astroCloud(T) {
+  const h = S.weather?.data?.hourly; if (!T || !h || !h.time || !h.weather_code) return null;
+  const codes = [];
+  for (let i = 0; i < h.time.length; i++) { const t = Date.parse(h.time[i] + ':00Z') - astroOff() * 1000; if (t >= T.night.start - 3600000 && t <= T.night.end) codes.push(h.weather_code[i]); }
+  if (!codes.length) return null;
+  const rain = codes.filter((c) => c >= 45).length, over = codes.filter((c) => c === 3).length, part = codes.filter((c) => c === 2).length;
+  if (rain * 2 >= codes.length) return { bad: true, text: '今晚天氣不太好（雨或霧），多半看不到天空。' };
+  if (over * 2 >= codes.length) return { bad: true, text: '今晚雲很多，可能看不太到。' };
+  if (over + part >= codes.length / 2) return { bad: false, text: '今晚有一些雲，運氣好會看得到。' };
+  return { bad: false, text: '今晚天氣看起來不錯，適合抬頭看。' };
+}
+function drawSkyChart() {
+  const box = $('as-skybox'), T = astroCache && astroCache.T; if (!box || !T) return;
+  const L = astroLoc(), r = $('as-time'), i = r ? +r.value : Math.round((T.times.length - 1) * 0.3); astroIdx = i;
+  const ms = cmp.on ? astroNow() : (T.times[Math.max(0, Math.min(T.times.length - 1, i))] || T.refMs);       // 尋星時畫「現在」的天空
+  const keepAim = $('as-aim'); box.innerHTML = skySVG(L.lat, L.lon, ms, cmp.on ? cmp.target : astroSel); if (keepAim && cmp.on) box.appendChild(keepAim);
+  const sa = bodyAltAz('sun', L.lat, L.lon, ms).alt, tl = $('as-tl'); if (tl) tl.textContent = skyHm(ms, T.off) + '・' + (sa > 0 ? '太陽還在地平線上' : sa > -6 ? '天剛黑（微亮）' : sa > -18 ? '天色還沒全黑' : '全黑，星星最清楚');
+}
+function drawAstro() {
+  const body = $('as-body'); if (!body || $('astro').hidden) return;
+  document.querySelectorAll('#as-tabs button').forEach((b) => b.classList.toggle('on', b.dataset.tab === astroTab));
+  const L = astroLoc(), off = astroOff(), now = astroNow(), keepScroll = body.scrollTop;
+  if (astroTab === 'tonight') {
+    const T = astroTonight(); const list = T ? (astroEventsList(true) || []) : [];
+    const te = T ? list.filter((e) => e.vis !== 'no' && e.ts >= T.night.start - 3 * 3600000 && e.ts <= T.night.end) : [];
+    body.innerHTML = tonightHTML(T, { place: L.name, cloud: T ? astroCloud(T) : null, tonightEvents: te, idx: astroIdx, compass: compassOK() }); document.querySelector('#astro .dlg').classList.toggle('as-can-compass', compassOK()); if (cmp.on) { const b = $('as-findbtn'); if (b) b.textContent = '關掉尋星'; } drawSkyChart(); if (cmp.on) compassDraw();
+    $('as-note').textContent = '所在地：' + L.name + '（在「世界時間」的編輯裡可以改）。天文位置是大概算的，時間寫「約」。';
+  } else if (astroTab === 'events') {
+    body.innerHTML = '<div class="as-empty">整理未來一年的天象…</div>';
+    const run = () => { if ($('astro').hidden || astroTab !== 'events') return; const list = astroEventsList(); body.innerHTML = eventsHTML(list, { off, now, minor: astroOpts.minor, hidden: astroOpts.hidden, lat: L.lat, lon: L.lon }); body.scrollTop = keepScroll; astroShareEvents(list); };
+    (window.requestIdleCallback || ((f) => setTimeout(f, 30)))(run);
+    $('as-note').textContent = '日食月食表是整理出來的重要幾次；看不看得到依你的所在地。時間是大概的。';
+  } else {
+    body.innerHTML = launchHTML(S.launches?.data, { off, now }); body.scrollTop = keepScroll;
+    $('as-note').textContent = '火箭發射時程由 Mac 每小時更新一次；時間可能臨時延後。';
+  }
+  if (astroTab !== 'tonight') body.scrollTop = keepScroll;
+}
+// 把「未來 30 天、★★ 以上、這裡看得到」的天象存一份在 Mac 的設定裡（只有時間、名稱、一句說明，不含所在地），讓 Mac 能在傍晚發「今晚有天象」的提醒
+let astroSharedKey = '';
+function astroShareEvents(list) {
+  if (REMOTE || isStandalone() || !CFG.alertCfg?.astro) return;
+  const now = astroNow(), items = list.filter((e) => e.stars >= 2 && e.vis !== 'no' && e.ts >= now && e.ts <= now + 30 * 86400000).slice(0, 20).map((e) => ({ ts: Math.round(e.ts / 1000), title: e.title, note: e.note })), key = JSON.stringify(items);
+  if (key === astroSharedKey) return; astroSharedKey = key;
+  fetch('/api/prefs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ astroEvents: items }) }).catch(() => {});
+}
+function openAstro(tab) {
+  astroTab = tab || astroTab; astroIdx = null; astroSel = null;
+  openDialog('astro'); drawAstro(); clearInterval(astroTimer);
+  astroTimer = setInterval(() => {
+    if ($('astro').hidden) { clearInterval(astroTimer); astroTimer = 0; compassStop(); return; }
+    if (cmp.on && astroTab === 'tonight' && cmp.got) drawSkyChart();
+    if (astroTab === 'launch') { const el = $('as-cd'); if (el) el.textContent = launchCd(+el.dataset.t - astroNow()); }
+  }, 1000);
+}
+$('astro').addEventListener('click', (e) => {
+  const tb = e.target.closest('#as-tabs button'); if (tb) { if (tb.dataset.tab !== 'tonight') compassStop(); astroTab = tb.dataset.tab; drawAstro(); return; }
+  if (e.target.closest('#as-findbtn')) { compassStart(); return; }
+  const sb = e.target.closest('[data-spot]'); if (sb) { const s = SPOTS[+sb.dataset.spot]; if (s) { closeDialog($('astro')); const fly = () => { if (stageMode === 'insp') setStageMode('globe'); globe.setPin(s[2], s[3]); flyPlace(s[2], s[3], 5); }; if (globe.space.active) { globe.space.exit(); const t0 = performance.now(), iv = setInterval(() => { if (!globe.space.active || performance.now() - t0 > 20000) { clearInterval(iv); fly(); } }, 200); } else fly(); toast('觀星點：' + s[0] + '（' + s[1] + '）'); } return; }
+  const fi = e.target.closest('.as-findit'); if (fi) { const row = fi.closest('[data-find]'); document.querySelectorAll('#as-body .as-row.tgt').forEach((r) => r.classList.remove('tgt')); row.classList.add('tgt'); cmp.target = row.dataset.find; const go = () => { drawSkyChart(); compassDraw(); $('as-skybox').scrollIntoView({ block: 'center', behavior: 'smooth' }); }; if (!cmp.on) compassStart().then(go); else go(); return; }
+  const go = e.target.closest('[data-go]'); if (go) { closeDialog($('astro')); spGo(go.dataset.go); return; }
+  const pd = e.target.closest('[data-pad]'); if (pd) { const x = (S.launches?.data?.items || []).find((q) => q.id === pd.dataset.pad); if (x && x.lat != null) { closeDialog($('astro')); openPad(padKey(x)); } return; }
+  if (e.target.id === 'as-minor') { astroOpts.minor = e.target.checked; drawAstro(); return; }
+  if (e.target.id === 'as-hidden') { astroOpts.hidden = e.target.checked; drawAstro(); return; }
+});
+$('astro').addEventListener('input', (e) => { if (e.target.id === 'as-time') { cancelAnimationFrame(astroRaf); astroRaf = requestAnimationFrame(drawSkyChart); } });
+
+// ── 發射場的小卡：點地球上的發射場（或清單裡的「看發射場」）→ 地球轉過去並放大、標記亮起來、小卡寫清楚這是哪裡、接下來有哪幾次發射
+var padSel = null, padTimer = 0;
+const padKey = (x) => x.lat.toFixed(2) + ',' + x.lon.toFixed(2);
+function markPad() { for (const it of globe.labels) if (it.kind === 'launch') it.el.classList.toggle('sel', !!(it.data && it.data.key === padSel)); }
+function closePad() { padSel = null; clearInterval(padTimer); padTimer = 0; const el = $('lp-card'); if (el) el.hidden = true; markPad(); }
+function openPad(key) {
+  const L = S.launches?.data; if (!L) return; const now = astroNow(), off = astroOff();
+  const xs = (L.items || []).filter((x) => x.lat != null && padKey(x) === key && x.net * 1000 > now - 6 * 3600000).sort((a, b) => a.net - b.net); if (!xs.length) return;
+  const x0 = xs[0], z = padZh(x0.pad); padSel = key;
+  let el = $('lp-card');
+  if (!el) { el = document.createElement('div'); el.id = 'lp-card'; el.className = 'lp-card'; $('stage').appendChild(el); el.addEventListener('click', (e) => { if (e.target.closest('.lp-x')) closePad(); else if (e.target.closest('.lp-all')) { closePad(); openAstro('launch'); } }); }
+  el.innerHTML = `<button type="button" class="lp-x" aria-label="關閉">×</button><div class="lp-h"><i></i><b>${esc(z ? z.name : (x0.pad.split('，').pop() || x0.pad))}</b></div><span class="lp-w">${esc(z ? z.where + '・' : '')}${coord(x0.lat, x0.lon)}</span><small>${esc(x0.pad)}</small>`
+    + xs.slice(0, 3).map((x) => { const p = localParts(x.net * 1000, off); return `<div class="lp-row"><time>${p.mo}/${p.d} ${pad(p.h)}:${pad(p.mi)}</time><div>${esc(x.rocket || x.name)}${x.provider ? '・' + esc(x.provider) : ''}<em>${esc(x.mission || '')}${x.prec && x.prec !== 'exact' ? '・時間暫定' : ''}</em></div></div>`; }).join('')
+    + (x0.net * 1000 > now ? `<div class="lp-cd">下一次：<b id="lp-cd" data-t="${x0.net * 1000}">${launchCd(x0.net * 1000 - now)}</b>後</div>` : '') + '<button type="button" class="lp-all">看全部發射 ›</button>';
+  el.hidden = false; markPad(); clearInterval(padTimer); padTimer = setInterval(() => { const c = $('lp-cd'); if (!c || $('lp-card').hidden) { clearInterval(padTimer); padTimer = 0; return; } c.textContent = launchCd(+c.dataset.t - astroNow()); }, 1000);
+  const fly = () => { if (padSel !== key) return; if (stageMode === 'insp') setStageMode('globe'); globe.flyTo(x0.lat, x0.lon, 20000, { exact: true, zoom: Math.max(globe.zoom, 2.4) }); };
+  if (globe.space.active) { globe.space.exit(); const t0 = performance.now(), iv = setInterval(() => { if (!globe.space.active || performance.now() - t0 > 20000) { clearInterval(iv); fly(); } }, 200); } else fly();
+  toast('發射場：' + (z ? z.name + '（' + z.where + '）' : x0.pad));
+}
+// ── 尋星：用手機的方向感應，把手機背面對著天空，天空圖上會有一個圈圈跟著手機指的方向走；選一個目標就告訴你往哪邊轉、抬多高
+const cmp = { on: false, got: false, abs: false, az: 0, alt: 0, v: null, target: null, raf: 0, timer: 0 };
+const compassOK = () => 'DeviceOrientationEvent' in window && (QS.has('compass') || (() => { try { return matchMedia('(pointer: coarse)').matches; } catch (e) { return false; } })());
+function compassMsg(t, good) { const el = $('as-findmsg'); if (el) { el.hidden = !t; el.textContent = t || ''; el.classList.toggle('ok', !!good); } }
+function compassOrient(e) {
+  if (!cmp.on) return; let alpha = null; const isAbs = e.type === 'deviceorientationabsolute' || e.absolute === true;
+  if (typeof e.webkitCompassHeading === 'number' && e.webkitCompassHeading >= 0) alpha = 360 - e.webkitCompassHeading; else if (isAbs && e.alpha != null) alpha = e.alpha;
+  if (alpha == null || e.beta == null || e.gamma == null) return;
+  const a = deviceAim(alpha, e.beta, e.gamma), r = Math.PI / 180, v = [Math.cos(a.alt * r) * Math.sin(a.az * r), Math.cos(a.alt * r) * Math.cos(a.az * r), Math.sin(a.alt * r)];
+  if (!cmp.v) cmp.v = v; else { for (let i = 0; i < 3; i++) cmp.v[i] += (v[i] - cmp.v[i]) * 0.25; const l = Math.hypot(cmp.v[0], cmp.v[1], cmp.v[2]) || 1; cmp.v = cmp.v.map((x) => x / l); }       // 稍微平滑，圈圈才不會抖
+  cmp.az = (Math.atan2(cmp.v[0], cmp.v[1]) / r + 360) % 360; cmp.alt = Math.asin(Math.max(-1, Math.min(1, cmp.v[2]))) / r; cmp.got = true;
+  if (!cmp.raf) cmp.raf = requestAnimationFrame(() => { cmp.raf = 0; compassDraw(); });
+}
+async function compassStart() {
+  if (cmp.on) return compassStop();
+  try { if (typeof DeviceOrientationEvent.requestPermission === 'function') { const r = await DeviceOrientationEvent.requestPermission(); if (r !== 'granted') { compassMsg('沒有拿到方向感應的許可。在跳出來的詢問按「允許」之後才能用。'); return; } } }
+  catch (e) { compassMsg('這個瀏覽器現在沒辦法用方向感應（需要安全連線的網頁）。'); return; }
+  cmp.on = true; cmp.got = false; cmp.v = null;
+  addEventListener('deviceorientationabsolute', compassOrient, true); addEventListener('deviceorientation', compassOrient, true);
+  document.querySelector('#astro .dlg').classList.add('as-compass'); const b = $('as-findbtn'); if (b) b.textContent = '關掉尋星';
+  compassMsg('把手機直著拿，背面（鏡頭那一面）對著天空，慢慢轉動。'); clearTimeout(cmp.timer);
+  cmp.timer = setTimeout(() => { if (cmp.on && !cmp.got) compassMsg('這支裝置沒有回傳方向。要用手機、而且是安全連線的網頁才有；電腦沒有指南針。'); }, 2500);
+  drawSkyChart();
+}
+function compassStop() {
+  if (!cmp.on) return; cmp.on = false; cmp.target = null; removeEventListener('deviceorientationabsolute', compassOrient, true); removeEventListener('deviceorientation', compassOrient, true); clearTimeout(cmp.timer);
+  document.querySelector('#astro .dlg')?.classList.remove('as-compass'); const b = $('as-findbtn'); if (b) b.textContent = '📱 用手機指著天空找星星'; compassMsg(''); $('as-aim')?.remove();
+  document.querySelectorAll('#as-body .as-row.tgt').forEach((r) => r.classList.remove('tgt')); astroSel = null; drawSkyChart();
+}
+function compassDraw() {
+  if (!cmp.on || !cmp.got || $('astro').hidden || astroTab !== 'tonight') return; const box = $('as-skybox'), svg = box && box.querySelector('svg'); if (!svg) return;
+  const ang = (screen.orientation && screen.orientation.angle) || 0; if (ang) { compassMsg('請把手機直著拿（現在是橫的），方向才會準。'); return; }
+  let aim = $('as-aim'); if (!aim) { aim = document.createElement('i'); aim.id = 'as-aim'; aim.className = 'as-aim'; box.appendChild(aim); }
+  const rr = (90 - Math.max(0, cmp.alt)) / 90 * 142, a = cmp.az * Math.PI / 180, sr = svg.getBoundingClientRect(), br = box.getBoundingClientRect();
+  aim.style.transform = `translate(${(sr.left - br.left + (160 - rr * Math.sin(a)) / 320 * sr.width).toFixed(1)}px,${(sr.top - br.top + (160 - rr * Math.cos(a)) / 320 * sr.height).toFixed(1)}px) translate(-50%,-50%)`; aim.classList.toggle('low', cmp.alt < 0);
+  const L = astroLoc(), list = skyAt(L.lat, L.lon, astroNow()), r = Math.PI / 180;
+  const sepTo = (b) => Math.acos(Math.max(-1, Math.min(1, Math.sin(b.alt * r) * Math.sin(cmp.alt * r) + Math.cos(b.alt * r) * Math.cos(cmp.alt * r) * Math.cos((b.az - cmp.az) * r)))) / r;
+  const t = cmp.target && list.find((b) => b.id === cmp.target);
+  if (t) {
+    if (t.alt < 0) return compassMsg(t.name + '現在在地平線下，這時候看不到。換一個目標試試。');
+    const d = sepTo(t), dAz = ((t.az - cmp.az + 540) % 360) - 180, dAlt = t.alt - cmp.alt; aim.classList.toggle('hit', d < 7);
+    if (d < 7) return compassMsg('✓ 對準了！' + t.name + '就在手機指的方向。', true);
+    const parts = []; if (Math.abs(dAz) > 4) parts.push((dAz > 0 ? '往右轉 ' : '往左轉 ') + Math.round(Math.abs(dAz)) + '°'); if (Math.abs(dAlt) > 4) parts.push((dAlt > 0 ? '再抬高 ' : '放低 ') + Math.round(Math.abs(dAlt)) + '°');
+    return compassMsg(t.name + '：' + (parts.join('、') || '就在附近，慢慢微調'));
+  }
+  aim.classList.remove('hit');
+  if (cmp.alt < -5) return compassMsg('手機現在指著地面。把手機立起來、背面對著天空。');
+  const up = list.filter((b) => b.alt > 0 && b.kind !== 'sun').map((b) => [sepTo(b), b]).sort((p, q) => p[0] - q[0])[0];
+  compassMsg('手機指著' + dirName(cmp.az) + '方、高度約 ' + Math.round(cmp.alt) + '°。' + (up ? '最近的是「' + up[1].name + '」（差 ' + Math.round(up[0]) + '°）。' : '') + '點下面任何一列的「帶我找」可以指定目標。');
+}
+// 太陽系列表上那三列的小字
+function astroSummaryRows() {
+  let tn = '', ev = '', lc = '';
+  try { const T = astroTonight(); tn = T ? T.summary.replace(/。$/, '') : ''; } catch (e) { tn = ''; }
+  try { const al = astroEventsList(true), nx = al ? nextNotable(al, astroNow(), astroOff()) : null; ev = nx ? nx.text : '未來一年的日月食、流星雨…'; } catch (e) { ev = ''; }
+  try { const L = S.launches?.data, nxt = (L?.items || []).find((x) => x.net * 1000 > astroNow() && x.status !== 'failure'); lc = nxt ? (nxt.rocket || nxt.name) + '・' + launchCd(nxt.net * 1000 - astroNow()).replace(/ 秒$/, '').replace(/^(.*?小時).*$/, '$1') + '後' : (L ? '' : '暫時沒有資料'); } catch (e) { lc = ''; }
+  return [['astro:tonight', '今晚的天空', tn || '行星、月亮、亮星在哪裡', '#9fb8ff'], ['astro:events', '近期天象', ev || '日月食、流星雨、行星相合', '#ffd28a'], ['astro:launch', '火箭發射', lc || '全球的發射時程與倒數', '#ff9a6a']];
+}
+// 地球上的發射場標記（未來 7 天內有發射的；同一個發射場合併）
+var launchOn = true, launchTs = -1;       // 用 var：圖層開關在檔案前面就會呼叫 setLaunchLayer（使用者上次把圖層關掉時），let 會撞到暫時死區
+function setLaunchLayer(on) { launchOn = on; launchTs = -1; renderLaunches(); }
+function renderLaunches() {
+  const L = S.launches; if (!L?.data) return; const key = (L.ts || 0) + ':' + launchOn;
+  if (key === launchTs) return; launchTs = key;
+  const now = astroNow(), pads = new Map();
+  if (launchOn) for (const x of L.data.items || []) { const t = x.net * 1000; if (x.lat == null || t < now - 6 * 3600000 || t > now + 7 * 86400000 || x.status === 'failure') continue; const k = x.lat.toFixed(2) + ',' + x.lon.toFixed(2), p = pads.get(k); if (!p || t < p.t) pads.set(k, { lat: x.lat, lon: x.lon, t, x, n: (p ? p.n : 0) + 1 }); else p.n++; }
+  globe.setLaunches([...pads.values()].map((p) => { const z = padZh(p.x.pad); return { key: padKey(p.x), lat: p.lat, lon: p.lon, soon: p.t - now < 86400000, title: `${z ? z.name + '（' + z.where + '）・' : ''}${p.x.rocket || p.x.name}・${p.x.mission || ''}${p.n > 1 ? `（另有 ${p.n - 1} 次）` : ''}`, label: (z ? z.name + '・' : '') + (p.x.rocket || p.x.name) }; }), (p) => openPad(p.key));
+  if (padSel) { if (!launchOn) closePad(); else markPad(); }
+}
 
 // 帶你看過去：在目標上疊一個發光的框閃兩下。框是獨立的元素，目標每秒重繪也不會被洗掉。
 // find 是「現在去找目標」的函式；找不到時改指 fallback（通常是所在的面板）。
@@ -9969,7 +10973,7 @@ $('st-alert').addEventListener('click', () => {
 // 提醒：伺服器判斷，畫面上顯示橫幅（Mac 另外有系統通知）；設定在「提醒」視窗
 let alertSeen = 0, alertFirst = true, alertUnread = 0;
 const ALERT_HIST = [];
-const ALERT_ICON = { move: '📈', target: '🎯', pla: '✈︎', quake: '〰', source: '⚠︎', surge: '◎' };
+const ALERT_ICON = { move: '📈', target: '🎯', pla: '✈︎', quake: '〰', source: '⚠︎', surge: '◎', astro: '✦', launch: '🚀' };
 function onAlerts(a) {
   if (!a) return;
   const fresh = (a.items || []).filter((x) => x.id > alertSeen);
@@ -9997,7 +11001,7 @@ function banner(x) {
   const b = document.createElement('div');
   b.className = 'banner k-' + x.kind;
   b.innerHTML = `<i>${ALERT_ICON[x.kind] || '•'}</i><div><b>${esc(x.title)}</b><span>${esc(x.body)}</span></div>`;
-  b.addEventListener('click', () => { b.remove(); if (x.kind === 'surge') showSurgeNews(surgeTermOf(x)); else openAlerts(); });
+  b.addEventListener('click', () => { b.remove(); if (x.kind === 'surge') showSurgeNews(surgeTermOf(x)); else if (x.kind === 'astro') openAstro('events'); else if (x.kind === 'launch') openAstro('launch'); else openAlerts(); });
   $('banners').prepend(b);
   while ($('banners').children.length > 3) $('banners').lastChild.remove();
   void b.offsetWidth; b.classList.add('on');
@@ -10016,7 +11020,7 @@ function tgtRow(t = {}) {
 }
 function openAlerts() {
   const c = CFG.alertCfg || {};
-  $('al-on').checked = c.enabled !== false; $('al-src').checked = c.sources !== false; $('al-surge').checked = c.surge === true;
+  $('al-on').checked = c.enabled !== false; $('al-src').checked = c.sources !== false; $('al-surge').checked = c.surge === true; $('al-astro').checked = c.astro === true; $('al-launch').checked = c.launch === true;
   $('al-move').value = c.move ?? 5; $('al-pla').value = c.pla ?? 25; $('al-quake').value = c.quake ?? 6;
   $('al-rules').classList.toggle('off', !$('al-on').checked);
   $('al-tgts').innerHTML = (c.targets || []).map(tgtRow).join('') || '<div class="dim al-empty">還沒有。可以設定「台積電高於 2500 提醒我」這類條件。</div>';
@@ -10045,7 +11049,7 @@ $('al-save').addEventListener('click', async () => {
     const [m, c] = r.querySelector('select').value.split(':');
     return { m, c, above: r.querySelector('.t-above').value.replace(/[,，\s]/g, ''), below: r.querySelector('.t-below').value.replace(/[,，\s]/g, '') };
   }).filter((t) => t.above || t.below);
-  const body = { enabled: $('al-on').checked, sources: $('al-src').checked, surge: $('al-surge').checked, move: $('al-move').value || 0, pla: $('al-pla').value || 0, quake: $('al-quake').value || 0, targets };
+  const body = { enabled: $('al-on').checked, sources: $('al-src').checked, surge: $('al-surge').checked, astro: $('al-astro').checked, launch: $('al-launch').checked, move: $('al-move').value || 0, pla: $('al-pla').value || 0, quake: $('al-quake').value || 0, targets };
   const btn = $('al-save'); btn.disabled = true;
   try {
     const j = await postJSON('/api/alerts/settings', body);
@@ -11106,7 +12110,7 @@ $('edl-reset').addEventListener('click', () => {
 
 // ───────────────────────── 指令列（⌘K） ─────────────────────────
 // 搜尋欄升級：⌘K 或 / 在畫面中央打開，可以搜尋地點、航班、股票、新聞，也可以直接下指令。
-const LAYER_NAME = { flights: '航班', ships: '貨輪', pla: '共機共艦', war: '戰事區域', cii: '不穩定指數', aurora: '極光', cables: '海底電纜' };
+const LAYER_NAME = { flights: '航班', ships: '貨輪', pla: '共機共艦', war: '戰事區域', cii: '不穩定指數', aurora: '極光', cables: '海底電纜', launch: '火箭發射' };
 let RECENT = (() => { try { const a = JSON.parse(lsGet('recentCmds', '[]')); return Array.isArray(a) ? a.filter((x) => typeof x === 'string').slice(0, 8) : []; } catch (e) { return []; } })();
 const COMMANDS = [
   ...SCENES.map((sc) => ({ id: 'scene:' + sc.id, name: '情境：' + sc.name, alias: [sc.name, sc.hint, '情境', 'scene'], hint: `${sc.hint}（按 ${sc.key}）`, run: () => switchScene(sc.id) })),
@@ -11135,7 +12139,15 @@ const COMMANDS = [
     { id: 'space:system', name: '太陽系', alias: ['太陽系全景', '宇宙', '行星', '星球', 'solar system', 'space'], hint: '縮到宇宙裡看所有行星', run: () => spGo('system') },
     { id: 'space:outer', name: '太陽系外圍', alias: ['古柏帶', '歐特雲', '航海家', 'kuiper', 'oort'], hint: '拉遠到行星外面的古柏帶與歐特雲', run: () => spGo('outer') },
     { id: 'space:stars', name: '鄰近恆星', alias: ['附近的星星', '恆星', '天狼星', '南門二', '比鄰星', 'nearby stars'], hint: '太陽附近 50 光年內真實位置的恆星', run: () => spGo('stars') },
+    { id: 'space:neighbors', name: '銀河系的鄰居', alias: ['麥哲倫雲', '大麥哲倫雲', '衛星星系', 'magellanic'], hint: '拉遠到銀河系旁邊的衛星星系', run: () => spGo('neighbors') },
+    { id: 'space:local', name: '仙女座與本星系群', alias: ['仙女座', '仙女座星系', '本星系群', '三角座', 'andromeda', 'local group'], hint: '拉遠到仙女座星系與本星系群', run: () => spGo('local') },
+    { id: 'space:nearby', name: '鄰近的星系', alias: ['星系團', '室女座星系團', '大吸引子', '鄰近星系'], hint: '拉遠到幾千個星系與星系團', run: () => spGo('nearby') },
+    { id: 'space:web', name: '宇宙網', alias: ['宇宙大尺度結構', '超星系團', '長城', '空洞', 'cosmic web'], hint: '拉遠到星系排成的絲、牆與空洞', run: () => spGo('web') },
+    { id: 'space:universe', name: '可觀測宇宙', alias: ['宇宙', '宇宙微波背景', '最遠', 'observable universe'], hint: '拉到整個可觀測宇宙，我們在正中間', run: () => spGo('universe') },
     { id: 'space:galaxy', name: '銀河系', alias: ['銀河', '星系', 'milky way', 'galaxy'], hint: '拉到整個銀河系，看我們在哪', run: () => spGo('galaxy') },
+    { id: 'space:astro-tonight', name: '今晚的天空', alias: ['今晚', '今天晚上', '看星星', '行星', '月相', '月亮', '今晚看得到什麼'], hint: '今晚哪些行星、月亮、亮星看得到、在哪個方向', run: () => spGo('astro:tonight') },
+    { id: 'space:astro-events', name: '天象日曆', alias: ['天象', '日食', '月食', '流星雨', '超級月亮', '行星相合', '衝'], hint: '未來一年的日月食、流星雨、行星相合', run: () => spGo('astro:events') },
+    { id: 'space:astro-launch', name: '火箭發射', alias: ['發射', '火箭', '獵鷹', 'spacex', 'launch', '倒數'], hint: '全球火箭發射時程與倒數', run: () => spGo('astro:launch') },
     { id: 'space:iss', name: '太空站（模型）', alias: ['國際太空站', 'iss', '天宮', '哈伯', '衛星模型'], hint: '近看太空站的模型', run: () => spGo('iss') },
     { id: 'space:earth', name: '回地球', alias: ['離開太空', '回到地球', 'earth'], hint: '從太陽系回到地球畫面', when: () => globe.space.active || globe.zoom < 0.9, run: () => spGo('home') },
     ...SPACE_BODIES.map((b) => ({ id: 'space:' + b.id, name: '看：' + b.name, alias: [b.name, b.en, b.en.toLowerCase(), ...(b.id === 'moon' ? ['月球', 'moon'] : b.id === 'mars' ? ['火星', 'mars'] : [])], hint: b.blurb, run: () => spGo(b.id) })),
@@ -11259,7 +12271,7 @@ async function poll() {
     setTimeout(() => { for (const el of document.querySelectorAll('.col .panel [data-v]')) { const v = +el.dataset.v; if (isFinite(v) && v) roll(el, 0, v, +el.dataset.d || 0, el.dataset.s || ''); } fxSweep = (el) => fx.sweep(el.closest('.panel')); }, 30);
   }
   const _r0 = performance.now();
-  if (serverOK) { safe(renderMarkets); safe(renderWeather); safe(renderSystem); safe(renderNews); safe(renderStrait); safe(renderConflicts); safe(renderWatch); safe(renderWhy); safe(renderBrief); safe(renderSurge); safe(renderCii); safe(renderAssets); safe(renderCal); safe(renderInsp); safe(renderMV); safe(renderFilm); safe(syncLayers); syncFlights(); }
+  if (serverOK) { safe(renderMarkets); safe(renderWeather); safe(renderSystem); safe(renderNews); safe(renderStrait); safe(renderConflicts); safe(renderWatch); safe(renderWhy); safe(renderBrief); safe(renderSurge); safe(renderLaunches); safe(renderCii); safe(renderAssets); safe(renderCal); safe(renderInsp); safe(renderMV); safe(renderFilm); safe(syncLayers); syncFlights(); }
   safe(renderStatus); safe(staleMarks);
   if ((QS.get('perf') || '').includes('log')) { const P = window.__rp || (window.__rp = { n: 0, ms: 0, max: 0 }); const d = performance.now() - _r0; P.n++; P.ms += d; P.max = Math.max(P.max, d); P.avg = P.ms / P.n; }
 }
@@ -11399,7 +12411,7 @@ if (QS_TEST && QS.has('wall')) setTimeout(() => $('insp-wall').click(), 9000);
 // 朋友用的手機網頁版：點最上面的標題回到頂端
 document.querySelector('.topbar .brand')?.addEventListener('click', (e) => { if (!document.documentElement.classList.contains('standalone') || !document.body.classList.contains('tall') || e.target.closest('button')) return; (document.scrollingElement || document.documentElement).scrollTop = 0; document.body.scrollTop = 0; });
 // 測試用的內部入口：只有電腦版（QS_TEST）而且網址帶 ?hook=1 才有（tests/*.js 用）。朋友的網頁（WP_BOOT）沒有。
-if (QS_HOOK && QS.has('hook')) window.__app = { banner, onAlerts, openAlerts, showSurgeNews, S, globe, get CFG() { return CFG; }, renderWatch, drawBriefDlg, renderClocks, applyLayout, setStageMode, setKey, pauseNews, get hlPaused() { return hlPaused; }, partsIn };
+if (QS_HOOK && QS.has('hook')) window.__app = { SPOTS, openAstro, drawAstro, renderLaunches, openPad, closePad, cmp, compassStart, compassStop, compassOrient, deviceAim, padZh, sky: { skyTonight, skyAt, skyHm, tzOf, bodyAltAz, altAz, dirName, planetMag, moonInfo, localParts, BRIGHT_STARS, riseSet, almEvents, nextNotable, checkEclipses, astroTonight, astroEventsList, astroCloud, openAstro, drawAstro }, banner, onAlerts, openAlerts, showSurgeNews, S, globe, get CFG() { return CFG; }, renderWatch, drawBriefDlg, renderClocks, applyLayout, setStageMode, setKey, pauseNews, get hlPaused() { return hlPaused; }, partsIn };
 
 </script>
 </body>
